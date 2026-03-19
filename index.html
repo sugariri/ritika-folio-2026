@@ -100,6 +100,7 @@
       .nav-bar { max-width: calc(100% - 32px); padding: 10px 16px; }
       .nav-center { display: none; }
       .nav-toggle { display: flex; }
+      .nav-cta-group { display: none !important; }
       .nav-center.open {
         display: flex; position: fixed; top: 0; right: 0;
         width: 60%; height: 100vh;
@@ -108,6 +109,12 @@
         box-shadow: -8px 0 30px rgba(0,0,0,0.06); z-index: 101;
       }
       .nav-center.open a { font-size: 16px; }
+      .nav-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.3); z-index: 100;
+      }
+      .nav-overlay.open { display: block; }
+      .nav-toggle { z-index: 102; }
     }
 
     /* ========== HERO ========== */
@@ -609,10 +616,14 @@
         <li><a href="#resume">About</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
-      <a href="#contact" class="nav-cta">Let's talk</a>
+      <div class="nav-cta-group" style="display:flex;gap:8px;">
+        <a href="#work" class="nav-cta">Work</a>
+        <a href="#contact" class="nav-cta">Contact</a>
+      </div>
       <button class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
   </nav>
+  <div class="nav-overlay" id="navOverlay"></div>
 
   <!-- ==================== HERO ==================== -->
   <section class="hero" id="hero">
@@ -1144,9 +1155,13 @@
   // ——— Mobile nav ———
   var navToggle = document.querySelector('.nav-toggle');
   var navCenter = document.querySelector('.nav-center');
-  navToggle.addEventListener('click', function() { navCenter.classList.toggle('open'); });
+  var navOverlay = document.getElementById('navOverlay');
+  function closeMenu() { navCenter.classList.remove('open'); navOverlay.classList.remove('open'); }
+  function toggleMenu() { navCenter.classList.toggle('open'); navOverlay.classList.toggle('open'); }
+  navToggle.addEventListener('click', toggleMenu);
+  navOverlay.addEventListener('click', closeMenu);
   navCenter.querySelectorAll('a').forEach(function(a) {
-    a.addEventListener('click', function() { navCenter.classList.remove('open'); });
+    a.addEventListener('click', closeMenu);
   });
 
   // ——— Smooth scroll ———
