@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ritika Shakkerwal — Product Designer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #F5F5F5;
+      --bg-card: #FFFFFF;
+      --text: #131313;
+      --text-muted: #5C5C5C;
+      --text-light: #B7B7B7;
+      --accent: #B56A10;
+      --border: #ECECEC;
+      --border-hover: #D4D4D4;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 8px 30px rgba(0,0,0,0.07);
+      --shadow-lg: 0 16px 50px rgba(0,0,0,0.10);
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ========== LOADER ========== */
+    .loader {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .loader-name {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--text); opacity: 0;
+      letter-spacing: -0.02em;
+    }
+
+    /* ========== SCROLL PROGRESS ========== */
+    .scroll-progress {
+      position: fixed; top: 0; left: 0;
+      width: 0%; height: 1.5px;
+      background: var(--accent); z-index: 200;
+    }
+
+    /* ========== NAV (pill) ========== */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0; }
+    .nav-bar {
+      max-width: 620px;
+      margin: 16px auto 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 60px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled .nav-bar { box-shadow: var(--shadow-md); }
+    .nav-logo {
+      font-family: var(--font-serif);
+      font-size: 1.05rem; letter-spacing: -0.02em;
+    }
+    .nav-center { display: flex; gap: 24px; list-style: none; }
+    .nav-center a { font-size: 13px; color: var(--text-muted); transition: color 0.25s; }
+    .nav-center a:hover { color: var(--text); }
+    .nav-cta {
+      font-size: 12px; font-weight: 500;
+      padding: 7px 18px;
+      background: var(--text); color: var(--bg);
+      border-radius: 50px; transition: background 0.25s;
+    }
+    .nav-cta:hover { background: #2a2a2a; }
+    .nav-toggle {
+      display: none; flex-direction: column; gap: 4px;
+      background: none; border: none; cursor: pointer; padding: 6px;
+    }
+    .nav-toggle span { width: 18px; height: 1.5px; background: var(--text); border-radius: 1px; }
+    @media (max-width: 640px) {
+      .nav-bar { max-width: calc(100% - 32px); padding: 10px 16px; }
+      .nav-center { display: none; }
+      .nav-toggle { display: flex; }
+      .nav-center.open {
+        display: flex; position: fixed; top: 0; right: 0;
+        width: 60%; height: 100vh;
+        background: var(--bg-card);
+        flex-direction: column; padding: 72px 28px; gap: 20px;
+        box-shadow: -8px 0 30px rgba(0,0,0,0.06); z-index: 101;
+      }
+      .nav-center.open a { font-size: 16px; }
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: visible;
+    }
+    .hero-inner { position: relative; z-index: 2; max-width: 650px; }
+
+    /* Typewriter badge */
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-badge .icon { font-size: 14px; }
+    .typewriter-wrap { display: inline-block; min-width: 170px; text-align: left; }
+    .typewriter-text {
+      border-right: 2px solid var(--accent);
+      padding-right: 2px;
+      animation: blink 0.8s step-end infinite;
+    }
+    @keyframes blink { 50% { border-color: transparent; } }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 400; line-height: 1.08;
+      letter-spacing: -0.03em; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub {
+      font-size: 15px; color: var(--text-muted);
+      line-height: 1.7; max-width: 460px;
+      margin: 0 auto 32px;
+    }
+    .hero-sub em {
+      font-family: var(--font-serif);
+      font-style: italic; color: var(--accent);
+    }
+    .hero-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 10px 24px;
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text);
+      cursor: pointer; transition: all 0.25s var(--ease);
+    }
+    .btn:hover { border-color: var(--border-hover); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+    .btn--dark { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn--dark:hover { background: #2a2a2a; box-shadow: var(--shadow-md); }
+
+    /* ========== FLOATING CARDS ========== */
+    .float-card {
+      position: absolute;
+      width: 260px;
+      background: var(--bg-card);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      z-index: 50;
+      pointer-events: none;
+      will-change: transform, opacity, left, top, width;
+    }
+    .float-card--left {
+      left: 5%; top: 50%;
+      transform: translateY(-50%) rotate(-4deg);
+    }
+    .float-card--right {
+      right: 5%; top: 50%;
+      transform: translateY(-50%) rotate(3deg);
+    }
+    .float-card .fc-thumb {
+      height: 150px; background: #EAEAEA;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .float-card .fc-body { padding: 14px 16px; }
+    .float-card .fc-title {
+      font-family: var(--font-serif);
+      font-size: 0.95rem; margin-bottom: 3px; line-height: 1.3;
+    }
+    .float-card .fc-label { font-size: 11px; color: var(--text-light); }
+
+    @media (max-width: 1100px) {
+      .float-card { width: 220px; }
+      .float-card--left { left: 2%; }
+      .float-card--right { right: 2%; }
+    }
+    @media (max-width: 860px) { .float-card { display: none !important; } }
+
+    /* ========== TRANSITION SPACER ========== */
+    .hero-to-work {
+      height: 30vh;
+      position: relative;
+    }
+
+    /* ========== SECTIONS ========== */
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+    .section-label {
+      font-size: 11px; font-weight: 500;
+      color: var(--text-light); text-transform: uppercase;
+      letter-spacing: 0.12em; margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 400; letter-spacing: -0.03em;
+      line-height: 1.15; margin-bottom: 48px;
+    }
+    .section-title em { font-style: italic; color: var(--accent); }
+    .divider { width: 100%; height: 1px; background: var(--border); }
+
+    /* ========== WORK ========== */
+    .work { padding: 80px 0 100px; }
+    .work-grid { display: flex; flex-direction: column; gap: 24px; }
+
+    .project-card {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.3s;
+    }
+    .project-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--border-hover);
+    }
+    .project-card:nth-child(even) .card-thumb { order: 2; }
+    .project-card:nth-child(even) .card-body { order: 1; }
+
+    .card-thumb {
+      position: relative; min-height: 300px;
+      background: #EAEAEA; overflow: hidden;
+    }
+    .card-thumb .placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text-light);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .card-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s var(--ease);
+    }
+    .project-card:hover .card-thumb img { transform: scale(1.03); }
+
+    .card-body {
+      padding: 36px 32px;
+      display: flex; flex-direction: column;
+      justify-content: center; gap: 10px;
+    }
+    .card-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .card-tag {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.03em;
+      color: var(--accent); background: rgba(181,106,16,0.07);
+      padding: 4px 10px; border-radius: 4px;
+    }
+    .card-year { font-size: 11px; color: var(--text-light); }
+    .card-body h3 {
+      font-family: var(--font-serif);
+      font-size: 1.4rem; font-weight: 400; letter-spacing: -0.02em;
+    }
+    .card-body p { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+    .card-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 500; color: var(--text);
+      margin-top: 4px; transition: gap 0.25s var(--ease);
+    }
+    .card-link:hover { gap: 10px; }
+
+    /* Sub-projects inside combined card */
+    .sub-projects {
+      display: flex; flex-direction: column;
+      gap: 0; margin-top: 8px;
+    }
+    .sub-project {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      transition: gap 0.25s var(--ease);
+    }
+    .sub-project:last-child { border-bottom: none; }
+    .sub-name {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      min-width: 52px;
+    }
+    .sub-desc {
+      font-size: 12px; color: var(--text-light);
+      flex: 1;
+    }
+    .sub-arrow {
+      font-size: 13px; color: var(--text-light);
+      transition: color 0.25s, transform 0.25s;
+    }
+    .sub-project:hover .sub-arrow { color: var(--text); transform: translateX(3px); }
+    .sub-project:hover .sub-name { color: var(--accent); }
+
+    /* Card initial states — controlled by GSAP autoAlpha */
+
+    @media (max-width: 768px) {
+      .project-card { grid-template-columns: 1fr; }
+      .project-card:nth-child(even) .card-thumb { order: 0; }
+      .project-card:nth-child(even) .card-body { order: 0; }
+      .card-thumb { min-height: 200px; }
+      .card-body { padding: 24px 20px; }
+    }
+
+    /* ========== RESUME ========== */
+    .resume { padding: 80px 0 100px; }
+
+    /* Minimal row list (shared by experience, skills, tools, education) */
+    .exp-heading {
+      font-family: var(--font-sans);
+      font-size: 15px; font-weight: 400;
+      color: var(--text-muted);
+      margin-bottom: 0;
+    }
+    .exp-list { display: flex; flex-direction: column; gap: 0; margin-bottom: 72px; }
+    .exp-row {
+      display: grid; grid-template-columns: 200px 1fr;
+      align-items: center;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .exp-row:first-child { border-top: 1px solid var(--border); }
+    .exp-year {
+      font-size: 15px; color: var(--text-light);
+      font-weight: 400; letter-spacing: -0.01em;
+    }
+    .exp-role {
+      font-size: 15px; color: var(--text-muted);
+      font-weight: 400;
+    }
+    .exp-role strong {
+      font-weight: 500; color: var(--text);
+    }
+    @media (max-width: 640px) {
+      .exp-row { grid-template-columns: 120px 1fr; gap: 8px; }
+      .exp-year { font-size: 13px; }
+      .exp-role { font-size: 13px; }
+    }
+
+    /* Chips for skills/tools rows */
+    .row-chips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+    }
+    .row-chip {
+      font-size: 13px; padding: 6px 16px; border-radius: 6px;
+      border: 1px solid var(--border); color: var(--text-muted);
+      background: var(--bg-card);
+      transition: border-color 0.25s, color 0.25s;
+    }
+    .row-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ========== ACHIEVEMENTS ========== */
+    .achievements { padding: 0 0 80px; }
+    .achieve-card {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--bg-card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .achieve-body {
+      padding: 40px 36px;
+      display: flex; flex-direction: column;
+      justify-content: center; gap: 12px;
+    }
+    .achieve-body .achieve-tag {
+      display: inline-block; width: fit-content;
+      font-size: 11px; font-weight: 500; letter-spacing: 0.03em;
+      color: var(--accent); background: rgba(181,106,16,0.07);
+      padding: 4px 10px; border-radius: 4px;
+    }
+    .achieve-body h3 {
+      font-family: var(--font-serif);
+      font-size: 1.3rem; font-weight: 400; letter-spacing: -0.02em;
+    }
+    .achieve-body p { font-size: 13.5px; color: var(--text-muted); line-height: 1.65; }
+    .achieve-images {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; padding: 16px;
+    }
+    .achieve-img {
+      width: 100%; aspect-ratio: 4/3;
+      background: #EAEAEA; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--text-light);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      overflow: hidden;
+    }
+    .achieve-img img { width: 100%; height: 100%; object-fit: cover; }
+    @media (max-width: 768px) {
+      .achieve-card { grid-template-columns: 1fr; }
+      .achieve-body { padding: 28px 24px; }
+      .achieve-images { padding: 12px; }
+    }
+
+    /* ========== LIFE UPDATES (horizontal polaroid stack) ========== */
+    .life-section { padding: 80px 0 80px; overflow: hidden; }
+    .life-header {
+      max-width: 960px; margin: 0 auto;
+      padding: 0 24px 48px;
+    }
+    .life-header .section-label { margin-bottom: 10px; }
+    .life-header .section-title { margin-bottom: 0; }
+
+    .life-grid {
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px 60px;
+      position: relative;
+    }
+    /* Polaroid card */
+    .life-card {
+      width: 200px; flex-shrink: 0;
+      background: var(--bg-card);
+      border-radius: 4px;
+      padding: 12px 12px 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+      position: relative;
+      transition: transform 0.4s var(--ease), box-shadow 0.4s, z-index 0s;
+    }
+    /* Horizontal overlap */
+    .life-card + .life-card { margin-left: -50px; }
+    /* Zigzag vertical offset + rotation */
+    .life-card:nth-child(1) { transform: rotate(-4deg) translateY(10px); z-index: 6; }
+    .life-card:nth-child(2) { transform: rotate(3deg) translateY(-15px); z-index: 5; }
+    .life-card:nth-child(3) { transform: rotate(-2deg) translateY(8px); z-index: 4; }
+    .life-card:nth-child(4) { transform: rotate(4deg) translateY(-12px); z-index: 3; }
+    .life-card:nth-child(5) { transform: rotate(-3deg) translateY(14px); z-index: 2; }
+    .life-card:nth-child(6) { transform: rotate(2deg) translateY(-8px); z-index: 1; }
+
+    .life-card:hover {
+      transform: rotate(0deg) translateY(-20px) scale(1.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 10;
+    }
+    .life-card-img {
+      width: 100%; aspect-ratio: 1;
+      background: #EAEAEA; border-radius: 2px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      overflow: hidden;
+    }
+    .life-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .life-card-body {
+      padding: 10px 2px 0;
+      text-align: center;
+    }
+    .life-card-body h4 {
+      font-family: var(--font-serif);
+      font-size: 0.85rem; font-weight: 400;
+      margin-bottom: 0;
+    }
+    .life-card-body p { display: none; }
+    @media (max-width: 768px) {
+      .life-card { width: 160px; padding: 10px 10px 32px; }
+      .life-card + .life-card { margin-left: -40px; }
+    }
+    @media (max-width: 480px) {
+      .life-card { width: 130px; padding: 8px 8px 28px; }
+      .life-card + .life-card { margin-left: -35px; }
+      .life-card-body h4 { font-size: 0.75rem; }
+    }
+
+    /* ========== CAT PAWS ========== */
+    .paw {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0;
+      font-size: 18px;
+      filter: grayscale(1);
+      will-change: transform, opacity;
+    }
+
+    /* ========== INTERACTIVE CAT ========== */
+    .hide-seek-cat {
+      position: fixed;
+      z-index: 9997;
+      pointer-events: none;
+      width: 64px; height: 64px;
+      transition: none;
+      will-change: left, top;
+      user-select: none;
+    }
+    .hide-seek-cat svg { width: 100%; height: 100%; }
+    .hide-seek-cat .cat-state { display: none; }
+    .hide-seek-cat .cat-state.active { display: block; }
+
+    /* Sitting: gentle breathing */
+    .hide-seek-cat.sitting { animation: catBreathe 2.5s ease-in-out infinite; }
+    @keyframes catBreathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+    /* Sitting tail sway */
+    .hide-seek-cat.sitting .cat-tail-sit {
+      transform-origin: 15px 38px;
+      animation: tailSway 2s ease-in-out infinite;
+    }
+    @keyframes tailSway {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(8deg); }
+    }
+    /* Hearts float */
+    .hide-seek-cat.sitting .cat-hearts {
+      animation: heartsFloat 2.5s ease-in-out infinite;
+    }
+    @keyframes heartsFloat {
+      0%, 100% { opacity: 0.5; transform: translateY(0); }
+      50% { opacity: 0.9; transform: translateY(-3px); }
+    }
+
+    /* Chasing: stalky bounce */
+    .hide-seek-cat.chasing { animation: catStalk 0.35s ease-in-out infinite; }
+    @keyframes catStalk {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-4px) rotate(2deg); }
+    }
+
+    /* Fleeing: frantic run */
+    .hide-seek-cat.fleeing { animation: catRun 0.18s ease-in-out infinite alternate; }
+    @keyframes catRun {
+      0% { transform: translateY(0) scaleX(1.1) scaleY(0.92); }
+      100% { transform: translateY(-5px) scaleX(0.92) scaleY(1.08); }
+    }
+    /* Fleeing legs */
+    .hide-seek-cat.fleeing .cat-legs-flee {
+      animation: legsScramble 0.12s linear infinite alternate;
+    }
+    @keyframes legsScramble {
+      0% { transform: rotate(-15deg); }
+      100% { transform: rotate(15deg); }
+    }
+
+    @media (max-width: 768px) {
+      .hide-seek-cat { width: 48px; height: 48px; }
+    }
+
+    /* ========== FOOTER ========== */
+    footer { padding: 72px 0 32px; border-top: 1px solid var(--border); }
+    .footer-inner { text-align: center; }
+    .footer-heading {
+      font-family: var(--font-serif);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 400; letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .footer-heading em { font-style: italic; color: var(--accent); }
+    .footer-sub {
+      font-size: 14px; color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    .socials {
+      display: flex; justify-content: center; gap: 10px;
+      flex-wrap: wrap; margin-bottom: 48px;
+    }
+    .social-pill {
+      padding: 8px 18px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px;
+      color: var(--text-muted); background: var(--bg-card);
+      transition: border-color 0.25s, color 0.25s, transform 0.25s;
+    }
+    .social-pill:hover { border-color: var(--border-hover); color: var(--text); transform: translateY(-1px); }
+    .footer-copy {
+      font-size: 11px; color: var(--text-light);
+      padding-top: 28px; border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div class="loader"><div class="loader-name">Ritika Shakkerwal</div></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress"></div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-bar">
+      <a href="#" class="nav-logo">Ritika</a>
+      <ul class="nav-center">
+        <li><a href="#work">Work</a></li>
+        <li><a href="#resume">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <a href="#contact" class="nav-cta">Let's talk</a>
+      <button class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="hero" id="hero">
+    <!-- Floating cards (will become position:fixed via JS) -->
+    <div class="float-card float-card--left" id="floatLeft">
+      <div class="fc-thumb">Thumbnail — FinSynth AI</div>
+      <div class="fc-body">
+        <p class="fc-title">AI copilot for financial analysts in Excel</p>
+        <p class="fc-label">FinSynth AI</p>
+      </div>
+    </div>
+    <div class="float-card float-card--right" id="floatRight">
+      <div class="fc-thumb">Thumbnail — Scream</div>
+      <div class="fc-body">
+        <p class="fc-title">Three MVPs designed end-to-end in under a year</p>
+        <p class="fc-label">Scream</p>
+      </div>
+    </div>
+
+    <div class="hero-inner" id="heroInner">
+      <div class="hero-badge">
+        <span class="icon">✦</span>
+        <span class="typewriter-wrap"><span class="typewriter-text" id="typewriter"></span></span>
+      </div>
+      <h1>Ritika <em>Shakkerwal</em></h1>
+      <p class="hero-sub">
+        Product designer crafting interfaces that feel so right,
+        they seem <em>inevitable</em> — currently shaping AI experiences at FinSynth.
+      </p>
+      <div class="hero-buttons">
+        <a href="#work" class="btn btn--dark">View my work ↓</a>
+        <a href="#contact" class="btn">Get in touch</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Transition spacer — gives scroll room for merge animation -->
+  <div class="hero-to-work" id="mergeZone"></div>
+
+  <!-- ==================== WORK ==================== -->
+  <section class="work" id="work">
+    <div class="container">
+      <p class="section-label">Selected Work</p>
+      <h2 class="section-title">Projects I've shaped<br>from <em>zero to one</em></h2>
+
+      <div class="work-grid">
+        <!-- 1 · FinSynth AI (merge target for left float card) -->
+        <a href="#" class="project-card merge-target" id="card-finsynth">
+          <div class="card-thumb"><div class="placeholder">Thumbnail — FinSynth AI</div></div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-tag">AI · Excel · Fintech</span>
+              <span class="card-year">2025 — Present</span>
+            </div>
+            <h3>FinSynth AI</h3>
+            <p>Designing the end-to-end experience for an AI copilot embedded in Excel — enabling financial analysts to build, query, and track models.</p>
+            <span class="card-link">View case study <span>→</span></span>
+          </div>
+        </a>
+
+        <!-- 2 · Scream — Yomo, Mazic, Slyce (merge target for right float card) -->
+        <div class="project-card merge-target" id="card-scream">
+          <div class="card-thumb"><div class="placeholder">Thumbnail — Scream</div></div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-tag">MVP · 0→1 · Multi-product</span>
+              <span class="card-year">2024 — 2025</span>
+            </div>
+            <h3>Scream</h3>
+            <p>Designed three products end-to-end as the sole designer — translating founder vision into shipped MVPs across AI video, user insights, and developer tooling.</p>
+            <div class="sub-projects">
+              <a href="https://ritikamazicv1.framer.website/" target="_blank" class="sub-project">
+                <span class="sub-name">Mazic</span>
+                <span class="sub-desc">AI-powered demo videos · 200+ users</span>
+                <span class="sub-arrow">→</span>
+              </a>
+              <a href="#" class="sub-project">
+                <span class="sub-name">Yomo</span>
+                <span class="sub-desc">User insights platform redesign</span>
+                <span class="sub-arrow">→</span>
+              </a>
+              <a href="#" class="sub-project">
+                <span class="sub-name">Slyce</span>
+                <span class="sub-desc">Bug-reporting tool for QA & design</span>
+                <span class="sub-arrow">→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 · Event Beep -->
+        <a href="#" class="project-card scroll-reveal">
+          <div class="card-thumb"><div class="placeholder">Thumbnail — Event Beep</div></div>
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-tag">Mobile · Dashboard</span>
+              <span class="card-year">2023</span>
+            </div>
+            <h3>Event Beep</h3>
+            <p>Redesigned key screens of the BEEP mobile app and enhanced the recruiter-facing web dashboard.</p>
+            <span class="card-link">View case study <span>→</span></span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container"><div class="divider"></div></div>
+
+  <!-- ==================== RESUME ==================== -->
+  <section class="resume" id="resume">
+    <div class="container">
+      <p class="section-label">About</p>
+      <h2 class="section-title">Experience, skills<br>& <em>education</em></h2>
+
+      <!-- Work Experience -->
+      <h3 class="exp-heading">Work Experience</h3>
+      <div class="exp-list">
+        <div class="exp-row">
+          <span class="exp-year">2025 - Present</span>
+          <span class="exp-role">Product Designer at <strong>FinSynth AI</strong></span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">2024 - 2025</span>
+          <span class="exp-role">Product Design Intern at <strong>Scream</strong></span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">2023</span>
+          <span class="exp-role">UI Intern at <strong>Event Beep</strong></span>
+        </div>
+      </div>
+
+      <!-- Skills -->
+      <h3 class="exp-heading">Skills</h3>
+      <div class="exp-list">
+        <div class="exp-row">
+          <span class="exp-year">Design</span>
+          <span class="exp-role">
+            <span class="row-chips">
+              <span class="row-chip">UI Design</span>
+              <span class="row-chip">Product Design</span>
+              <span class="row-chip">UX Research</span>
+              <span class="row-chip">Wireframing</span>
+              <span class="row-chip">Prototyping</span>
+            </span>
+          </span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">Engineering</span>
+          <span class="exp-role">
+            <span class="row-chips">
+              <span class="row-chip">HTML / CSS</span>
+              <span class="row-chip">Design Systems</span>
+              <span class="row-chip">Responsive Design</span>
+              <span class="row-chip">Component Architecture</span>
+              <span class="row-chip">Design Tokens</span>
+            </span>
+          </span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">Strategy</span>
+          <span class="exp-role">
+            <span class="row-chips">
+              <span class="row-chip">Information Architecture</span>
+              <span class="row-chip">Product Thinking</span>
+              <span class="row-chip">Design QA</span>
+              <span class="row-chip">Collaboration</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Tools -->
+      <h3 class="exp-heading">Tools</h3>
+      <div class="exp-list">
+        <div class="exp-row">
+          <span class="exp-year">Design</span>
+          <span class="exp-role">
+            <span class="row-chips">
+              <span class="row-chip">Figma</span>
+              <span class="row-chip">Figma Make</span>
+              <span class="row-chip">Notion</span>
+              <span class="row-chip">Linear</span>
+            </span>
+          </span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">AI & Dev</span>
+          <span class="exp-role">
+            <span class="row-chips">
+              <span class="row-chip">Claude</span>
+              <span class="row-chip">Magic Patterns</span>
+              <span class="row-chip">Vercel</span>
+              <span class="row-chip">Supabase</span>
+              <span class="row-chip">GitHub</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <h3 class="exp-heading">Education</h3>
+      <div class="exp-list">
+        <div class="exp-row">
+          <span class="exp-year">2022 - 2023</span>
+          <span class="exp-role">Product Design Course at <strong>10k Designers</strong></span>
+        </div>
+        <div class="exp-row">
+          <span class="exp-year">2019 - 2022</span>
+          <span class="exp-role">B.Sc (CBZ) at <strong>St Joseph's College, Bangalore</strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container"><div class="divider"></div></div>
+
+  <!-- ==================== ACHIEVEMENTS ==================== -->
+  <section class="achievements" id="achievements">
+    <div class="container" style="padding-top: 80px;">
+      <p class="section-label">Achievements</p>
+      <h2 class="section-title">Giving back to the<br><em>community</em></h2>
+
+      <div class="achieve-card">
+        <div class="achieve-body">
+          <span class="achieve-tag">Mentorship</span>
+          <h3>Alumni Mentor at 10k Designers</h3>
+          <p>Mentored aspiring product designers as an alumni mentor at 10k Designers — conducting portfolio reviews, design critiques, and career guidance sessions to help the next generation of designers grow.</p>
+        </div>
+        <div class="achieve-images">
+          <div class="achieve-img">Image 1</div>
+          <div class="achieve-img">Image 2</div>
+          <div class="achieve-img">Image 3</div>
+          <div class="achieve-img">Image 4</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== LIFE UPDATES (horizontal scroll) ==================== -->
+  <section class="life-section" id="life">
+    <div class="life-header">
+      <p class="section-label">Beyond Work</p>
+      <h2 class="section-title">More about <em>life</em></h2>
+    </div>
+    <div class="life-grid">
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Travel</h4>
+          <p>Exploring new places and cultures whenever I get the chance.</p>
+        </div>
+      </div>
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Reading</h4>
+          <p>Books on design, psychology, and personal growth.</p>
+        </div>
+      </div>
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Community</h4>
+          <p>Connecting with designers, sharing ideas and learning together.</p>
+        </div>
+      </div>
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Music</h4>
+          <p>Always have something playing in the background while I design.</p>
+        </div>
+      </div>
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Food</h4>
+          <p>Trying new restaurants and cooking experiments on weekends.</p>
+        </div>
+      </div>
+      <div class="life-card">
+        <div class="life-card-img">Photo placeholder</div>
+        <div class="life-card-body">
+          <h4>Fitness</h4>
+          <p>Staying active and maintaining a healthy routine.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer id="contact">
+    <div class="container" style="max-width:620px;">
+      <div class="footer-inner">
+        <h2 class="footer-heading">Let's create something <em>great</em></h2>
+        <p class="footer-sub">Open to full-time roles, freelance, and interesting collaborations.</p>
+        <div class="socials">
+          <a href="mailto:Ritikashofficial2511@gmail.com" class="social-pill">Email</a>
+          <a href="#" class="social-pill" target="_blank">LinkedIn</a>
+          <a href="#" class="social-pill" target="_blank">Behance</a>
+          <a href="#" class="social-pill" target="_blank">Twitter</a>
+        </div>
+        <div class="footer-copy"><p>© 2026 Ritika Shakkerwal</p></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== GSAP ==================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script>
+  (function() {
+    var loader = document.querySelector('.loader');
+    var allEls = '.hero-inner,.project-card,.exp-row,.achieve-card,.life-card,.footer-heading,.footer-sub,.socials,.float-card';
+
+    if (typeof gsap === 'undefined') {
+      loader.style.display = 'none';
+      document.querySelectorAll(allEls).forEach(function(el) {
+        el.style.opacity = '1'; el.style.transform = 'none';
+      });
+      return;
+    }
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ——— Set ALL initial states via GSAP (single source of truth) ———
+    gsap.set('.hero-inner', { autoAlpha: 0, y: 20 });
+    gsap.set('.float-card--left', { autoAlpha: 0, x: -40 });
+    gsap.set('.float-card--right', { autoAlpha: 0, x: 40 });
+    gsap.set('.project-card.scroll-reveal', { autoAlpha: 0, y: 50 });
+    gsap.set('.project-card.merge-target', { autoAlpha: 0 });
+    gsap.set('.exp-row', { autoAlpha: 0, y: 12 });
+    gsap.set('.achieve-card', { autoAlpha: 0, y: 20 });
+    gsap.set('.footer-heading', { autoAlpha: 0, y: 16 });
+    gsap.set('.footer-sub', { autoAlpha: 0, y: 10 });
+    gsap.set('.socials', { autoAlpha: 0, y: 10 });
+
+    // ——— LOADER ———
+    var loaderName = document.querySelector('.loader-name');
+    var masterTL = gsap.timeline();
+
+    masterTL
+      .to(loaderName, { opacity: 1, duration: 0.5, ease: 'power2.out' })
+      .to(loaderName, { opacity: 0, duration: 0.3, delay: 0.65 })
+      .to(loader, {
+        yPercent: -100, duration: 0.65, ease: 'power4.inOut',
+        onComplete: function() { loader.style.display = 'none'; }
+      })
+      // ——— HERO ENTRANCE (chained after loader) ———
+      .to('.hero-inner', { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out' })
+      .to('.float-card--left', { autoAlpha: 1, x: 0, duration: 0.8, ease: 'power3.out' }, '-=0.4')
+      .to('.float-card--right', { autoAlpha: 1, x: 0, duration: 0.8, ease: 'power3.out' }, '-=0.7')
+      .add(function() {
+        setupMergeAnimation();
+        startTypewriter();
+        setupScrollAnimations();
+      });
+
+    // ——— TYPEWRITER ———
+    var phrases = ['Located in Bangalore', 'Available for work'];
+    var typeEl = document.getElementById('typewriter');
+    var pIdx = 0, cIdx = 0, deleting = false;
+
+    function startTypewriter() { tick(); }
+
+    function tick() {
+      var cur = phrases[pIdx];
+      var speed;
+      if (deleting) {
+        cIdx--;
+        typeEl.textContent = cur.substring(0, cIdx);
+        speed = 40;
+      } else {
+        cIdx++;
+        typeEl.textContent = cur.substring(0, cIdx);
+        speed = 90;
+      }
+      if (!deleting && cIdx === cur.length) { speed = 2000; deleting = true; }
+      else if (deleting && cIdx === 0) { deleting = false; pIdx = (pIdx + 1) % phrases.length; speed = 400; }
+      setTimeout(tick, speed);
+    }
+
+    // ===================================================================
+    // MERGE ANIMATION: Float cards fly to their target project cards
+    // ===================================================================
+    function setupMergeAnimation() {
+      var floatL = document.getElementById('floatLeft');
+      var floatR = document.getElementById('floatRight');
+      var cardL = document.getElementById('card-finsynth');
+      var cardR = document.getElementById('card-scream');
+
+      // Skip merge on mobile (float cards hidden)
+      if (window.innerWidth <= 860) {
+        gsap.set([cardL, cardR], { autoAlpha: 1 });
+        return;
+      }
+
+      // Capture starting viewport positions
+      var sL = floatL.getBoundingClientRect();
+      var sR = floatR.getBoundingClientRect();
+
+      // Convert to position:fixed at current viewport coords
+      floatL.style.position = 'fixed';
+      floatL.style.left = sL.left + 'px';
+      floatL.style.top = sL.top + 'px';
+      floatL.style.width = sL.width + 'px';
+      floatL.style.margin = '0';
+      floatL.style.transform = 'rotate(-4deg)';
+
+      floatR.style.position = 'fixed';
+      floatR.style.left = sR.left + 'px';
+      floatR.style.top = sR.top + 'px';
+      floatR.style.width = sR.width + 'px';
+      floatR.style.margin = '0';
+      floatR.style.transform = 'rotate(3deg)';
+
+      var startL = { left: sL.left, top: sL.top, w: sL.width, h: sL.height };
+      var startR = { left: sR.left, top: sR.top, w: sR.width, h: sR.height };
+
+      ScrollTrigger.create({
+        trigger: '#mergeZone',
+        start: 'top 80%',
+        end: 'bottom 10%',
+        scrub: 1,
+        onUpdate: function(self) {
+          var p = self.progress;
+          var ep = p * p * (3 - 2 * p);
+
+          var tL = cardL.getBoundingClientRect();
+          var tR = cardR.getBoundingClientRect();
+
+          // Left float → FinSynth
+          floatL.style.left = (startL.left + (tL.left - startL.left) * ep) + 'px';
+          floatL.style.top  = (startL.top  + (tL.top  - startL.top)  * ep) + 'px';
+          floatL.style.width = (startL.w + (tL.width - startL.w) * ep) + 'px';
+          floatL.style.transform = 'rotate(' + (-4 * (1 - ep)) + 'deg)';
+          floatL.style.opacity = Math.max(0, p < 0.75 ? 1 : 1 - ((p - 0.75) / 0.25));
+          floatL.style.borderRadius = (14 + 2 * ep) + 'px';
+
+          // Right float → Yomo
+          floatR.style.left = (startR.left + (tR.left + tR.width - startR.w - startR.left) * ep) + 'px';
+          floatR.style.top  = (startR.top  + (tR.top - startR.top) * ep) + 'px';
+          floatR.style.width = (startR.w + (tR.width - startR.w) * ep) + 'px';
+          floatR.style.transform = 'rotate(' + (3 * (1 - ep)) + 'deg)';
+          floatR.style.opacity = Math.max(0, p < 0.75 ? 1 : 1 - ((p - 0.75) / 0.25));
+          floatR.style.borderRadius = (14 + 2 * ep) + 'px';
+
+          // Target cards fade in
+          var cardAlpha = p < 0.65 ? 0 : Math.min(1, (p - 0.65) / 0.25);
+          cardL.style.opacity = cardAlpha;
+          cardL.style.visibility = cardAlpha > 0 ? 'visible' : 'hidden';
+          cardR.style.opacity = cardAlpha;
+          cardR.style.visibility = cardAlpha > 0 ? 'visible' : 'hidden';
+
+          // Hide float cards when done
+          floatL.style.visibility = p > 0.99 ? 'hidden' : 'visible';
+          floatR.style.visibility = p > 0.99 ? 'hidden' : 'visible';
+        }
+      });
+    }
+
+    // ===================================================================
+    // ALL SCROLL-TRIGGERED ANIMATIONS
+    // ===================================================================
+    function setupScrollAnimations() {
+      // Project cards (scroll-reveal)
+      gsap.utils.toArray('.project-card.scroll-reveal').forEach(function(card) {
+        gsap.to(card, {
+          autoAlpha: 1, y: 0, duration: 0.85, ease: 'power3.out',
+          scrollTrigger: { trigger: card, start: 'top 88%', toggleActions: 'play none none reverse' }
+        });
+      });
+
+      // Experience rows
+      gsap.utils.toArray('.exp-row').forEach(function(row, i) {
+        gsap.to(row, {
+          autoAlpha: 1, y: 0, duration: 0.5, delay: i * 0.06, ease: 'power3.out',
+          scrollTrigger: { trigger: row, start: 'top 90%', toggleActions: 'play none none reverse' }
+        });
+      });
+
+      // Achievement card
+      gsap.utils.toArray('.achieve-card').forEach(function(card) {
+        gsap.to(card, {
+          autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out',
+          scrollTrigger: { trigger: card, start: 'top 85%', toggleActions: 'play none none reverse' }
+        });
+      });
+
+      // Polaroid cards — fan out from center
+      var rots = [-4, 3, -2, 4, -3, 2];
+      var yOffs = [10, -15, 8, -12, 14, -8];
+      gsap.utils.toArray('.life-card').forEach(function(card, i) {
+        gsap.set(card, { autoAlpha: 0, scale: 0.7, rotation: 0, y: 30 });
+        gsap.to(card, {
+          autoAlpha: 1, scale: 1,
+          rotation: rots[i] || 0,
+          y: yOffs[i] || 0,
+          duration: 0.6, delay: i * 0.08, ease: 'back.out(1.4)',
+          scrollTrigger: { trigger: '.life-grid', start: 'top 85%', toggleActions: 'play none none reverse' }
+        });
+      });
+
+      // Footer
+      gsap.to('.footer-heading', { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: { trigger: '.footer-heading', start: 'top 88%' } });
+      gsap.to('.footer-sub', { autoAlpha: 1, y: 0, duration: 0.5, delay: 0.1, ease: 'power3.out',
+        scrollTrigger: { trigger: '.footer-sub', start: 'top 92%' } });
+      gsap.to('.socials', { autoAlpha: 1, y: 0, duration: 0.5, delay: 0.15, ease: 'power3.out',
+        scrollTrigger: { trigger: '.socials', start: 'top 92%' } });
+
+      // Refresh ScrollTrigger after all setup
+      ScrollTrigger.refresh();
+    }
+  })();
+
+  // ——— Scroll progress ———
+  window.addEventListener('scroll', function() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    document.querySelector('.scroll-progress').style.width = (window.scrollY / h * 100) + '%';
+  });
+
+  // ——— Nav scroll ———
+  window.addEventListener('scroll', function() {
+    document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // ——— Mobile nav ———
+  var navToggle = document.querySelector('.nav-toggle');
+  var navCenter = document.querySelector('.nav-center');
+  navToggle.addEventListener('click', function() { navCenter.classList.toggle('open'); });
+  navCenter.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() { navCenter.classList.remove('open'); });
+  });
+
+  // ——— Smooth scroll ———
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var t = document.querySelector(this.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ——— Cat paw prints & cats ———
+  (function() {
+    var pawPool = [];
+    var poolSize = 24;
+    var catPool = [];
+    var catPoolSize = 4;
+    var pawChar = '\uD83D\uDC3E'; // 🐾
+    var catChars = ['\uD83D\uDC08', '\uD83D\uDC31', '\uD83D\uDE3A', '\uD83D\uDC08\u200D\u2B1B']; // 🐈 🐱 😺 🐈‍⬛
+    var isScrolling = false;
+    var scrollTimer = null;
+
+    // Track scrolling state
+    window.addEventListener('scroll', function() {
+      isScrolling = true;
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function() { isScrolling = false; }, 150);
+    }, { passive: true });
+
+    // Pre-create paw elements
+    for (var i = 0; i < poolSize; i++) {
+      var el = document.createElement('div');
+      el.className = 'paw';
+      el.textContent = pawChar;
+      document.body.appendChild(el);
+      pawPool.push(el);
+    }
+
+    // Pre-create cat elements
+    for (var i = 0; i < catPoolSize; i++) {
+      var cel = document.createElement('div');
+      cel.className = 'paw';
+      document.body.appendChild(cel);
+      catPool.push(cel);
+    }
+
+    var poolIdx = 0;
+    var catIdx = 0;
+    function getPaw() {
+      var p = pawPool[poolIdx % poolSize];
+      poolIdx++;
+      return p;
+    }
+    function getCat() {
+      var c = catPool[catIdx % catPoolSize];
+      catIdx++;
+      return c;
+    }
+
+    function spawnPaws(x, y) {
+      if (isScrolling) return;
+      var count = 3 + Math.floor(Math.random() * 2);
+      for (var i = 0; i < count; i++) {
+        (function(index) {
+          setTimeout(function() {
+            var paw = getPaw();
+            var angle = (Math.random() * 360) * (Math.PI / 180);
+            var dist = 32 + index * 30 + Math.random() * 16;
+            var px = x + Math.cos(angle) * dist;
+            var py = y + Math.sin(angle) * dist;
+            var rot = (Math.random() - 0.5) * 60;
+            var size = 16 + Math.random() * 9; // 10% bigger
+
+            paw.style.left = px + 'px';
+            paw.style.top = py + 'px';
+            paw.style.fontSize = size + 'px';
+            paw.style.transform = 'translate(-50%,-50%) rotate(' + rot + 'deg) scale(0.5)';
+            paw.style.opacity = '0';
+
+            requestAnimationFrame(function() {
+              paw.style.transition = 'opacity 0.25s ease-out, transform 0.35s cubic-bezier(0.16,1,0.3,1)';
+              paw.style.opacity = String(0.2 - index * 0.035);
+              paw.style.transform = 'translate(-50%,-50%) rotate(' + rot + 'deg) scale(1)';
+
+              setTimeout(function() {
+                paw.style.transition = 'opacity 0.6s ease-in';
+                paw.style.opacity = '0';
+              }, 400 + index * 100);
+            });
+          }, index * 90);
+        })(i);
+      }
+
+      // Occasionally spawn a small cat face at the end of the trail
+      if (Math.random() < 0.25) {
+        var lastDelay = count * 90 + 200;
+        setTimeout(function() {
+          var cat = getCat();
+          var cAngle = (Math.random() * 360) * (Math.PI / 180);
+          var cDist = 50 + count * 30 + Math.random() * 20;
+          var cx2 = x + Math.cos(cAngle) * cDist;
+          var cy2 = y + Math.sin(cAngle) * cDist;
+          cat.textContent = catChars[Math.floor(Math.random() * catChars.length)];
+          cat.style.left = cx2 + 'px';
+          cat.style.top = cy2 + 'px';
+          cat.style.fontSize = '22px';
+          cat.style.transform = 'translate(-50%,-50%) scale(0.3)';
+          cat.style.opacity = '0';
+
+          requestAnimationFrame(function() {
+            cat.style.transition = 'opacity 0.3s ease-out, transform 0.45s cubic-bezier(0.16,1,0.3,1)';
+            cat.style.opacity = '0.25';
+            cat.style.transform = 'translate(-50%,-50%) scale(1)';
+
+            setTimeout(function() {
+              cat.style.transition = 'opacity 0.8s ease-in';
+              cat.style.opacity = '0';
+            }, 700);
+          });
+        }, lastDelay);
+      }
+    }
+
+    // Spawn on click (only if not scrolling)
+    document.addEventListener('click', function(e) {
+      if (!isScrolling) spawnPaws(e.clientX, e.clientY);
+    });
+
+    // Spawn on hover over interactive elements (throttled, not while scrolling)
+    var lastHover = 0;
+    document.addEventListener('mouseover', function(e) {
+      if (isScrolling) return;
+      var t = e.target.closest('a, button, .btn, .nav-cta, .social-pill, .sub-project, .project-card, .life-card, .row-chip, .chip');
+      if (!t) return;
+      var now = Date.now();
+      if (now - lastHover < 400) return;
+      lastHover = now;
+      var rect = t.getBoundingClientRect();
+      var cx = rect.left + rect.width * (0.3 + Math.random() * 0.4);
+      var cy = rect.top + rect.height * (0.3 + Math.random() * 0.4);
+      spawnPaws(cx, cy);
+    });
+  })();
+
+  // ——— Interactive hide-and-seek cat (SVG illustrated) ———
+  (function() {
+    // Cute fluffy kitten SVGs inspired by the pencil illustration
+    var svgSitting = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      // --- Tail ---
+      + '<path class="cat-tail-sit" d="M12 42 C4 38, 2 30, 8 26 C12 23, 16 28, 14 34" stroke="#555" stroke-width="2.5" stroke-linecap="round" fill="none"/>'
+      // --- Body (fluffy round) ---
+      + '<ellipse cx="32" cy="44" rx="16" ry="13" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Chest fluff ---
+      + '<path d="M26 38 C28 34, 36 34, 38 38" stroke="#ccc" stroke-width="1" fill="none"/>'
+      + '<path d="M27 41 C29 37, 35 37, 37 41" stroke="#ccc" stroke-width="1" fill="none"/>'
+      // --- Head ---
+      + '<circle cx="32" cy="26" r="13" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Left ear ---
+      + '<path d="M21 18 L18 6 L26 14 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M20.5 15 L19.5 9 L24 13 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Right ear ---
+      + '<path d="M43 18 L46 6 L38 14 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M43.5 15 L44.5 9 L40 13 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Head fluff ---
+      + '<path d="M25 16 C28 13, 32 12, 32 14" stroke="#555" stroke-width="1" fill="none"/>'
+      + '<path d="M39 16 C36 13, 33 12, 33 14" stroke="#555" stroke-width="1" fill="none"/>'
+      // --- Eyes (big cute) ---
+      + '<ellipse cx="27" cy="25" rx="3.5" ry="4" fill="#333"/>'
+      + '<ellipse cx="37" cy="25" rx="3.5" ry="4" fill="#333"/>'
+      + '<circle cx="28.2" cy="23.8" r="1.3" fill="#fff"/>'
+      + '<circle cx="38.2" cy="23.8" r="1.3" fill="#fff"/>'
+      + '<circle cx="26" cy="25.5" r="0.6" fill="#fff" opacity="0.5"/>'
+      + '<circle cx="36" cy="25.5" r="0.6" fill="#fff" opacity="0.5"/>'
+      // --- Nose ---
+      + '<path d="M31 29 L32 30.5 L33 29 Z" fill="#e8a0a0"/>'
+      // --- Mouth ---
+      + '<path d="M32 30.5 C31 32, 29.5 32, 29 31" stroke="#555" stroke-width="0.8" fill="none" stroke-linecap="round"/>'
+      + '<path d="M32 30.5 C33 32, 34.5 32, 35 31" stroke="#555" stroke-width="0.8" fill="none" stroke-linecap="round"/>'
+      // --- Whiskers ---
+      + '<line x1="18" y1="28" x2="25" y2="29" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="17" y1="31" x2="25" y2="30.5" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="39" y1="29" x2="46" y2="28" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="39" y1="30.5" x2="47" y2="31" stroke="#999" stroke-width="0.6"/>'
+      // --- Front paws ---
+      + '<ellipse cx="26" cy="54" rx="5" ry="3.5" fill="#e8e0d8" stroke="#555" stroke-width="1.2"/>'
+      + '<ellipse cx="38" cy="54" rx="5" ry="3.5" fill="#e8e0d8" stroke="#555" stroke-width="1.2"/>'
+      // --- Paw lines ---
+      + '<path d="M24.5 54.5 L25.5 52.5" stroke="#555" stroke-width="0.6"/>'
+      + '<path d="M26.5 54.5 L26.5 52.5" stroke="#555" stroke-width="0.6"/>'
+      + '<path d="M36.5 54.5 L37.5 52.5" stroke="#555" stroke-width="0.6"/>'
+      + '<path d="M38.5 54.5 L38.5 52.5" stroke="#555" stroke-width="0.6"/>'
+      // --- Hearts ---
+      + '<g class="cat-hearts" opacity="0.6">'
+      + '<path d="M46 12 C46 10, 48 9, 49 10.5 C50 9, 52 10, 52 12 C52 14, 49 16, 49 16 C49 16, 46 14, 46 12Z" fill="#e8a0a0" stroke="none" transform="scale(0.6) translate(68 8)"/>'
+      + '<path d="M46 12 C46 10, 48 9, 49 10.5 C50 9, 52 10, 52 12 C52 14, 49 16, 49 16 C49 16, 46 14, 46 12Z" fill="#e8a0a0" stroke="none" transform="scale(0.4) translate(118 18)"/>'
+      + '</g>'
+      + '</svg>';
+
+    var svgChasing = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      // --- Tail (alert, up) ---
+      + '<path d="M10 36 C4 30, 3 22, 8 18 C11 16, 13 20, 12 28" stroke="#555" stroke-width="2.5" stroke-linecap="round" fill="none"/>'
+      // --- Body (crouched, elongated) ---
+      + '<ellipse cx="32" cy="46" rx="18" ry="11" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Head (lower, stalking) ---
+      + '<circle cx="34" cy="28" r="12" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Left ear (alert) ---
+      + '<path d="M24 20 L20 7 L28 16 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M23.5 17 L21.5 10 L26 15 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Right ear (alert) ---
+      + '<path d="M44 20 L48 7 L40 16 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M44.5 17 L46.5 10 L42 15 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Eyes (wide, focused) ---
+      + '<ellipse cx="29" cy="27" rx="4" ry="4.5" fill="#333"/>'
+      + '<ellipse cx="39" cy="27" rx="4" ry="4.5" fill="#333"/>'
+      + '<circle cx="30.5" cy="25.5" r="1.5" fill="#fff"/>'
+      + '<circle cx="40.5" cy="25.5" r="1.5" fill="#fff"/>'
+      + '<circle cx="28" cy="27.5" r="0.7" fill="#fff" opacity="0.4"/>'
+      + '<circle cx="38" cy="27.5" r="0.7" fill="#fff" opacity="0.4"/>'
+      // --- Nose ---
+      + '<path d="M33 31 L34 32.5 L35 31 Z" fill="#e8a0a0"/>'
+      // --- Mouth (determined) ---
+      + '<path d="M34 32.5 C33 33.5, 32 33.5, 31.5 33" stroke="#555" stroke-width="0.8" fill="none"/>'
+      + '<path d="M34 32.5 C35 33.5, 36 33.5, 36.5 33" stroke="#555" stroke-width="0.8" fill="none"/>'
+      // --- Whiskers (forward) ---
+      + '<line x1="20" y1="29" x2="27" y2="30" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="19" y1="32" x2="27" y2="31.5" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="41" y1="30" x2="48" y2="29" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="41" y1="31.5" x2="49" y2="32" stroke="#999" stroke-width="0.6"/>'
+      // --- Legs (walking pose) ---
+      + '<g class="cat-legs-chase">'
+      + '<path d="M22 52 L18 60" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M28 53 L26 61" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M38 53 L40 61" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M44 52 L48 60" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '</g>'
+      + '</svg>';
+
+    var svgFleeing = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
+      // --- Speed lines ---
+      + '<line x1="0" y1="30" x2="8" y2="30" stroke="#ccc" stroke-width="1" opacity="0.5"/>'
+      + '<line x1="2" y1="38" x2="10" y2="38" stroke="#ccc" stroke-width="1" opacity="0.4"/>'
+      + '<line x1="1" y1="46" x2="7" y2="46" stroke="#ccc" stroke-width="1" opacity="0.3"/>'
+      // --- Tail (puffed, panicked) ---
+      + '<path d="M10 34 C2 28, 0 20, 4 16 C7 13, 10 16, 9 22 C8 26, 10 30, 12 32" stroke="#555" stroke-width="3" stroke-linecap="round" fill="none"/>'
+      // --- Body (stretched, running) ---
+      + '<ellipse cx="34" cy="40" rx="19" ry="10" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Head (looking back, scared) ---
+      + '<circle cx="38" cy="24" r="12" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
+      // --- Left ear (flat/scared) ---
+      + '<path d="M28 18 L22 10 L30 15 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M28 16 L24 11 L29 14.5 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Right ear (flat/scared) ---
+      + '<path d="M48 18 L54 10 L46 15 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M48 16 L52 11 L47 14.5 Z" fill="#f0b8b8" opacity="0.5"/>'
+      // --- Eyes (wide scared) ---
+      + '<ellipse cx="33" cy="23" rx="4.5" ry="5" fill="#fff" stroke="#555" stroke-width="1"/>'
+      + '<ellipse cx="43" cy="23" rx="4.5" ry="5" fill="#fff" stroke="#555" stroke-width="1"/>'
+      + '<circle cx="33" cy="23" r="2.8" fill="#333"/>'
+      + '<circle cx="43" cy="23" r="2.8" fill="#333"/>'
+      + '<circle cx="34" cy="21.8" r="1.2" fill="#fff"/>'
+      + '<circle cx="44" cy="21.8" r="1.2" fill="#fff"/>'
+      // --- Eyebrows (worried) ---
+      + '<path d="M29 17 C31 15.5, 34 16, 35 17" stroke="#555" stroke-width="1" fill="none"/>'
+      + '<path d="M41 17 C43 15.5, 46 16, 47 17" stroke="#555" stroke-width="1" fill="none"/>'
+      // --- Nose ---
+      + '<path d="M37 28 L38 29.5 L39 28 Z" fill="#e8a0a0"/>'
+      // --- Mouth (open, panicked) ---
+      + '<ellipse cx="38" cy="31" rx="2.5" ry="1.8" fill="#f0c0c0" stroke="#555" stroke-width="0.8"/>'
+      // --- Whiskers (blown back) ---
+      + '<line x1="22" y1="26" x2="28" y2="28" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="21" y1="30" x2="28" y2="29" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="47" y1="28" x2="54" y2="26" stroke="#999" stroke-width="0.6"/>'
+      + '<line x1="47" y1="29" x2="55" y2="30" stroke="#999" stroke-width="0.6"/>'
+      // --- Legs (running fast) ---
+      + '<g class="cat-legs-flee">'
+      + '<path d="M20 46 L14 58" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M28 48 L22 59" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M42 48 L48 59" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '<path d="M50 46 L56 58" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
+      + '</g>'
+      // --- Sweat drop ---
+      + '<path d="M52 14 C52 12, 54 10, 54 12 C54 14, 52 16, 52 14Z" fill="#a0d0e8" opacity="0.7"/>'
+      + '</svg>';
+
+    var cat = document.createElement('div');
+    cat.className = 'hide-seek-cat sitting';
+    cat.innerHTML = svgSitting;
+    document.body.appendChild(cat);
+
+    var catX = window.innerWidth * 0.85;
+    var catY = window.innerHeight * 0.7;
+    var mouseX = window.innerWidth / 2;
+    var mouseY = window.innerHeight / 2;
+    var velX = 0, velY = 0;
+    var isUserScrolling = false;
+    var scrollTimer2 = null;
+    var state = 'sitting';
+    var facingLeft = false;
+    var lastMouseX = mouseX, lastMouseY = mouseY;
+    var mouseSpeed = 0;
+
+    cat.style.left = catX + 'px';
+    cat.style.top = catY + 'px';
+
+    document.addEventListener('mousemove', function(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    window.addEventListener('scroll', function() {
+      isUserScrolling = true;
+      clearTimeout(scrollTimer2);
+      scrollTimer2 = setTimeout(function() { isUserScrolling = false; }, 200);
+    }, { passive: true });
+
+    function updateCat() {
+      var dx = mouseX - catX;
+      var dy = mouseY - catY;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+
+      var msDx = mouseX - lastMouseX;
+      var msDy = mouseY - lastMouseY;
+      mouseSpeed = Math.sqrt(msDx * msDx + msDy * msDy);
+      lastMouseX = mouseX;
+      lastMouseY = mouseY;
+
+      var prevState = state;
+
+      if (isUserScrolling) {
+        state = 'chasing';
+        if (dist > 60) {
+          velX += (dx / dist) * 1.8 * 0.12;
+          velY += (dy / dist) * 1.8 * 0.12;
+        }
+        velX *= 0.92;
+        velY *= 0.92;
+      } else if (mouseSpeed > 3 && dist < 250) {
+        state = 'fleeing';
+        var fleeX = -dx / (dist || 1);
+        var fleeY = -dy / (dist || 1);
+        var fleeSpeed = 4 + (250 - dist) * 0.02;
+        velX += fleeX * fleeSpeed * 0.2;
+        velY += fleeY * fleeSpeed * 0.2;
+        velX *= 0.88;
+        velY *= 0.88;
+      } else {
+        state = 'sitting';
+        velX *= 0.9;
+        velY *= 0.9;
+        velX += (Math.random() - 0.5) * 0.05;
+        velY += (Math.random() - 0.5) * 0.05;
+      }
+
+      catX += velX;
+      catY += velY;
+
+      var pad = 40;
+      if (catX < pad) { catX = pad; velX = Math.abs(velX) * 0.5; }
+      if (catX > window.innerWidth - pad) { catX = window.innerWidth - pad; velX = -Math.abs(velX) * 0.5; }
+      if (catY < pad) { catY = pad; velY = Math.abs(velY) * 0.5; }
+      if (catY > window.innerHeight - pad) { catY = window.innerHeight - pad; velY = -Math.abs(velY) * 0.5; }
+
+      if (Math.abs(velX) > 0.3) facingLeft = velX < 0;
+
+      cat.style.left = catX + 'px';
+      cat.style.top = catY + 'px';
+
+      // Flip direction
+      var svgEl = cat.querySelector('svg');
+      if (svgEl) svgEl.style.transform = facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+
+      // Swap SVG on state change
+      if (prevState !== state) {
+        cat.className = 'hide-seek-cat ' + state;
+        if (state === 'sitting') cat.innerHTML = svgSitting;
+        else if (state === 'chasing') cat.innerHTML = svgChasing;
+        else if (state === 'fleeing') cat.innerHTML = svgFleeing;
+        // Re-apply flip
+        var newSvg = cat.querySelector('svg');
+        if (newSvg) newSvg.style.transform = facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
+      }
+
+      requestAnimationFrame(updateCat);
+    }
+
+    requestAnimationFrame(updateCat);
+  })();
+  </script>
+</body>
+</html>
