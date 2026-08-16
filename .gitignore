@@ -1,0 +1,10 @@
+.vercel
+node_modules/
+.DS_Store
+
+# Local tooling — contains git worktrees, do not commit
+.claude/
+.agents/
+
+# Working notes, not portfolio copy — keep out of the public repo
+case-study-inputs/
