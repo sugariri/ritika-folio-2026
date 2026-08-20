@@ -8,3 +8,6 @@ node_modules/
 
 # Working notes, not portfolio copy — keep out of the public repo
 case-study-inputs/
+
+# Browser-automation scratch output, not source
+.playwright-cli/

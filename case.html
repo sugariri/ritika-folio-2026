@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case study — Ritika Shakkerwal</title>
+  <meta name="description" content="Case studies from Ritika Shakkerwal — product design across AI video, user insights, internal tools, and mobile.">
+  <meta name="robots" content="index, follow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#fcfcfc">
+  <!-- Theme resolved before first paint so the page never flashes the wrong
+       one. Stored choice wins; otherwise the OS preference. Same script and
+       same localStorage key as index.html, so the choice carries across. -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Tokens mirrored from index.html — any new colour goes here as a variable */
+    :root {
+      color-scheme: light;
+
+      --gray-1:  #fcfcfc;
+      --gray-4:  #ececef;
+      --gray-7:  #acacb9;
+      --gray-9:  #6d6d78; /* darkest step that still reads as "faint" — 4.98:1 on --bg */
+      --gray-10: #5d5d6f;
+      --gray-14: #2c2c35;
+
+      --bg: var(--gray-1);
+      --bg-card: #ffffff;
+      --bg-raised: #f6f6f7;
+      --bg-stage: linear-gradient(135deg, #f4f4f6, #fbfbfb);
+      --bg-float: var(--bg);  /* the chat, lifted off the page in dark */
+      /* The ask pill sits on the page, not in it: a true white card a
+         step off --bg so it never reads as part of the column. The
+         --glow-* set is the first-visit attract ring, in site purple. */
+      --ask-pill-bg: #ffffff;
+      --glow-ink:    #752afc;
+      --glow-strong: rgba(117, 42, 252, 0.90);
+      --glow-soft:   rgba(117, 42, 252, 0.34);
+      /* The mat the hero screen sits on. Sampled from the FinSynth
+         marketing band — core #345bc3, lifting toward the top. Artwork, so
+         it never flips; --blue-ink is the same blue for drawn diagram ink,
+         which does flip because it sits on the page's own ground. */
+      --blue-core: #345bc3;
+      --blue-ink: var(--blue-core);
+      --fail: #b3352c; /* failed-step ink in the tool-call timeline — 8.5:1 on white */
+      --mat-shade: rgba(10, 22, 66, 0.16);
+      --mat-lift:  rgba(10, 22, 66, 0.50);
+      /* macOS traffic lights — decorative browser chrome only, never UI meaning */
+      --tl-close: #ff5f57;
+      --tl-min:   #febc2e;
+      --tl-max:   #28c840;
+      /* Dia-style blush chrome — decorative browser frame only, never UI meaning */
+      --chrome-bg:    #f9e3ea;
+      --chrome-pill:  #f1cfda;
+      --chrome-ink:   #6b4a58;
+      --chrome-faint: #ab7f90;
+      /* The browser-window illustration frames real light screenshots, so its
+         chrome is artwork too: these four never flip, or a white shot would
+         sit in half-dark chrome. The blush --chrome-* above are already
+         literal for the same reason. */
+      --art-bg:    #ffffff;
+      --art-ink:   var(--gray-14);
+      --art-muted: var(--gray-10);
+      --art-line:  rgba(0, 0, 0, 0.08);
+      --text: var(--gray-14);
+      --muted: var(--gray-10);
+      --faint: var(--gray-9);
+      --line: rgba(0, 0, 0, 0.08);
+      --line-hover: rgba(0, 0, 0, 0.16); /* the hovered ask pill */
+      --logo: #752afc; /* riri wordmark — site purple (index.html --brand) */
+
+      /* Shadows are theme-dependent: on a dark page a soft black blur does
+         nothing, so the dark set is deeper and tighter. */
+      --shadow-note:   0 8px 16px -10px rgba(20, 20, 26, 0.4);
+      --shadow-pill:   0 16px 40px -10px rgba(18, 18, 28, 0.30), 0 3px 10px rgba(18, 18, 28, 0.10);
+      --shadow-drawer: -16px 0 48px rgba(0, 0, 0, 0.08);
+      --shadow-pop:    0 24px 64px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      /* Diagram ink — the drawn figures read as one set because of these.
+         --dia-box is only the .slot dash now; boxes ink at full --text. */
+      --dia-box: rgba(0, 0, 0, 0.16);
+      --dia-ink: rgba(0, 0, 0, 0.66);
+      --dia-dot: rgba(0, 0, 0, 0.13);
+
+      --t-header-lg: 44px;
+      --t-header-md: 32px;
+      --t-body-lg: 17px;
+      --t-body-md: 15px;
+      --t-body-sm: 13px;
+      --t-label: 11px;   /* the mono micro-labels: chapter numbers, strip steps */
+
+      --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      /* The problem wall is the one place the page uses colour as material */
+      --hand: 'Caveat', 'Segoe Script', cursive;
+      --note-a: #fdf0b8;
+      --note-b: #d9e4fb;
+      --note-c: #d7ecdc;
+
+      --content: 660px;
+      --measure: 760px;   /* figures break out to here */
+      --gutter: 24px;
+
+    }
+
+    /* ---------- DARK ----------
+       The head script resolves the stored choice (or the OS preference) into
+       data-theme on <html> before first paint, so this is the only place a
+       dark colour is written: every rule below still reads the same token.
+       Deliberately untouched: the grey ramp (it is the fixed dark ink the
+       sticky notes and .strip-say are written in), the blush --chrome-*, the
+       --art-* set, --blue-core and the traffic lights and the pale --note-*.
+       All of those are artwork — a light product screenshot must not end up
+       framed in half-dark chrome, and a negative of a sticky note is not a
+       sticky note. Drawn figures, which are only ink on the page's own
+       ground, do flip. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg: #101013;
+      --bg-card: #16161b;
+      --bg-raised: #1c1c22;
+      --bg-stage: linear-gradient(135deg, #17171d, #1b1b22);
+      /* the chat lifts off the page instead of relying on a shadow, which
+         does almost nothing against near-black */
+      --bg-float: #1a1a20;
+      --ask-pill-bg: #22222b;
+      --glow-ink:    #a97bff;
+      --glow-strong: rgba(169, 123, 255, 0.95);
+      --glow-soft:   rgba(169, 123, 255, 0.40);
+      --text: #ededf2;
+      --muted: #a6a6b6;
+      --faint: #8b8b9c;
+      --line: rgba(255, 255, 255, 0.10);
+      --line-hover: rgba(255, 255, 255, 0.24);
+      /* #345bc3 and #752afc both sink into near-black — the seam blue and the
+         wordmark lift, matching index.html's dark --brand */
+      --blue-ink: #7f9dff;
+      --fail: #ef7a70;
+      --logo: #a97bff;
+
+      /* Diagram ink inverts with the canvas it is drawn on */
+      --dia-box: rgba(255, 255, 255, 0.22);
+      --dia-ink: rgba(255, 255, 255, 0.62);
+      --dia-dot: rgba(255, 255, 255, 0.09);
+
+      --shadow-note:   0 10px 20px -10px rgba(0, 0, 0, 0.8);
+      --shadow-pill:   0 18px 44px -8px rgba(0, 0, 0, 0.72), 0 2px 8px rgba(0, 0, 0, 0.5);
+      --shadow-drawer: -18px 0 56px rgba(0, 0, 0, 0.5);
+      --shadow-pop:    0 28px 72px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      background: var(--bg);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: var(--t-body-lg);
+      line-height: 1.75;
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      max-width: calc(var(--content) + var(--gutter) * 2);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    main, footer { position: relative; z-index: 1; }
+    /* The workflow track bleeds past the column by design &mdash; clip it
+       here rather than letting the page scroll sideways. */
+    main { overflow-x: clip; }
+
+    /* ---------- NAV ---------- */
+    header {
+      position: sticky; top: 0; z-index: 60;
+      background: var(--bg);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+    header.scrolled { border-bottom-color: var(--line); }
+    .nav {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 22px 0;
+      gap: 24px;
+      font-size: var(--t-body-md); line-height: 24px;
+    }
+    .nav-name { font-weight: 500; color: var(--text); }
+    /* "riri" wordmark — hand-drawn monoline SVG, colored via currentColor */
+    .riri-logo {
+      display: block; height: 28px; width: auto;
+      color: var(--logo);
+      transition: scale 0.18s ease;
+    }
+    .nav-name:hover .riri-logo { scale: 1.05; }
+    /* the cat in the second i swishes its tail on hover — a `d` morph where
+       supported, a rotate-from-the-base wag everywhere else */
+    .riri-tail { transform-box: fill-box; transform-origin: 0% 0%; }
+    @keyframes riri-tail-wag {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-10deg); }
+      65% { transform: rotate(7deg); }
+    }
+    @keyframes riri-tail-wave {
+      0%, 100% { d: path("M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61"); }
+      30% { d: path("M129 51 C138 57 144 50 149 53 C153 55 155 56 160 52"); }
+      65% { d: path("M129 51 C138 59 143 54 148 59 C152 62 153 65 157 63"); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .nav-name:hover .riri-tail,
+      .nav-name:focus-visible .riri-tail { animation: riri-tail-wag 1s ease-in-out infinite; }
+      @supports (d: path("M0 0")) {
+        .nav-name:hover .riri-tail,
+        .nav-name:focus-visible .riri-tail { animation-name: riri-tail-wave; }
+      }
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .nav-back, .nav-next {
+      color: var(--muted);
+      transition: color 0.18s ease;
+    }
+    .nav-back:hover, .nav-next:hover { color: var(--text); }
+    .nav-back, .nav-next { white-space: nowrap; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+
+    /* Light / dark switch — same icon-button family as the chat's controls.
+       The glyph names the theme you are in; the label names the one you'd get.
+       Kept identical to index.html. */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px;
+      border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: var(--faint);
+      cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .theme-toggle:hover, .theme-toggle:focus-visible {
+      color: var(--text); background: var(--bg-raised); border-color: var(--line); outline: none;
+    }
+    .theme-toggle:active { scale: 0.94; }
+    .theme-toggle svg { display: block; width: 16px; height: 16px; }
+    .theme-toggle .ico-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-moon { display: block; }
+
+    /* Narrow screens: back/next earn the space; the masthead carries identity */
+    @media (max-width: 560px) {
+      .nav-name { display: none; }
+    }
+
+    /* ---------- MASTHEAD ---------- */
+    /* Section 01 is the orientation beat and reads in one rhythm:
+       what is it -> see it -> why it matters. The product screen is the
+       hero visual, so the ground stays quiet and warm and the page only
+       gets more expressive from Section 02 on. */
+    .masthead { padding: 80px 0 92px; }
+    .eyebrow {
+      font-size: var(--t-body-sm); line-height: 22px;
+      color: var(--faint); font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .masthead h1 {
+      font-size: clamp(32px, 7vw, var(--t-header-lg));
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.022em; /* em, not px — the size is fluid */
+      text-wrap: balance;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .standfirst {
+      font-size: 21px; line-height: 1.55;
+      color: var(--muted);
+      letter-spacing: -0.2px;
+      text-wrap: pretty;
+    }
+    .masthead-meta {
+      font-size: var(--t-body-sm); line-height: 22px;
+      color: var(--faint); font-weight: 500;
+      margin-top: 26px;
+    }
+
+
+    /* ---------- CHAPTERS ---------- */
+    /* No rules, no labels, no numbered sections — rhythm carries the reader. */
+    .chapter { padding: 76px 0 0; scroll-margin-top: 76px; }
+    .chapter:first-of-type { padding-top: 88px; }
+
+    p { margin-bottom: 22px; }
+    p:last-child { margin-bottom: 0; }
+    i { font-style: italic; }
+
+    h2 {
+      font-size: 26px; line-height: 1.32;
+      font-weight: 500; letter-spacing: -0.5px;
+      text-wrap: balance;
+      color: var(--text);
+      margin-bottom: 26px;
+    }
+
+    /* A line that gets its own air, not a heading */
+    .beat { margin-bottom: 0; }
+
+    .pull {
+      font-size: clamp(24px, 5.2vw, 30px);
+      line-height: 1.3;
+      letter-spacing: -0.024em; /* em, not px — the size is fluid */
+      font-weight: 500;
+      text-wrap: balance;
+      color: var(--text);
+      margin: 56px 0;
+    }
+
+    /* The moment of noticing — set as dialogue, not as another paragraph */
+    .voice { margin: 46px 0 46px 28px; }
+    .voice p {
+      font-size: 19px; line-height: 1.9;
+      margin: 0; color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .voice p.turn { margin-top: 22px; }
+
+
+    /* ---------- CHAPTER HEADS ----------
+       The number is the map's promise being kept. The name is compelling
+       rather than procedural; the gloss says what the reader is about to
+       get, so no chapter has to be read to find out whether it matters. */
+    .chapter-head { margin-bottom: 34px; }
+    .chapter-num {
+      display: block;
+      font-family: var(--mono); font-size: var(--t-label);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .chapter-head h2 {
+      font-size: var(--t-header-md);
+      letter-spacing: -0.7px;
+      margin-bottom: 10px;
+    }
+    .chapter-gloss {
+      font-size: var(--t-body-md); line-height: 24px;
+      color: var(--muted);
+      text-wrap: pretty;
+      margin-bottom: 0;
+    }
+
+
+    /* ---------- CASE BODY ----------
+       The five short case studies share one shape: masthead, then numbered
+       chapters of prose or a short list, then an optional outward link.
+       Everything above this comment is finsynth.html's shell, unchanged. */
+    .case-list { list-style: none; margin: 0 0 22px; }
+    .case-list:last-child { margin-bottom: 0; }
+    .case-list li {
+      position: relative;
+      padding-left: 22px;
+      margin-bottom: 14px;
+      color: var(--text);
+      text-wrap: pretty;
+    }
+    .case-list li:last-child { margin-bottom: 0; }
+    /* A hairline dash, not a bullet — the page has no other dots on it */
+    .case-list li::before {
+      content: '';
+      position: absolute; left: 0; top: 14px;
+      width: 10px; height: 1px;
+      background: var(--faint);
+    }
+
+    .case-cta { padding: 40px 0 0; }
+    .case-cta a {
+      display: inline-block;
+      font-size: var(--t-body-md); line-height: 24px;
+      color: var(--text);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 3px;
+      transition: border-color 0.2s ease, color 0.2s ease;
+    }
+    .case-cta a:hover { border-bottom-color: var(--text); }
+
+    /* Shown only if the page is opened without a readable case key */
+    .case-miss { padding: 96px 0; }
+    .case-miss a { border-bottom: 1px solid var(--line); }
+
+    /* ---------- CLOSE ---------- */
+    .close { padding: 88px 0 0; scroll-margin-top: 76px; }
+    .close p { color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--line);
+      margin-top: 96px;
+      padding: 48px 0 64px;
+    }
+    .footer-row {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      align-items: baseline; justify-content: space-between;
+      font-size: var(--t-body-md); line-height: 24px;
+    }
+    .footer-row a { color: var(--muted); transition: color 0.18s ease; }
+    .footer-row a:hover { color: var(--text); }
+    .footer-copy { font-size: var(--t-body-sm); color: var(--faint); }
+
+    /* ---------- REVEAL ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .tc-spin, .tc-run { animation: none; }
+    }
+
+    @media (max-width: 560px) {
+      .masthead { padding: 56px 0 68px; }
+      .mat { --mat-pad: 18px; border-radius: 14px; }
+      .hero-product { --mat-pad: 20px; margin-top: 40px; }
+      .masthead .pull { margin-top: 44px; max-width: none; }
+      .chapter { padding-top: 60px; }
+      .standfirst { font-size: 19px; }
+      .voice { margin-left: 0; }
+      .voice p { font-size: 18px; line-height: 1.85; }
+    }
+
+    /* ---------- ASK-ME CHAT ----------
+       Mirrored from index.html's case-overlay chat — keep the two in sync
+       if the interaction changes. Here the pill floats on the page itself. */
+    .ask-pill {
+      position: fixed; left: 50%; bottom: 20px; z-index: 70;
+      translate: -50% 0;
+      display: flex; align-items: center; gap: 10px;
+      width: min(520px, calc(100vw - 32px));
+      padding: 9px 9px 9px 10px;
+      background: var(--ask-pill-bg);
+      border: 1px solid var(--line-hover); border-radius: 999px;
+      box-shadow: var(--shadow-pill);
+      font: inherit; font-size: var(--t-body-md); line-height: 22px; font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      cursor: text; /* reads as an input; clicking opens the real one */
+      transition: color 0.18s ease, border-color 0.18s ease, opacity 0.25s ease, scale 0.15s ease-out;
+    }
+    .ask-pill:hover { border-color: var(--glow-strong); }
+    .ask-pill:active { scale: 0.98; }
+    .ask-pill:focus-visible { outline: 2px solid var(--glow-ink); outline-offset: 3px; }
+
+    /* First-visit attract: the pill is easy to read past, so on a reader's
+       first landing (and only if they have never opened the chat) its border
+       breathes in site purple three times and pings one expanding ring. Drawn
+       on pseudo-elements so the resting hairline border is untouched; both are
+       out of flow, so they are not flex items of the pill. */
+    .ask-pill::before, .ask-pill::after {
+      content: ''; position: absolute; inset: -1px;
+      border-radius: 999px; pointer-events: none;
+      border: 2px solid transparent;
+    }
+    .ask-pill::after { opacity: 0; }
+    .ask-pill.attract::before { animation: ask-breathe 2.2s ease-in-out 3; }
+    .ask-pill.attract::after { animation: ask-ping 2.2s ease-out 3; }
+    .ask-pill.attract .ask-pill-send { animation: ask-send-glow 2.2s ease-in-out 3; }
+    @keyframes ask-breathe {
+      0%, 100% { border-color: transparent; box-shadow: 0 0 0 0 transparent; }
+      42%      { border-color: var(--glow-strong);
+                 box-shadow: 0 0 0 4px var(--glow-soft), 0 0 34px 8px var(--glow-soft); }
+    }
+    @keyframes ask-ping {
+      0%       { opacity: 1; box-shadow: 0 0 0 0 var(--glow-strong); }
+      60%, 100% { opacity: 0; box-shadow: 0 0 0 20px var(--glow-strong); }
+    }
+    @keyframes ask-send-glow {
+      0%, 100% { background: var(--text); }
+      42%      { background: var(--glow-ink); }
+    }
+    .ask-pill .ask-avatar { width: 32px; height: 32px; font-size: 13px; }
+    .ask-pill-send {
+      flex: none; width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--text); color: var(--bg);
+    }
+    .ask-pill-send svg { width: 14px; height: 14px; }
+    body.chat-open .ask-pill { opacity: 0; pointer-events: none; }
+    .ask-avatar {
+      flex: none; width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--text); color: var(--bg);
+      font-size: 12px; font-weight: 500; line-height: 1;
+    }
+    .ask-pill-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .ask-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 80;
+      width: min(var(--ask-w, 360px), 100vw);
+      display: flex; flex-direction: column;
+      background: var(--bg-float);
+      border-left: 1px solid var(--line);
+      box-shadow: var(--shadow-drawer);
+      transform: translateX(calc(100% + 24px));
+      visibility: hidden;
+      transition: transform 0.4s cubic-bezier(.22,.61,.36,1), visibility 0s 0.4s;
+    }
+    .ask-drawer.in {
+      transform: none; visibility: visible;
+      transition: transform 0.4s cubic-bezier(.22,.61,.36,1);
+    }
+    /* Drag handle on the drawer's left edge — width lives in --ask-w so the
+       page squeeze below tracks it 1:1. Pointer-only affordance; keyboard
+       users resize with arrow keys on the focused separator. */
+    .ask-resize {
+      position: absolute; top: 0; bottom: 0; left: -5px; width: 10px;
+      cursor: ew-resize; touch-action: none; z-index: 2;
+    }
+    .ask-resize::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+      background: var(--text); opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .ask-resize:hover::after, .ask-resize:focus-visible::after,
+    body.ask-dragging .ask-resize::after { opacity: 0.22; }
+    .ask-resize:focus-visible { outline: none; }
+    /* The popped window clips overflow for its rounded corners, so the
+       handle tucks fully inside its left edge there. */
+    .ask-drawer.pop .ask-resize { left: 0; }
+    .ask-drawer.pop .ask-resize::after { left: 0; }
+    /* Popped out: a floating chat window, Zoom-style. Positioned by
+       --ask-x/--ask-y (set from JS), dragged by its header. */
+    .ask-drawer.pop {
+      top: var(--ask-y, 24px); left: var(--ask-x, calc(100vw - 400px));
+      right: auto; bottom: auto;
+      height: min(600px, calc(100vh - 48px));
+      border: 1px solid var(--line); border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-pop);
+      transform: none;
+      opacity: 0; scale: 0.98;
+      transition: opacity 0.25s ease, scale 0.25s ease, visibility 0s 0.25s;
+    }
+    .ask-drawer.pop.in {
+      opacity: 1; scale: 1;
+      transition: opacity 0.25s ease, scale 0.25s ease;
+    }
+    .ask-drawer.pop .ask-head { cursor: grab; user-select: none; touch-action: none; }
+    body.ask-dragging .ask-drawer.pop .ask-head { cursor: grabbing; }
+    /* No page squeeze while transitions are killed mid-drag */
+    body.ask-dragging, body.ask-dragging .ask-drawer { transition: none !important; }
+    .ask-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 0;
+    }
+    .ask-head .ask-avatar { width: 28px; height: 28px; }
+    .ask-head-actions { display: flex; align-items: center; gap: 4px; }
+    .ask-head-close, .ask-head-pop {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: var(--faint);
+      font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .ask-head-close:hover, .ask-head-pop:hover { color: var(--text); background: var(--bg-raised); border-color: var(--line); }
+    .ask-head-close:active, .ask-head-pop:active { scale: 0.96; }
+    .ask-head-pop svg { width: 14px; height: 14px; display: block; }
+    .ask-head-pop .ico-dock { display: none; }
+    .ask-drawer.pop .ask-head-pop .ico-dock { display: block; }
+    .ask-drawer.pop .ask-head-pop .ico-pop { display: none; }
+    .ask-note {
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: var(--t-body-sm); line-height: 18px; color: var(--faint);
+    }
+    .ask-log {
+      flex: 1; overflow-y: auto; overscroll-behavior: contain;
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 18px 16px;
+    }
+    .ask-msg-user {
+      align-self: flex-end; max-width: 85%;
+      background: var(--bg-raised); color: var(--text);
+      padding: 8px 14px; border-radius: 16px 16px 4px 16px;
+      font-size: var(--t-body-sm); line-height: 20px;
+    }
+    .ask-msg-a { display: flex; gap: 10px; }
+    .ask-msg-a .ask-avatar { width: 22px; height: 22px; font-size: 10px; margin-top: 1px; }
+    .ask-msg-body { min-width: 0; font-size: var(--t-body-sm); line-height: 21px; color: var(--muted); }
+    .ask-msg-body p + p { margin-top: 10px; }
+    .ask-typing { display: flex; gap: 4px; padding: 6px 0; }
+    .ask-typing span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--faint);
+      animation: askDot 1.1s ease-in-out infinite;
+    }
+    .ask-typing span:nth-child(2) { animation-delay: 0.18s; }
+    .ask-typing span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes askDot {
+      0%, 60%, 100% { opacity: 0.35; transform: none; }
+      30% { opacity: 1; transform: translateY(-2px); }
+    }
+    .ask-chips {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+      padding: 0 16px 12px;
+    }
+    .ask-chip {
+      max-width: 100%;
+      background: var(--bg-float); border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 14px;
+      font: inherit; font-size: var(--t-body-sm); line-height: 20px; color: var(--muted);
+      text-align: right; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out,
+                  opacity 0.3s ease, translate 0.3s ease;
+    }
+    .ask-chip:hover { color: var(--text); background: var(--bg-raised); }
+    .ask-chip:active { scale: 0.97; }
+    .ask-chip.pre { opacity: 0; translate: 0 6px; }
+    .ask-form {
+      display: flex; align-items: center; gap: 8px;
+      border-top: 1px solid var(--line);
+      padding: 10px 12px 10px 16px;
+    }
+    .ask-input {
+      flex: 1; min-width: 0;
+      border: 0; background: transparent; outline: none;
+      font: inherit; font-size: var(--t-body-md); line-height: 22px; color: var(--text);
+    }
+    .ask-input::placeholder { color: var(--faint); }
+    .ask-send {
+      flex: none; width: 30px; height: 30px;
+      border: 1px solid var(--line); border-radius: 50%;
+      background: var(--bg-float); color: var(--muted);
+      font: inherit; font-size: 14px; line-height: 1; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out;
+    }
+    .ask-send:hover { color: var(--text); background: var(--bg-raised); }
+    .ask-send:active { scale: 0.94; }
+    .ask-sr {
+      position: absolute; width: 1px; height: 1px;
+      overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    /* Wide screens: the page slides left to make room, like the reference.
+       The squeezed column collides with the fixed section rail below ~1440px,
+       so the rail steps aside while the chat is open. */
+    @media (min-width: 1100px) {
+      body { transition: padding-right 0.4s cubic-bezier(.22,.61,.36,1); }
+      /* Pane mode only — a popped-out window floats over the page instead */
+      body.chat-open:not(.chat-popped) { padding-right: var(--ask-w, 360px); }
+      body.chat-open:not(.chat-popped) .index { opacity: 0; pointer-events: none; transition-delay: 0s; }
+      /* …but it peeks back in when the cursor visits its home corner
+         (.rail-peek is set by the ask script's mousemove hotspot). The flat
+         page-colored halo keeps it legible when the squeezed column has
+         slid underneath it. */
+      body.chat-open:not(.chat-popped).rail-peek .index {
+        opacity: 1;
+        pointer-events: auto;
+        background: var(--bg);
+        box-shadow: 0 0 0 14px var(--bg);
+      }
+      /* The squeezed column also steps its scale down (zoom re-lays out, unlike
+         transform), so the page reads as fitting beside the pane rather than
+         being cramped by it. --ask-zoom comes from applyPane(): it shrinks as
+         the pane widens so the column always fits in the space that's left. */
+      body.chat-open:not(.chat-popped) main,
+      body.chat-open:not(.chat-popped) footer { zoom: var(--ask-zoom, 0.85); }
+    }
+    /* Resize + pop-out need room to be useful; below this the drawer just
+       takes the viewport, so hide both affordances. */
+    @media (max-width: 699px) {
+      .ask-resize, .ask-head-pop { display: none; }
+    }
+    @media (max-width: 560px) {
+      .ask-pill { bottom: 12px; width: calc(100vw - 24px); }
+      .ask-drawer { width: 100vw; border-left: 0; }
+      .ask-input { font-size: 16px; } /* under 16px iOS zooms the field on focus */
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ask-drawer, .ask-drawer.in, .ask-drawer.pop, .ask-drawer.pop.in, body, .ask-chip { transition: none; }
+      .ask-typing span { animation: none; }
+      .ask-pill.attract::before, .ask-pill.attract::after,
+      .ask-pill.attract .ask-pill-send { animation: none; }
+      .ask-pill.attract::before { border-color: var(--glow-strong); }
+      .ask-chip.pre { opacity: 1; translate: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header id="siteHeader">
+    <div class="wrap">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="index.html" class="nav-name" aria-label="Riri — Ritika Shakkerwal, back to portfolio">
+            <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21v32"/>
+                <path d="M12 41c0-14 17-23 26-15"/>
+              </g>
+              <!-- first i: plain dotted stem -->
+              <circle cx="57" cy="6.5" r="6" fill="currentColor"/>
+              <path d="M57 21v32" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M80 21v32"/>
+                <path d="M80 41c0-14 17-23 26-15"/>
+              </g>
+              <g fill="currentColor" stroke="none" transform="translate(0 2)">
+                <path d="M112 10 C112 5 113 3 113 1 L118 5 C119.3 4.6 120.7 4.6 122 5 L127 1 C127 3 128 5 128 10 C128 15.5 124.5 18 120 18 C115.5 18 112 15.5 112 10 Z"/>
+                <path d="M120 21 C115 30 108 37 108 45 C108 51.5 113.5 56 120 56 C126.5 56 132 51.5 132 45 C132 37 125 30 120 21 Z"/>
+              </g>
+              <path class="riri-tail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </a>
+          <a href="index.html#work" class="nav-back">&larr; Back</a>
+        </div>
+        <div class="nav-right">
+          <a href="index.html#work" class="nav-next" id="caseNext" hidden></a>
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
+            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="4.2"/>
+              <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
+            </svg>
+            <svg class="ico-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Rendered from the CASES data below, keyed by ?c= in the URL -->
+  <main id="caseMain"></main>
+  <noscript>
+    <div class="wrap" style="padding:96px 0">
+      <p>These case studies are rendered in the browser. <a href="index.html#work" style="border-bottom:1px solid var(--line)">Back to the work list &rarr;</a></p>
+    </div>
+  </noscript>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-row">
+        <a href="index.html#work">&larr; Back to work</a>
+        <a href="mailto:Ritikashofficial2511@gmail.com">Ritikashofficial2511@gmail.com</a>
+      </div>
+      <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
+    </div>
+  </footer>
+
+  <!-- ===== ASK-ME CHAT — mirrored from finsynth.html ===== -->
+  <button type="button" class="ask-pill" id="askPill" hidden>
+    <span class="ask-avatar" aria-hidden="true">R</span>
+    <span class="ask-pill-label">Search anything about me</span>
+    <span class="ask-pill-send" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg></span>
+  </button>
+  <div class="ask-drawer" id="askDrawer" role="dialog" aria-modal="false" aria-label="Ask Ritika about this case study">
+    <div class="ask-resize" id="askResize" role="separator" aria-orientation="vertical" aria-label="Resize chat panel" tabindex="0"></div>
+    <div class="ask-head" id="askHead">
+      <span class="ask-avatar" aria-hidden="true">R</span>
+      <div class="ask-head-actions">
+        <button type="button" class="ask-head-pop" id="askPop" aria-label="Pop out chat">
+          <svg class="ico-pop" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2.5H3.5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V8"/>
+            <path d="M8.5 2.5h3v3M11.5 2.5 7 7"/>
+          </svg>
+          <svg class="ico-dock" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="1.5" y="2.5" width="11" height="9" rx="1.2"/>
+            <path d="M8.5 2.5v9"/>
+          </svg>
+        </button>
+        <button type="button" class="ask-head-close" id="askClose" aria-label="Close chat">&times;</button>
+      </div>
+    </div>
+    <p class="ask-note">Nothing here is generated &mdash; every answer is scripted in advance.</p>
+    <div class="ask-log" id="askLog"></div>
+    <div class="ask-chips" id="askChips"></div>
+    <form class="ask-form" id="askForm">
+      <input class="ask-input" id="askInput" type="text" placeholder="Ask me anything&hellip;" autocomplete="off" aria-label="Ask a question about this case study">
+      <button class="ask-send" type="submit" aria-label="Send question">&rarr;</button>
+    </form>
+    <div class="ask-sr" aria-live="polite" id="askLive"></div>
+  </div>
+
+  <script>
+  // ——— Light / dark theme ———
+  // The head script already picked the theme; this wires the switch, keeps the
+  // address-bar colour in step, and follows the OS while no choice is stored.
+  // Same key as index.html, so a choice made on either page holds on both.
+  (function() {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+    function apply(t) {
+      root.setAttribute('data-theme', t);
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
+      if (btn) {
+        var label = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
+    }
+    apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
+    mq.addEventListener('change', function(e) {
+      if (stored() !== 'light' && stored() !== 'dark') apply(e.matches ? 'dark' : 'light');
+    });
+    if (btn) btn.addEventListener('click', function() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      apply(next);
+    });
+  })();
+
+  // ——— Header hairline on scroll ———
+  (function() {
+    var header = document.getElementById('siteHeader');
+    function sync() {
+      header.classList.toggle('scrolled', window.scrollY > 8);
+    }
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+  })();
+
+  // ——— Case studies ———
+  // One page, five cases. The key comes from ?c= (or #key), the content from
+  // the CASES object below — the same data that used to feed index.html's
+  // modal overlay, now rendered as a real page in finsynth.html's format.
+  (function() {
+    var CASES = {
+      // FinSynth has no entry here — its row links straight to finsynth.html.
+      scream: {
+        eyebrow: 'Product Design Intern · 2024 — 2025',
+        title: 'Scream',
+        lead: 'Sole designer across three products in a year — an AI video tool, a user-insights platform, and a bug reporting tool for QA and design.',
+        meta: ['0→1', 'Sole designer', 'Design systems'],
+        sections: [
+          { h: 'Context', p: ['A small studio shipping several bets at once. There was no design team, no system, and no shared language between the three products — just three codebases moving fast in different directions.'] },
+          { h: 'My role', p: ['Every design decision across all three: research, wireframes, UI, prototypes, handoff, and QA. I also built the shared foundation the products now sit on.'] },
+          { h: 'What I worked on', list: [
+            'Mazic — AI-powered demo videos. Pivoted off an interactive-demo tool, shipped in two months, past 200 users.',
+            'Yomo — a redesign of the user-insights platform around how teams actually read feedback.',
+            'Slyce — bug reporting built for the handoff between QA, design, and engineering.',
+            'One set of tokens and components reused across all three, so a fix in one landed everywhere.'
+          ] },
+          { h: 'Outcome', p: ['Three MVPs shipped, a design system that outlived my internship, and a much shorter distance between "we should try this" and something in front of users.'] }
+        ],
+        link: { href: 'https://ritikamazicv1.framer.website/', label: 'See the Mazic case study →' },
+        qa: [
+          { q: 'What did "sole designer" actually involve?',
+            k: ['alone', 'solo', 'team'],
+            a: ['Everything with a surface: research, wireframes, UI, prototypes, handoff, and the QA pass after engineering built it — across three products that shared nothing when I arrived.',
+                'The real job was deciding what not to design. With three codebases moving fast, anything that could not be reused was a luxury.'] },
+          { q: 'How did one design system serve three products?',
+            k: ['tokens', 'components', 'shared', 'system'],
+            a: ['I built the foundation once — tokens for type, color, and spacing, plus the components all three products kept reaching for. A fix in one place landed everywhere.',
+                'It outlived my internship, which is the only real test of a system.'] },
+          { q: 'Which of the three was hardest?',
+            k: ['hardest', 'difficult', 'challenge'],
+            a: ['Yomo, comfortably. Mazic and Slyce were 0→1 — a blank file does what you tell it. Yomo was a redesign of something people already used, so every improvement had to earn its place against a habit.'] }
+        ]
+      },
+      mazic: {
+        eyebrow: 'Scream \u00b7 2024 \u00b7 2 months',
+        title: 'Mazic',
+        lead: 'A screen recorder that edits itself \u2014 record once, and the zooms, cursor work and cuts are already applied by the time you open the studio.',
+        meta: ['0\u21921', '2 months', '200+ users'],
+        sections: [
+          { h: 'Context', p: [
+            'By 2024 a product video had stopped being a nice-to-have for B2B SaaS \u2014 it is what carries a launch, a demo, a support article. Getting one made well cost around $3,000 outsourced. Making it in-house cost hours: scripting, recording, then the edit.',
+            'Mazic did not start here. It started as an interactive demo tool, and the demand we kept running into was for demo videos. The product pivoted; this case study is what came after that.'
+          ] },
+          { h: 'My role', p: [
+            'Led product thinking and design, end to end \u2014 the only designer in a team of five: two founders, two engineers, me. Two months from research to a shipped MVP.'
+          ] },
+          { h: 'Research', p: [
+            'Two questions ran the whole thing: who actually needs a tool like this, and what do they want it to do? We answered them with user interviews and by pulling apart the products people were already using.'
+          ], list: [
+            'The people making these videos are not editors and have no interest in becoming editors.',
+            'No tool on the market offered a simple experience for someone with limited editing experience \u2014 that gap was the opening.'
+          ] },
+          { h: 'What we shipped', p: [
+            'Three steps, and nothing in between them.'
+          ], list: [
+            'Record & capture \u2014 screen, camera, or both, with automatic editing, pan-and-zoom, and cursor shapes applied as you record.',
+            'Edit in studio \u2014 trim, zoom effects, themes and templates for the common case; voiceover, syncing and custom elements when someone needs to go further.',
+            'Share & export \u2014 4K out, ready for a site, a knowledge base, YouTube, LinkedIn or X.'
+          ] },
+          { h: 'Outcome', p: [
+            '100 beta users on day one of the September launch, and 200+ active users within two months of going public. $1,009 gross revenue in December 2024, and Mazic was named the most impactful and loved startup at the Magic Balls AI event.'
+          ] },
+          { h: 'What I would do differently', p: [
+            'Our first direction was off, and we found that out from users rather than before them. We went back to the drawing board and revamped the product \u2014 which worked, but it was a slower and more expensive way to learn something foundational research would have told us earlier. That is the habit I took into the next product.'
+          ] }
+        ],
+        link: { href: 'https://ritikamazicv1.framer.website/', label: 'View the full case study \u2192' },
+        qa: [
+          { q: 'What was the pivot?',
+            k: ['pivot', 'change', 'direction', 'interactive', 'demo'],
+            a: ['Mazic began as an interactive demo tool. What people kept asking for was product demo videos \u2014 so we went back to the drawing board and rebuilt around recording and editing video.',
+                'The honest version: our initial approach was off-track, and we learned it from users rather than ahead of them.'] },
+          { q: 'How did it get to 200+ users?',
+            k: ['users', 'growth', 'adoption', 'revenue', 'traction'],
+            a: ['100 beta users signed up on day one of the September launch, and it passed 200 active users within two months of the public launch. December 2024 brought $1,009 in gross revenue.',
+                'It was also named the most impactful and loved startup at the Magic Balls AI event.'] },
+          { q: 'What did you actually own?',
+            k: ['role', 'own', 'team', 'responsibilities', 'designer'],
+            a: ['Product thinking and design, end to end. The team was five people \u2014 two founders, two engineers and me as the only designer \u2014 and the whole thing took two months.',
+                'That meant research and the product calls as much as the screens: what the three steps were, what stayed out of the studio, and what the tool decided on the user\u2019s behalf.'] }
+        ]
+      },
+      yomo: {
+        eyebrow: 'Scream · 2024 — 2025',
+        title: 'Yomo',
+        lead: 'A redesign of a user-insights platform around a simple question: what do you do the morning after the feedback arrives?',
+        meta: ['Redesign', 'Research', 'Data-dense UI'],
+        sections: [
+          { h: 'Problem', p: ['The product collected feedback well and surfaced it badly. Teams exported everything into spreadsheets to make sense of it, which meant the platform lost the room the moment the data was in.'] },
+          { h: 'Approach', list: [
+            'Reframed the core object from "a response" to "a theme" — grouping first, reading second.',
+            'Rebuilt the list and detail views for scanning volume, not admiring individual entries.',
+            'Made every insight exportable into the artefacts teams actually present in.'
+          ] },
+          { h: 'Outcome', p: ['Fewer trips out to spreadsheets, and a structure the team could keep building features onto instead of bolting views on top of.'] }
+        ],
+        qa: [
+          { q: 'Why themes instead of individual responses?',
+            k: ['themes', 'grouping', 'responses'],
+            a: ['Because nobody\'s morning starts with response #4,812. Teams read feedback to decide what to do next, and decisions happen at the level of patterns, not entries.',
+                'The spreadsheet exports were the tell. When users rebuild your product in Excel, they are showing you the design.'] },
+          { q: 'What does "the platform lost the room" mean?',
+            k: ['spreadsheets', 'export', 'room'],
+            a: ['The product collected feedback well and surfaced it badly, so the moment data arrived, teams exported everything — and every conversation after that happened outside the product.',
+                'The redesign was about earning that moment back: views built for scanning volume, and exports into the artefacts teams actually present in.'] },
+          { q: 'How did you know it worked?',
+            k: ['worked', 'success', 'metric', 'outcome'],
+            a: ['Fewer trips out to spreadsheets — that was the metric that mattered, because it meant the reading was happening inside the product.',
+                'The other signal was structural: the team could keep building features onto the new shape instead of bolting views on top.'] }
+        ]
+      },
+      slyce: {
+        eyebrow: 'Scream · 2024 — 2025',
+        title: 'Slyce',
+        lead: 'Bug reporting designed for the handoff between QA, design, and engineering — where most bug reports quietly die.',
+        meta: ['Internal tools', 'Workflow design', '0→1'],
+        sections: [
+          { h: 'Problem', p: ['A bug report is written by one person and read by three. Most tools optimise for the writing. The reading — reproducing it, assigning it, closing it — is where the time actually goes.'] },
+          { h: 'Approach', list: [
+            'Capture that collects context automatically, so the reporter writes one sentence instead of ten fields.',
+            'A triage view built for the person deciding, not the person reporting.',
+            'Visual diffing so a design bug can be shown rather than described.'
+          ] },
+          { h: 'Outcome', p: ['Reports arrived with enough context to be actioned without a follow-up thread — which was the whole point.'] }
+        ],
+        qa: [
+          { q: 'Why optimise for reading reports, not writing them?',
+            k: ['reading', 'writing', 'triage'],
+            a: ['A bug report is written once and read three times — by whoever reproduces it, whoever assigns it, and whoever closes it. Most tools polish the writing and abandon the readers.',
+                'The reading is where reports quietly die, so that is where the design effort went.'] },
+          { q: 'What does automatic context capture look like?',
+            k: ['capture', 'context', 'automatic'],
+            a: ['The reporter writes one sentence; the capture collects the rest — environment, steps, state. The ten fields nobody fills in honestly anyway.',
+                'For design bugs, visual diffing let people show the problem instead of describing it, which killed the longest follow-up threads.'] },
+          { q: 'Did it actually change anything?',
+            k: ['outcome', 'result', 'change'],
+            a: ['Reports started arriving with enough context to be actioned without a follow-up thread. That was the whole point — the thread was the tax.'] }
+        ]
+      },
+      eventbeep: {
+        eyebrow: 'UI Design Intern · 2023',
+        title: 'Event Beep',
+        lead: 'A mobile app redesign for students, and a recruiter-facing dashboard built alongside it.',
+        meta: ['Mobile', 'Dashboard', 'First design role'],
+        sections: [
+          { h: 'Context', p: ['Event Beep connected students with campus events and opportunities. The app had grown feature by feature until the navigation could not hold it, and recruiters had no interface of their own at all.'] },
+          { h: 'What I worked on', list: [
+            'Restructured the app around what students came back for, rather than what had shipped most recently.',
+            'A visual refresh — type scale, spacing, components — that made the app feel like one product.',
+            'A recruiter dashboard from scratch: posting, tracking applicants, and reading results.'
+          ] },
+          { h: 'What I learned', p: ['My first design role, and the one that taught me that most redesigns are really information-architecture problems wearing a visual-design costume.'] }
+        ],
+        qa: [
+          { q: 'What did your first design role teach you?',
+            k: ['learn', 'first', 'lesson'],
+            a: ['That most redesigns are information-architecture problems wearing a visual-design costume. The app did not look broken — it had grown feature by feature until the navigation could not hold it.',
+                'I went in expecting to push pixels and spent most of my time deciding what the app was actually organised around.'] },
+          { q: 'Why restructure around what students came back for?',
+            k: ['navigation', 'restructure', 'students'],
+            a: ['The navigation had been organised by shipping order — whatever launched most recently got the space. Students did not think in release notes; they came back for events and opportunities.',
+                'Restructuring around those return visits made the rest of the redesign mostly fall out on its own.'] },
+          { q: 'What was the recruiter dashboard?',
+            k: ['recruiter', 'dashboard'],
+            a: ['Recruiters had no interface at all — they worked through the team behind the scenes. I designed their first one from scratch: posting, tracking applicants, reading results.',
+                'Designing for a second audience inside the same product was the most useful thing I could have done in a first role.'] }
+        ]
+      }
+    };
+
+    // Questions matchable from typed input in any case study (never shown as chips)
+    var GLOBAL_QA = [
+      { q: 'How do I get in touch?',
+        k: ['contact', 'email', 'hire', 'hiring', 'reach', 'available', 'chat', 'talk', 'connect'],
+        a: ['The links in the site footer reach me directly — email is fastest.',
+            'If it is about this project specifically, mention which part caught your eye and I will skip straight to the interesting bits.'] },
+      { q: 'Who are you?',
+        k: ['who', 'about', 'ritika', 'designer', 'background'],
+        a: ['I am Ritika — a product designer working on AI and fintech interfaces, currently the founding designer at FinSynth.',
+            'The About section on the main page has the longer version.'] }
+    ];
+
+    // Fallback when nothing matches a typed question
+    var ASK_FALLBACK = ['Fair question — and past the edge of what I have written up here. This little chat runs on prepared answers, not a live model, so it only knows what I have told it.',
+                        'For the real answer, the contact links in the footer reach the actual me.'];
+
+    // Brief orientation before anything else — streamed on the very first
+    // interaction (localStorage 'askIntroSeen', shared across the site),
+    // rendered instantly after that so the log never opens empty.
+    var ASK_INTRO = ['Hi — I’m the scripted version of Ritika. This chat is a quick way to interrogate this case study: I’ve written answers ahead of time to the questions it tends to raise.',
+                     'Tap a suggestion below, or just type; if I don’t have an answer prepared, I’ll say so instead of making one up.'];
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function(ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch];
+      });
+    }
+
+    // Mirrors the row order in index.html's #panel-work, which is what drives
+    // the Next chain (finsynth → scream → mazic → yomo → slyce → eventbeep).
+    // Reorder the rows there and this list has to follow.
+    var CASE_ORDER = ['scream', 'yomo', 'slyce', 'eventbeep'];  // mazic lives on its own
+                                                            // Framer site, so it is not
+                                                            // a stop on the Next chain
+
+    var main = document.getElementById('caseMain');
+    var key = (new URLSearchParams(location.search).get('c')
+      || location.hash.replace(/^#(case-)?/, '')).trim();
+    var c = CASES[key];
+
+    if (!c) {
+      // A bad or missing key says so rather than silently bouncing — easier to
+      // spot a broken link than a mystery redirect.
+      main.innerHTML = '<div class="wrap case-miss"><h1>Case not found</h1>'
+        + '<p style="margin-top:14px"><a href="index.html#work">&larr; Back to the work list</a></p></div>';
+      document.title = 'Case not found — Ritika Shakkerwal';
+      return;
+    }
+
+    function chapterNum(i) { return (i < 9 ? '0' : '') + (i + 1); }
+
+    (function renderCase() {
+      var html = '<div class="wrap"><div class="masthead reveal">';
+      if (c.eyebrow) html += '<p class="eyebrow">' + esc(c.eyebrow) + '</p>';
+      html += '<h1>' + esc(c.title) + '</h1>';
+      html += '<p class="standfirst">' + esc(c.lead) + '</p>';
+      if (c.meta && c.meta.length) {
+        html += '<p class="masthead-meta">' + c.meta.map(esc).join(' &middot; ') + '</p>';
+      }
+      html += '</div></div>';
+
+      (c.sections || []).forEach(function(s, i) {
+        html += '<section class="chapter reveal"><div class="wrap">'
+          + '<div class="chapter-head"><span class="chapter-num">' + chapterNum(i) + '</span>'
+          + '<h2>' + esc(s.h) + '</h2></div>';
+        (s.p || []).forEach(function(p) { html += '<p>' + esc(p) + '</p>'; });
+        if (s.list) {
+          html += '<ul class="case-list">' + s.list.map(function(li) {
+            return '<li>' + esc(li) + '</li>';
+          }).join('') + '</ul>';
+        }
+        html += '</div></section>';
+      });
+
+      if (c.link) {
+        var external = /^https?:/i.test(c.link.href);
+        html += '<div class="wrap"><div class="case-cta reveal"><a href="' + esc(c.link.href) + '"'
+          + (external ? ' target="_blank" rel="noopener"' : '') + '>' + esc(c.link.label) + '</a></div></div>';
+      }
+
+      main.innerHTML = html;
+      document.title = c.title + ' — Ritika Shakkerwal';
+
+      var next = CASE_ORDER[CASE_ORDER.indexOf(key) + 1];
+      var nextEl = document.getElementById('caseNext');
+      if (next && CASES[next]) {
+        nextEl.href = 'case.html?c=' + next;
+        nextEl.innerHTML = 'Next &middot; ' + esc(CASES[next].title) + ' <span aria-hidden="true">&rarr;</span>';
+        nextEl.hidden = false;
+      }
+    })();
+
+    // ——— Reveal on scroll ———
+    // Runs after the render above, since the .reveal nodes only exist by then.
+    (function() {
+      var items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window) ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        items.forEach(function(el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+      items.forEach(function(el) {
+        // Content already on screen at load shouldn't animate in
+        var r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight - 40 && r.bottom > 0) { el.classList.add('in'); return; }
+        io.observe(el);
+      });
+    })();
+
+    // ——— Ask-me chat (floating pill + drawer) ———
+    // Mirrored from finsynth.html — keep the two in sync if the interaction
+    // changes. Scripted, not generated: this case's prepared Q&A plus
+    // GLOBAL_QA, keyword-matched for typed questions; misses get ASK_FALLBACK.
+    // Unlike finsynth.html there are no section-tagged chips — a case page has
+    // no rail to follow, so the chips are just this case's own questions.
+    var QA = (c.qa || []).concat(GLOBAL_QA);
+    if (!(c.qa && c.qa.length)) return;   // no prepared answers, no pill
+
+    var askPill = document.getElementById('askPill');
+    var askDrawer = document.getElementById('askDrawer');
+    var askLog = document.getElementById('askLog');
+    var askChips = document.getElementById('askChips');
+    var askForm = document.getElementById('askForm');
+    var askInput = document.getElementById('askInput');
+    var askLive = document.getElementById('askLive');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var ask = { seeds: c.qa.slice(), asked: [], busy: false };
+    askPill.hidden = false;
+
+    function askOpenDrawer(entry) {
+      askAttractStop();
+      document.body.classList.add('chat-open');
+      askDrawer.classList.add('in');
+      if (entry) askQuestion(entry.q, entry);
+      else {
+        if (!askLog.childNodes.length) askIntro();
+        if (window.matchMedia('(hover: hover)').matches) askInput.focus();
+      }
+    }
+
+    function askCloseDrawer() {
+      askDrawer.classList.remove('in');
+      document.body.classList.remove('chat-open');
+      askPill.focus();
+    }
+
+    function scrollLog() { askLog.scrollTop = askLog.scrollHeight; }
+
+    // Orientation message when the log is empty: streamed word-by-word the
+    // very first time (across pages, via localStorage), instant after that.
+    function askIntro() {
+      var seen = false;
+      try { seen = !!localStorage.getItem('askIntroSeen'); } catch (err) {}
+      try { localStorage.setItem('askIntroSeen', '1'); } catch (err) {}
+      if (seen) {
+        var wrap = document.createElement('div');
+        wrap.className = 'ask-msg-a';
+        wrap.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span><div class="ask-msg-body">'
+          + ASK_INTRO.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>';
+        askLog.appendChild(wrap);
+        renderChips();
+      } else {
+        ask.busy = true;
+        streamAnswer(ASK_INTRO, function() { ask.busy = false; renderChips(); });
+      }
+    }
+
+    function askQuestion(text, entry) {
+      if (ask.busy) return;
+      ask.busy = true;
+      entry = entry || matchQA(text);
+      if (entry && ask.asked.indexOf(entry) < 0) ask.asked.push(entry);
+      var u = document.createElement('div');
+      u.className = 'ask-msg-user';
+      u.textContent = text;
+      askLog.appendChild(u);
+      askChips.innerHTML = '';
+      var typing = document.createElement('div');
+      typing.className = 'ask-msg-a';
+      typing.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span>'
+        + '<div class="ask-typing"><span></span><span></span><span></span></div>';
+      askLog.appendChild(typing);
+      scrollLog();
+      setTimeout(function() {
+        typing.remove();
+        streamAnswer(entry ? entry.a : ASK_FALLBACK, function() {
+          ask.busy = false;
+          renderChips();
+        });
+      }, reduceMotion.matches ? 250 : 900);
+    }
+
+    function streamAnswer(paras, done) {
+      var wrap = document.createElement('div');
+      wrap.className = 'ask-msg-a';
+      wrap.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span><div class="ask-msg-body"></div>';
+      var msgBody = wrap.lastChild;
+      askLog.appendChild(wrap);
+      var finish = function() {
+        askLive.textContent = paras.join(' ');
+        scrollLog();
+        done();
+      };
+      if (reduceMotion.matches) {
+        msgBody.innerHTML = paras.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('');
+        finish();
+        return;
+      }
+      var chunks = paras.map(function(p) {
+        return { el: document.createElement('p'), words: p.split(' ') };
+      });
+      var pi = 0, wi = 0;
+      (function tick() {
+        var chunk = chunks[pi];
+        if (!chunk) { finish(); return; }
+        if (wi === 0) msgBody.appendChild(chunk.el);
+        chunk.el.textContent += (wi ? ' ' : '') + chunk.words[wi];
+        wi++;
+        if (wi >= chunk.words.length) { pi++; wi = 0; }
+        scrollLog();
+        setTimeout(tick, 22 + Math.random() * 38);
+      })();
+    }
+
+    function renderChips() {
+      var picks = ask.seeds.filter(function(s) { return ask.asked.indexOf(s) < 0; }).slice(0, 3);
+      askChips.innerHTML = '';
+      picks.forEach(function(s, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ask-chip pre';
+        b.textContent = s.q;
+        b.addEventListener('click', function() { askQuestion(s.q, s); });
+        askChips.appendChild(b);
+        setTimeout(function() { b.classList.remove('pre'); }, 60 + i * 90);
+      });
+      scrollLog();
+    }
+
+    var ASK_STOP = {};
+    ('a an and are but can could did do does for from how i in is it its me my of on or so ' +
+     'that the this to was were what when where which who why will would you your it\'s your').split(' ')
+      .forEach(function(w) { ASK_STOP[w] = 1; });
+
+    function askTokens(s) {
+      return s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(function(w) {
+        return w.length > 2 && !ASK_STOP[w];
+      });
+    }
+
+    function matchQA(text) {
+      var toks = askTokens(text);
+      var best = null, bestScore = 0;
+      QA.forEach(function(entry) {
+        var pool = askTokens(entry.q);
+        var keys = entry.k || [];
+        var score = 0;
+        toks.forEach(function(t) {
+          if (keys.indexOf(t) >= 0) score += 2;
+          else if (pool.indexOf(t) >= 0) score += 1;
+        });
+        if (score > bestScore) { bestScore = score; best = entry; }
+      });
+      return bestScore >= 2 ? best : null;
+    }
+
+    askPill.addEventListener('click', function() { askOpenDrawer(null); });
+
+    /* First-visit attract. The pill is quiet enough to read straight past, so
+       a reader who has never opened the chat gets one three-beat purple pulse
+       shortly after landing. Once per session (sessionStorage) so navigating
+       between case pages does not re-nudge, and never for someone who has
+       already used the chat (the shared 'askIntroSeen' flag). Any hover, focus
+       or open cancels it early; under prefers-reduced-motion the CSS holds the
+       border lit instead of pulsing, and this timer is what clears it. */
+    function askAttractStop() {
+      if (askAttract.timer) { clearTimeout(askAttract.timer); askAttract.timer = null; }
+      askPill.classList.remove('attract');
+    }
+    function askAttract() {
+      var skip = false;
+      try {
+        skip = !!localStorage.getItem('askIntroSeen') || !!sessionStorage.getItem('askPillNudged');
+        sessionStorage.setItem('askPillNudged', '1');
+      } catch (err) {}   /* no storage: nudge anyway, it is only decoration */
+      if (skip) return;
+      setTimeout(function() {
+        if (document.body.classList.contains('chat-open')) return;
+        askPill.classList.add('attract');
+        askAttract.timer = setTimeout(askAttractStop, 7000);   /* 3 x 2.2s + slack */
+      }, 1400);
+    }
+    askAttract();
+    askPill.addEventListener('pointerenter', askAttractStop);
+    askPill.addEventListener('focus', askAttractStop);
+    document.getElementById('askClose').addEventListener('click', askCloseDrawer);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.body.classList.contains('chat-open')) askCloseDrawer();
+    });
+    askForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var v = askInput.value.trim();
+      if (!v || ask.busy) return;
+      askInput.value = '';
+      askQuestion(v);
+    });
+
+    // ——— Resize + pop-out (Zoom-style floating window) ———
+    // Width lives in --ask-w so the page squeeze tracks it; the popped
+    // window is positioned by --ask-x/--ask-y and dragged by its header.
+    // Geometry persists in localStorage ('askPane', shared with the other pages).
+    var askPop = document.getElementById('askPop');
+    var askResize = document.getElementById('askResize');
+    var askHead = document.getElementById('askHead');
+    var askRoot = document.documentElement;
+    var ASK_MIN_W = 300, ASK_MAX_W = 720;
+    var pane = { w: 360, x: null, y: 24, pop: false };
+    try {
+      var savedPane = JSON.parse(localStorage.getItem('askPane') || '{}');
+      if (savedPane.w) pane.w = savedPane.w;
+      if (savedPane.x != null) { pane.x = savedPane.x; pane.y = savedPane.y; }
+    } catch (err) {}
+
+    function askMaxW() {
+      // In squeeze mode leave the column at least ~380px; overlay mode just
+      // keeps a sliver of page visible.
+      var reserve = window.innerWidth >= 1100 ? 380 : 120;
+      return Math.max(ASK_MIN_W, Math.min(ASK_MAX_W, window.innerWidth - reserve));
+    }
+    function applyPane() {
+      pane.w = Math.max(ASK_MIN_W, Math.min(pane.w, askMaxW()));
+      if (pane.x == null) pane.x = window.innerWidth - pane.w - 24;
+      pane.x = Math.max(8, Math.min(pane.x, window.innerWidth - pane.w - 8));
+      // Keep the whole popped window on screen so the input stays reachable
+      var popH = Math.min(600, window.innerHeight - 48);
+      pane.y = Math.max(8, Math.min(pane.y, Math.max(8, window.innerHeight - popH - 8)));
+      askRoot.style.setProperty('--ask-w', pane.w + 'px');
+      askRoot.style.setProperty('--ask-x', pane.x + 'px');
+      askRoot.style.setProperty('--ask-y', pane.y + 'px');
+      // Squeeze zoom: shrink the 660px column to fit whatever the pane leaves
+      var availW = window.innerWidth - pane.w;
+      var z = Math.min(0.85, Math.max(0.5, (availW - 32) / 660));
+      askRoot.style.setProperty('--ask-zoom', z.toFixed(3));
+    }
+    function savePane() {
+      try { localStorage.setItem('askPane', JSON.stringify({ w: pane.w, x: pane.x, y: pane.y })); } catch (err) {}
+    }
+    function setPop(on) {
+      pane.pop = on;
+      applyPane();
+      askDrawer.classList.toggle('pop', on);
+      document.body.classList.toggle('chat-popped', on);
+      askPop.setAttribute('aria-label', on ? 'Dock chat to side' : 'Pop out chat');
+    }
+    applyPane();
+    askPop.addEventListener('click', function() { setPop(!pane.pop); });
+
+    // Left-edge drag: pane mode resizes from the right edge of the screen;
+    // pop mode keeps the window's right edge pinned while the width changes.
+    var resizeDrag = null;
+    askResize.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      resizeDrag = { right: pane.x + pane.w };
+      askResize.setPointerCapture(e.pointerId);
+      document.body.classList.add('ask-dragging');
+    });
+    askResize.addEventListener('pointermove', function(e) {
+      if (!resizeDrag) return;
+      if (pane.pop) {
+        pane.w = Math.max(ASK_MIN_W, Math.min(resizeDrag.right - e.clientX, askMaxW()));
+        pane.x = resizeDrag.right - pane.w;
+      } else {
+        pane.w = window.innerWidth - e.clientX;
+      }
+      applyPane();
+    });
+    function endResize() {
+      if (!resizeDrag) return;
+      resizeDrag = null;
+      document.body.classList.remove('ask-dragging');
+      savePane();
+    }
+    askResize.addEventListener('pointerup', endResize);
+    askResize.addEventListener('pointercancel', endResize);
+    askResize.addEventListener('keydown', function(e) {
+      var d = e.key === 'ArrowLeft' ? 24 : e.key === 'ArrowRight' ? -24 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var right = pane.x + pane.w;
+      pane.w += d;
+      applyPane();
+      if (pane.pop) { pane.x = right - pane.w; applyPane(); }
+      savePane();
+    });
+
+    // Header drag moves the popped window anywhere on screen
+    var moveDrag = null;
+    askHead.addEventListener('pointerdown', function(e) {
+      if (!pane.pop || e.target.closest('button')) return;
+      e.preventDefault();
+      moveDrag = { dx: e.clientX - pane.x, dy: e.clientY - pane.y };
+      askHead.setPointerCapture(e.pointerId);
+      document.body.classList.add('ask-dragging');
+    });
+    askHead.addEventListener('pointermove', function(e) {
+      if (!moveDrag) return;
+      pane.x = e.clientX - moveDrag.dx;
+      pane.y = e.clientY - moveDrag.dy;
+      applyPane();
+    });
+    function endMove() {
+      if (!moveDrag) return;
+      moveDrag = null;
+      document.body.classList.remove('ask-dragging');
+      savePane();
+    }
+    askHead.addEventListener('pointerup', endMove);
+    askHead.addEventListener('pointercancel', endMove);
+
+    window.addEventListener('resize', function() {
+      // No room to float on small screens — fold back into the pane
+      if (pane.pop && window.innerWidth < 700) setPop(false);
+      else applyPane();
+    }, { passive: true });
+  })();
+  </script>
+</body>
+</html>

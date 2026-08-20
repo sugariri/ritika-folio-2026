@@ -9,6 +9,39 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
   <meta name="theme-color" content="#fcfcfc">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐾</text></svg>">
+  <!-- Theme resolved before first paint so the page never flashes the wrong
+       one. Stored choice wins; otherwise the OS preference. The full driver
+       (toggle button, theme-color, OS-change listener) is at the end of the
+       script — this only has to set the attribute. -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+
+      /* The wordmark intro is armed here, before first paint, for the same
+         reason the theme is: an opaque curtain has to be up on the very first
+         frame, or the reader sees the page and then loses it. Setting an
+         attribute is all it takes — the driver is the intro IIFE in the main
+         script. Once per session, so coming back from a case study is not
+         taxed, and never under reduced motion. If this script cannot run (or
+         storage is blocked) the attribute is never set, the curtain stays
+         invisible, and the page loads exactly as it did before the intro
+         existed — failing closed, because a curtain on every load with no way
+         to suppress it is worse than no curtain. */
+      try {
+        if (!sessionStorage.getItem('introPlayed') &&
+            !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          sessionStorage.setItem('introPlayed', '1');
+          document.documentElement.setAttribute('data-intro', 'on');
+        }
+      } catch (e2) {}
+    })();
+  </script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -26,12 +59,35 @@
       /* Semantic */
       --bg: var(--gray-1);
       --bg-secondary: #ececee;
+      --bg-secondary-hover: #e2e2e5;
+      --bg-hover: #fff;                    /* the pill a row fills into */
+      --bg-float: var(--bg);               /* sheets and the chat, lifted in dark */
       --text: var(--gray-14);
       --muted: var(--gray-10);
       --faint: var(--gray-7);
       --line: rgba(0, 0, 0, 0.08);
+      --line-soft: rgba(0, 0, 0, 0.06);    /* row divider */
+      --line-strong: rgba(0, 0, 0, 0.10);  /* hovered row edge */
+      --line-hover: rgba(0, 0, 0, 0.16);   /* hovered ask pill */
       --brand: #752afc;
       --brand-hover: #6109de;
+      --logo: var(--brand); /* riri wordmark — site purple */
+      /* wet ink in the wordmark intro: laid down hot, cooling to --logo */
+      --intro-hot:  #cbaaff;
+      --intro-glow: rgba(117, 42, 252, 0.30);
+      --ok: #3ea96b;                       /* the "available for work" dot */
+      --ok-glow: rgba(62, 169, 107, 0.16);
+      --backdrop: rgba(20, 20, 26, 0.28);
+      --paw-filter: grayscale(1);
+      --paw-cat-filter: grayscale(1);
+
+      /* Shadows are theme-dependent: on a dark page a soft black blur does
+         nothing, so the dark set is deeper and tighter. */
+      --shadow-row: 0 1px 0.5px rgba(0, 0, 0, 0.04);
+      --shadow-pill: 0 8px 28px rgba(0, 0, 0, 0.10), 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.04);
+      --shadow-drawer: -16px 0 48px rgba(0, 0, 0, 0.08);
+      --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
 
       /* Type scale — their rem base is 10px, values inlined as px */
       --t-header-lg: 44px;
@@ -45,6 +101,54 @@
       /* Layout */
       --content: 572px;
       --gutter: 24px;
+
+      /* Hero spotlight-reveal photo. Needs color edge-to-edge — an image that
+         fades to white reads as an empty lens over the white page. The case
+         studies have no spotlight; only this page's hero and finsynth.html do. */
+      --spotlight-hero-img: url('assets/spotlight-hero.jpg');
+    }
+
+    /* ---------- DARK ----------
+       The head script resolves the stored choice (or the OS preference) into
+       data-theme on <html> before first paint, so this is the only place a
+       dark colour is written: every rule below still reads the same token.
+       The grey ramp above is deliberately untouched — it is the light ink
+       the interactive cat and the spotlight photos are drawn against. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg: #101013;
+      --bg-secondary: #26262e;
+      --bg-secondary-hover: #32323c;
+      --bg-hover: #1b1b22;
+      /* the case sheet and the chat lift off the page instead of relying on a
+         shadow, which does almost nothing against near-black */
+      --bg-float: #1a1a20;
+      --text: #ededf2;
+      --muted: #a6a6b6;
+      --faint: #74748c;
+      --line: rgba(255, 255, 255, 0.10);
+      --line-soft: rgba(255, 255, 255, 0.07);
+      --line-strong: rgba(255, 255, 255, 0.14);
+      --line-hover: rgba(255, 255, 255, 0.24);
+      /* #752afc vibrates against near-black — the mark and the links lift */
+      --brand: #a97bff;
+      --brand-hover: #c3a4ff;
+      --intro-hot:  #ded0ff;
+      --intro-glow: rgba(169, 123, 255, 0.40);
+      --ok: #4cc484;
+      --ok-glow: rgba(76, 196, 132, 0.18);
+      --backdrop: rgba(0, 0, 0, 0.6);
+      /* grey paw prints would sink into the page; the emoji cats brighten
+         instead of inverting — a negative of a face reads as a glitch */
+      --paw-filter: grayscale(1) invert(1);
+      --paw-cat-filter: grayscale(1) brightness(1.9);
+
+      --shadow-row: 0 1px 2px rgba(0, 0, 0, 0.5);
+      --shadow-pill: 0 10px 32px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-panel: 0 16px 48px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
+      --shadow-drawer: -18px 0 56px rgba(0, 0, 0, 0.5);
+      --shadow-pop: 0 28px 72px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
     html {
@@ -75,8 +179,8 @@
       z-index: 0;
       background-image: repeating-linear-gradient(
         to bottom,
-        rgba(0, 0, 0, 0.08) 0,
-        rgba(0, 0, 0, 0.08) 3px,
+        var(--line) 0,
+        var(--line) 3px,
         transparent 3px,
         transparent 6px
       );
@@ -117,15 +221,67 @@
       font-weight: 500; font-size: var(--t-body-md);
       color: var(--text);
     }
+    /* "riri" wordmark — hand-drawn monoline SVG, colored via currentColor */
+    .riri-logo {
+      display: block; height: 28px; width: auto;
+      color: var(--logo);
+      transition: scale 0.18s ease;
+    }
+    .nav-name:hover .riri-logo { scale: 1.05; }
+    /* the cat in the second i swishes its tail on hover — a `d` morph where
+       supported, a rotate-from-the-base wag everywhere else */
+    .riri-tail { transform-box: fill-box; transform-origin: 0% 0%; }
+    @keyframes riri-tail-wag {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-10deg); }
+      65% { transform: rotate(7deg); }
+    }
+    @keyframes riri-tail-wave {
+      0%, 100% { d: path("M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61"); }
+      30% { d: path("M129 51 C138 57 144 50 149 53 C153 55 155 56 160 52"); }
+      65% { d: path("M129 51 C138 59 143 54 148 59 C152 62 153 65 157 63"); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .nav-name:hover .riri-tail,
+      .nav-name:focus-visible .riri-tail { animation: riri-tail-wag 1s ease-in-out infinite; }
+      @supports (d: path("M0 0")) {
+        .nav-name:hover .riri-tail,
+        .nav-name:focus-visible .riri-tail { animation-name: riri-tail-wave; }
+      }
+    }
     .nav-links { display: flex; gap: 22px; list-style: none; }
     .nav-links a {
       font-size: var(--t-body-md); color: var(--muted);
       transition: color 0.18s ease;
     }
     .nav-links a:hover { color: var(--text); }
+    .nav-links { align-items: center; }
+    .nav-links li:last-child { margin-left: -10px; } /* the icon carries its own padding */
+
+    /* Light / dark switch — same icon-button family as the overlay's controls.
+       The glyph names the theme you are in; the label names the one you'd get. */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px;
+      border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: var(--faint);
+      cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .theme-toggle:hover, .theme-toggle:focus-visible {
+      color: var(--text); background: var(--bg-secondary); border-color: var(--line);
+      outline: none;
+    }
+    .theme-toggle:active { scale: 0.94; }
+    .theme-toggle svg { display: block; width: 16px; height: 16px; }
+    .theme-toggle .ico-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-moon { display: block; }
 
     /* ---------- HERO ---------- */
-    .hero { padding: 88px 0 80px; }
+    .hero { position: relative; padding: 88px 0 80px; }
+    .hero .wrap { position: relative; z-index: 1; } /* copy above the spotlight layer */
     .hero h1 {
       font-size: clamp(32px, 7vw, var(--t-header-lg));
       font-weight: 500;
@@ -156,8 +312,16 @@
     }
     .status .dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: #3EA96B;
-      box-shadow: 0 0 0 3px rgba(62, 169, 107, 0.16);
+      background: var(--ok);
+      box-shadow: 0 0 0 3px var(--ok-glow);
+    }
+
+    .hero-img {
+      display: block;
+      width: 100%;
+      margin-top: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
     }
 
     /* ---------- SECTIONS ---------- */
@@ -168,6 +332,29 @@
       font-weight: 500;
       margin-bottom: 24px;
     }
+
+    /* Work / Side-projects toggle — tabs that stand in for the section label */
+    .work-tabs { display: flex; gap: 24px; margin-bottom: 24px; }
+    .work-tab {
+      position: relative;
+      padding: 0 0 5px;
+      border: 0; background: none;
+      font: inherit; font-size: var(--t-body-sm); line-height: 22px; font-weight: 500;
+      color: var(--faint);
+      cursor: pointer;
+      transition: color 0.2s ease;
+      -webkit-appearance: none; appearance: none;
+    }
+    .work-tab::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+      background: var(--text);
+      transform: scaleX(0); transform-origin: 0 50%;
+      transition: transform 0.3s cubic-bezier(.22,.61,.36,1);
+    }
+    .work-tab:hover, .work-tab:focus-visible { color: var(--muted); outline: none; }
+    .work-tab[aria-selected="true"] { color: var(--text); }
+    .work-tab[aria-selected="true"]::after { transform: scaleX(1); }
+    .rows[hidden] { display: none; }
 
     /* ---------- ROW LIST ---------- */
     /* Hover behaviour mirrors salleedesign.com's work rows: the row fills into a
@@ -188,9 +375,9 @@
 
     a.row:hover, a.row:focus-visible,
     button.row:hover, button.row:focus-visible {
-      background: #fff;
-      border-color: rgba(0, 0, 0, 0.10);
-      box-shadow: 0 1px 0.5px rgba(0, 0, 0, 0.04);
+      background: var(--bg-hover);
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow-row);
       outline: none;
     }
 
@@ -219,7 +406,7 @@
     .row-divider {
       flex: 1 1 auto; min-width: 16px; height: 1px;
       margin: 0 16px;
-      background: rgba(0, 0, 0, 0.06);
+      background: var(--line-soft);
     }
 
     .row-end {
@@ -262,10 +449,108 @@
 
     /* Rows with no case study behind them — no pill, role always visible */
     .row-static { cursor: default; }
+    /* Experience rows with nowhere to go. Unlike .row-static (Education, where
+       every row is dead and the always-open role is the whole line), these sit
+       between live links, so they keep .row's rhythm — role hidden until hover —
+       and only drop the pointer and the arrow. The hover opens the role; it never
+       promises a page. */
+    .row-flat { cursor: default; }
     .row-static .row-role { max-width: 100%; margin-left: 16px; opacity: 1; }
 
     @media (prefers-reduced-motion: reduce) {
       .row-role, .row-end, .row-arrow { transition: none; }
+    }
+
+    /* ---------- WORK CARDS ---------- */
+    /* The one place the site uses a card. Work is the thing people came to
+       browse, and a row list makes six projects read as six lines of a CV
+       rather than six pieces of work — so Work gets tiles and the CV history
+       keeps the rows (#experience, below). Kept inside the design direction:
+       hairline border, page ground, no shadow at rest, no gradient, no
+       photography. Each tile's mark is type — the project name as a lowercase
+       slug — because none of these products has a logo to show and a stock
+       glyph would be decoration standing in for content. */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .cards[hidden] { display: none; }
+
+    .card {
+      display: flex; flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: transparent;
+      color: inherit; text-decoration: none;
+      overflow: hidden;
+      transition: background 0.3s cubic-bezier(.22,.61,.36,1),
+                  border-color 0.3s cubic-bezier(.22,.61,.36,1),
+                  box-shadow 0.3s cubic-bezier(.22,.61,.36,1);
+    }
+    .card:hover, .card:focus-visible {
+      background: var(--bg-hover);
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow-row);
+      outline: none;
+    }
+
+    /* Mark plate — the tile's whole reason to be taller than a row */
+    .card-art {
+      display: flex; align-items: center; justify-content: center;
+      aspect-ratio: 16 / 9;
+      padding: 0 16px;
+    }
+    .card-mark {
+      font-size: 26px; font-weight: 500;
+      letter-spacing: -0.8px;
+      line-height: 1;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color 0.3s cubic-bezier(.22,.61,.36,1);
+    }
+    .card-mark i { font-style: normal; color: var(--faint); }
+    .card:hover .card-mark, .card:focus-visible .card-mark { color: var(--text); }
+
+    .card-foot {
+      display: flex; flex-direction: column; gap: 2px;
+      padding: 0 16px 16px;
+    }
+    .card-title {
+      display: flex; align-items: center;
+      font-size: var(--t-body-md); font-weight: 500;
+      line-height: 24px; color: var(--text);
+    }
+    /* Same easing and behaviour as .row-arrow, so the two lists feel related */
+    .card-arrow {
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-left: auto;
+      width: 0; height: 16px;
+      overflow: hidden; opacity: 0;
+      color: var(--faint);
+      transform: translateX(10px);
+      pointer-events: none;
+      transition: width 0.35s cubic-bezier(.22,.61,.36,1),
+                  opacity 0.3s ease,
+                  transform 0.35s cubic-bezier(.22,.61,.36,1);
+    }
+    .card-arrow svg { display: block; width: 16px; height: 16px; flex-shrink: 0; }
+    .card:hover .card-arrow, .card:focus-visible .card-arrow {
+      width: 16px; opacity: 1; transform: translateX(0);
+    }
+    .card-sub {
+      font-size: var(--t-body-sm); line-height: 20px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .cards { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .card-art { aspect-ratio: 5 / 2; }
+      /* No hover on touch: the arrow is the affordance, so it stays out */
+      .card-arrow { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .card, .card-mark, .card-arrow { transition: none; }
     }
 
     /* ---------- PROSE ---------- */
@@ -294,85 +579,6 @@
     }
     .pair dd { color: var(--muted); }
 
-    /* ---------- CASE STUDY OVERLAY ---------- */
-    .case {
-      position: fixed; inset: 0; z-index: 200;
-      display: flex; justify-content: center; align-items: flex-start;
-      overflow-y: auto; overscroll-behavior: contain;
-    }
-    .case[hidden] { display: none; }
-    .case-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(20, 20, 26, 0.28);
-      -webkit-backdrop-filter: blur(2px);
-      backdrop-filter: blur(2px);
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-    .case.in .case-backdrop { opacity: 1; }
-    .case-panel {
-      position: relative; z-index: 1;
-      width: 100%; max-width: 660px;
-      margin: 48px 16px 64px;
-      padding: 40px;
-      background: var(--bg);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.04);
-      opacity: 0; transform: translateY(10px);
-      transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.16,1,.3,1);
-    }
-    .case.in .case-panel { opacity: 1; transform: none; }
-    .case-close {
-      position: absolute; top: 14px; right: 14px;
-      width: 28px; height: 28px;
-      border: 1px solid transparent; border-radius: 8px;
-      background: transparent;
-      color: var(--faint);
-      font: inherit; font-size: 16px; line-height: 1;
-      cursor: pointer;
-      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-    }
-    .case-close:hover { color: var(--text); background: var(--bg-secondary); border-color: var(--line); }
-
-    .case-eyebrow { font-size: var(--t-body-sm); line-height: 22px; color: var(--faint); font-weight: 500; }
-    .case-title {
-      font-size: var(--t-header-md); font-weight: 500;
-      line-height: 1.2; letter-spacing: -0.5px;
-      color: var(--text);
-      margin: 6px 0 12px;
-    }
-    .case-lead { font-size: var(--t-body-lg); line-height: 26px; color: var(--muted); }
-    .case-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; list-style: none; }
-    .case-meta li {
-      font-size: var(--t-body-sm); line-height: 22px;
-      color: var(--muted); background: var(--bg-secondary);
-      padding: 4px 12px; border-radius: 999px;
-    }
-    .case-section { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
-    .case-section h3 {
-      font-size: var(--t-body-sm); line-height: 22px;
-      font-weight: 500; color: var(--faint);
-      margin-bottom: 10px;
-    }
-    .case-section p, .case-section li { font-size: var(--t-body-md); line-height: 24px; color: var(--muted); }
-    .case-section p + p { margin-top: 12px; }
-    .case-section ul { list-style: none; }
-    .case-section li { position: relative; padding-left: 18px; }
-    .case-section li + li { margin-top: 8px; }
-    .case-section li::before {
-      content: ''; position: absolute; left: 2px; top: 11px;
-      width: 5px; height: 1px; background: var(--faint);
-    }
-    .case-link {
-      display: inline-block; margin-top: 22px;
-      font-size: var(--t-body-sm); line-height: 22px; font-weight: 500;
-      color: var(--brand);
-      transition: color 0.18s ease;
-    }
-    .case-link:hover { color: var(--brand-hover); }
-    body.case-open { overflow: hidden; }
-
     /* ---------- FOOTER ---------- */
     footer {
       border-top: 1px solid var(--line);
@@ -397,9 +603,10 @@
       background: var(--bg-secondary);
       padding: 4px 12px;
       border-radius: 999px;
-      transition: color 0.18s ease, background 0.18s ease;
+      transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out;
     }
-    .footer-links a:hover { color: var(--text); background: #e2e2e5; }
+    .footer-links a:hover { color: var(--text); background: var(--bg-secondary-hover); }
+    .footer-links a:active { scale: 0.96; }
     .footer-copy { font-size: var(--t-body-sm); line-height: 22px; color: var(--faint); }
 
     /* ---------- REVEAL ---------- */
@@ -434,7 +641,6 @@
       .nav-links { gap: 16px; }
       .pair { flex-direction: column; gap: 6px; }
       .pair dt { width: auto; }
-      .case-panel { padding: 28px 20px; margin: 16px 12px 40px; }
     }
 
     /* ========== CAT PAWS ========== */
@@ -444,9 +650,9 @@
       z-index: 9998;
       opacity: 0;
       font-size: 18px;
-      filter: grayscale(1);
-      will-change: transform, opacity;
+      filter: var(--paw-filter);
     }
+    .paw-cat { filter: var(--paw-cat-filter); }
 
     /* ========== INTERACTIVE CAT ========== */
     .hide-seek-cat {
@@ -454,8 +660,9 @@
       z-index: 9997;
       pointer-events: none;
       width: 64px; height: 64px;
+      left: 0; top: 0;
       transition: none;
-      will-change: left, top;
+      will-change: translate;
       user-select: none;
     }
     .hide-seek-cat svg { width: 100%; height: 100%; }
@@ -470,7 +677,7 @@
     }
     /* Sitting tail sway */
     .hide-seek-cat.sitting .cat-tail-sit {
-      transform-origin: 15px 38px;
+      transform-origin: 50px 54px;
       animation: tailSway 2s ease-in-out infinite;
     }
     @keyframes tailSway {
@@ -501,11 +708,235 @@
     }
     /* Fleeing legs */
     .hide-seek-cat.fleeing .cat-legs-flee {
+      transform-origin: 32px 40px;
       animation: legsScramble 0.12s linear infinite alternate;
     }
     @keyframes legsScramble {
       0% { transform: rotate(-15deg); }
       100% { transform: rotate(15deg); }
+    }
+
+    /* Caught: happy purring wiggle */
+    .hide-seek-cat.caught { animation: catPurr 0.4s ease-in-out infinite; }
+    @keyframes catPurr {
+      0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+      50% { transform: translateY(-1px) rotate(1.5deg); }
+    }
+    .hide-seek-cat.caught .cat-tail-sit {
+      transform-origin: 50px 54px;
+      animation: tailSway 0.8s ease-in-out infinite;
+    }
+    .hide-seek-cat.caught .cat-hearts {
+      animation: heartsFloat 1.1s ease-in-out infinite;
+    }
+
+    /* "Purrrr" doodle speech bubble. Cream paper and brown ink, hardcoded on
+       purpose: it belongs to the cat, not to the page, so it stays the same
+       sticker in both themes — same rule as the pixel sprite it hangs off. */
+    .cat-bubble {
+      position: fixed;
+      left: 0; top: 0;
+      z-index: 9997;
+      pointer-events: none;
+      transform: translate(-50%, -100%) rotate(-2deg) scale(0.5);
+      background: #fffdf6;
+      border: 2px solid #4a4036;
+      border-radius: 10px 10px 10px 2px;
+      padding: 3px 9px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #4a4036;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.25s cubic-bezier(.34,1.56,.64,1);
+      will-change: translate;
+      user-select: none;
+    }
+    .cat-bubble::after {
+      content: '';
+      position: absolute;
+      left: 8px; bottom: -6px;
+      width: 7px; height: 7px;
+      background: #fffdf6;
+      border-right: 2px solid #4a4036;
+      border-bottom: 2px solid #4a4036;
+      transform: rotate(65deg) skew(10deg, 10deg);
+    }
+    .cat-bubble.show {
+      opacity: 1;
+      transform: translate(-50%, -100%) rotate(-2deg) scale(1);
+      animation: bubbleWobble 1.4s ease-in-out 0.25s infinite;
+    }
+    @keyframes bubbleWobble {
+      0%, 100% { transform: translate(-50%, -100%) rotate(-2deg) scale(1); }
+      50% { transform: translate(-50%, -100%) rotate(2deg) scale(1.05); }
+    }
+
+    /* ========== SPOTLIGHT ========== */
+    /* A hidden photo revealed through a soft-edged lens that trails the cursor.
+       The lens moves via `translate` (compositor-only, matching the cat) and its
+       inner image counter-translates so the photo appears pinned to the host —
+       the lens shows whatever part of the photo sits beneath the cursor. */
+    .spotlight {
+      position: absolute; inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+    .spotlight-lens {
+      position: absolute; left: 0; top: 0;
+      width: 760px; height: 760px;
+      opacity: 0;
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1);
+      will-change: translate;
+      -webkit-mask-image: radial-gradient(circle closest-side, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 42%, transparent 72%);
+      mask-image: radial-gradient(circle closest-side, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 42%, transparent 72%);
+    }
+    .spotlight-lens.on { opacity: 1; }
+    .spotlight-img {
+      position: absolute; left: 0; top: 0;
+      /* Width/height set from JS to match the host section */
+      background-image: var(--spotlight-hero-img);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      will-change: translate;
+    }
+    @media (prefers-reduced-motion: reduce), (hover: none), (max-width: 640px) {
+      .spotlight { display: none; }
+    }
+
+    /* Dark theme only: with the lens open the photo passes directly under the
+       hero copy, and --muted/--faint sit in the same tonal band as the plate —
+       the paragraphs and the status line vanish into it. While the lens is on,
+       the secondary copy lifts to full text ink and every line gets a --bg halo
+       so it reads over the light and dark parts of the photo alike. (The halo
+       is invisible off-photo: it is the page ground on the page ground.) The
+       headline keeps its two-tone — at 44px the halo alone separates the faint
+       word from the plate, and lifting it would flatten the one deliberate
+       colour break in the hero. The one place colour is allowed to
+       transition — it matches the lens fade, and the hero is nowhere near the
+       chat squeeze. */
+    :root[data-theme="dark"] .hero:has(.spotlight-lens.on) p,
+    :root[data-theme="dark"] .hero:has(.spotlight-lens.on) .status {
+      color: var(--text);
+    }
+    :root[data-theme="dark"] .hero:has(.spotlight-lens.on) h1,
+    :root[data-theme="dark"] .hero:has(.spotlight-lens.on) p,
+    :root[data-theme="dark"] .hero:has(.spotlight-lens.on) .status {
+      text-shadow: 0 0 4px var(--bg), 0 0 16px var(--bg), 0 0 28px var(--bg);
+    }
+    :root[data-theme="dark"] .hero h1,
+    :root[data-theme="dark"] .hero h1 span,
+    :root[data-theme="dark"] .hero p,
+    :root[data-theme="dark"] .hero .status {
+      transition: color 0.5s cubic-bezier(0.16,1,0.3,1),
+                  text-shadow 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* ========== INTRO ========== */
+    /* Before the folio opens, the wordmark writes itself. Adapted from the
+       signature intro on gyanl.com: a nib lays the stroke down and the fresh
+       ink cools behind it, then the finished mark flies to the exact box the
+       header logo occupies and dissolves into it — the thing that was drawn
+       *becomes* the logo, which is the whole idea worth borrowing.
+       Four deliberate departures from the source. It is purple, not a
+       rainbow: every colour here is a grey or the one brand purple, and a
+       spectrum that shows up for a second and never again promises a palette
+       the page does not have — the source can keep its rainbow because a
+       coloured stub survives into its real logo, and this mark has to land
+       identical to the header's. It runs ~2s rather than ~10s, same reasoning
+       as the loader below. The nib lifts between letters, because "riri" is
+       written in pieces and a pen really does leave the paper. And riri's cat
+       is filled paths, not strokes, so those cannot draw on — the nib arrives
+       and they bloom out of it, which is what the nib was doing anyway.
+       A true curtain, unlike the loader: opaque, fixed, and it swallows
+       clicks, because there is nothing to aim at behind it — a click or a
+       keypress skips straight to the flight instead. Armed before first paint
+       by the head script (`data-intro`), so without JS the element is never
+       shown and never blocks anything. Removed from the DOM when it is done. */
+    .intro { display: none; }
+    :root[data-intro="on"] .intro {
+      position: fixed; inset: 0;
+      z-index: 10001;                /* above the loader's pixel field (10000) */
+      display: grid; place-items: center;
+      background: var(--bg);
+      transition: opacity 0.42s cubic-bezier(0.16,1,0.3,1);
+    }
+    .intro.done { opacity: 0; }
+    /* The flight is one transform on one element — the mark never touches
+       layout on its way to the header, and it is a compositor job the whole
+       way. Duration here is the FLY_MS in the driver; change both together. */
+    .intro-flier {
+      transition: transform 0.62s cubic-bezier(0.16,1,0.3,1);
+      will-change: transform;
+    }
+    .intro-mark {
+      display: block; height: auto;
+      width: min(74vw, 440px);
+      overflow: visible;             /* the nib's bloom sits outside the viewBox */
+    }
+    /* Two identical copies of every glyph: the hot one underneath, the inked
+       one over it on a lagging clock. That lag is what makes a stroke cool
+       from its start forward instead of just changing colour all at once —
+       the same trick the source uses, in one hue instead of six. The second
+       copy is cloned in JS, so the markup only carries one. */
+    .intro-hot { color: var(--intro-hot); }
+    .intro-ink { color: var(--logo); }
+    .intro-layer .ipen {
+      fill: none; stroke: currentColor;
+      stroke-width: 12; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .intro-layer .itail { stroke-width: 7; }
+    /* filled glyphs (the first i's dot, the cat's head and body) pop from the
+       nib rather than drawing — a fill has no length to run a dash along */
+    .intro-layer .ipop {
+      fill: currentColor; stroke: none; opacity: 0;
+      transform-box: fill-box; transform-origin: 50% 50%;
+    }
+    .intro-nib {
+      fill: var(--text);
+      filter: drop-shadow(0 0 10px var(--intro-glow));
+    }
+    /* Killed in CSS as well as in the head script and the driver, same as the
+       spotlight and the loader: a reduced-motion reader never sees a frame. */
+    @media (prefers-reduced-motion: reduce) {
+      .intro, :root[data-intro="on"] .intro { display: none; }
+    }
+
+    /* ========== LOADER ========== */
+    /* First paint is one pixel field across the whole first screen, in two inks:
+       the hero spotlight photo rises out of bricks in the side margins (outside
+       the dashed column guides), and the content column is bricked in the page's
+       own ground tone — a faint pixel shimmer, no photo behind the copy. Same
+       grid, same landing beats, so it reads as one field rather than two effects.
+       The copy is pixel-erased by those ground bricks for about a second and
+       comes back crisp when the field fades: pixels first, deliberately.
+       It stops at the mosaic and never resolves to a sharp photo — the pixels are
+       the point here, and the sharp photo is what the spotlight lens is for.
+       No background of its own: bricks composite straight onto the live page, so
+       there is no curtain, no scroll lock, and `pointer-events: none` throughout
+       means every link is clickable from the first frame. Absolute rather than
+       fixed so it scrolls away with the page if the reader moves before it
+       finishes; body-level rather than inside `.hero` so it can also cover the
+       sticky header (which is opaque, and inside main's z-index: 1 nothing could
+       rise above it). Driver is the second IIFE in the script; it removes the
+       element once it has played, so nothing survives the load. */
+    .loader {
+      position: absolute; top: 0; left: 0;
+      width: 100%; /* height is the first screen, measured in JS */
+      z-index: 10000; /* above the cat band (9997) */
+      pointer-events: none; /* the page is live underneath from the first frame */
+      overflow: hidden;
+      transition: opacity 0.42s cubic-bezier(0.16,1,0.3,1);
+    }
+    .loader.done { opacity: 0; }
+    .loader-canvas { display: block; }
+    /* Same deal as the spotlight: killed in CSS as well as JS, so a reduced-motion
+       reader never sees a frame of it. */
+    @media (prefers-reduced-motion: reduce) {
+      .loader { display: none; }
     }
 
     @media (max-width: 768px) {
@@ -515,14 +946,76 @@
 </head>
 <body>
 
+  <!-- Wordmark intro: "riri" writes itself, then flies into the header logo's
+       box and dissolves into it. Armed before first paint by the head script,
+       driven by the intro IIFE, and removed from the DOM when it has played.
+       The glyphs are the header wordmark's own paths, flattened into writing
+       order (the cat's translate(0 2) is baked into its two `d`s so the draw
+       order can stay a flat list) — the inked second copy is cloned in JS. -->
+  <div class="intro" id="intro" aria-hidden="true">
+    <div class="intro-flier" id="introFlier">
+      <svg class="intro-mark" id="introMark" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
+        <g class="intro-layer intro-hot">
+          <path class="ipen" d="M12 21V53"/>
+          <path class="ipen" d="M12 41c0-14 17-23 26-15"/>
+          <path class="ipen" d="M57 21V53"/>
+          <circle class="ipop" cx="57" cy="6.5" r="6"/>
+          <path class="ipen" d="M80 21V53"/>
+          <path class="ipen" d="M80 41c0-14 17-23 26-15"/>
+          <path class="ipop" d="M120 23 C115 32 108 39 108 47 C108 53.5 113.5 58 120 58 C126.5 58 132 53.5 132 47 C132 39 125 32 120 23 Z"/>
+          <path class="ipop" d="M112 12 C112 7 113 5 113 3 L118 7 C119.3 6.6 120.7 6.6 122 7 L127 3 C127 5 128 7 128 12 C128 17.5 124.5 20 120 20 C115.5 20 112 17.5 112 12 Z"/>
+          <path class="ipen itail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61"/>
+        </g>
+        <circle class="intro-nib" id="introNib" r="7.5" cx="12" cy="21" opacity="0"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Loading animation: one pixel field across the first screen — spotlight
+       photo in the margins, page-tone bricks over the content column. Removed
+       from the DOM once it has played (see the loader IIFE in the script). -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <canvas class="loader-canvas"></canvas>
+  </div>
+
   <header id="siteHeader">
     <div class="wrap">
       <nav class="nav">
-        <a href="#top" class="nav-name">Ritika Shakkerwal</a>
+        <a href="#top" class="nav-name" aria-label="Riri — Ritika Shakkerwal, home">
+          <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21v32"/>
+              <path d="M12 41c0-14 17-23 26-15"/>
+            </g>
+            <!-- first i: plain dotted stem -->
+            <circle cx="57" cy="6.5" r="6" fill="currentColor"/>
+            <path d="M57 21v32" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+            <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M80 21v32"/>
+              <path d="M80 41c0-14 17-23 26-15"/>
+            </g>
+            <g fill="currentColor" stroke="none" transform="translate(0 2)">
+              <path d="M112 10 C112 5 113 3 113 1 L118 5 C119.3 4.6 120.7 4.6 122 5 L127 1 C127 3 128 5 128 10 C128 15.5 124.5 18 120 18 C115.5 18 112 15.5 112 10 Z"/>
+              <path d="M120 21 C115 30 108 37 108 45 C108 51.5 113.5 56 120 56 C126.5 56 132 51.5 132 45 C132 37 125 30 120 21 Z"/>
+            </g>
+            <path class="riri-tail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+          </svg>
+        </a>
         <ul class="nav-links">
           <li><a href="#work">Work</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
+          <li>
+            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
+              <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.2"/>
+                <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.5 1.5M18.1 18.1l1.5 1.5M2.6 12h2.2M19.2 12h2.2M4.4 19.6l1.5-1.5M18.1 5.9l1.5-1.5"/>
+              </svg>
+              <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
+              </svg>
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
@@ -532,6 +1025,9 @@
 
     <!-- ===== HERO ===== -->
     <section class="hero">
+      <div class="spotlight" aria-hidden="true">
+        <div class="spotlight-lens"><div class="spotlight-img"></div></div>
+      </div>
       <div class="wrap">
         <h1>
           I design interfaces<br>
@@ -550,68 +1046,127 @@
       </div>
     </section>
 
-    <!-- ===== WORK + EXPERIENCE (merged) ===== -->
+    <!-- ===== WORK ===== -->
     <section id="work">
       <div class="wrap reveal">
-        <p class="sec-label">Work &amp; Experience</p>
+        <div class="work-tabs" role="tablist" aria-label="Work">
+          <button type="button" class="work-tab" id="tab-work" role="tab" aria-selected="true" aria-controls="panel-work">Work</button>
+          <button type="button" class="work-tab" id="tab-side" role="tab" aria-selected="false" aria-controls="panel-side" tabindex="-1">Side projects</button>
+        </div>
+
+        <div class="cards" id="panel-work" role="tabpanel" aria-labelledby="tab-work">
+
+          <a class="card" href="finsynth.html">
+            <span class="card-art"><span class="card-mark"><i>/</i>finsynth<i>/</i>product</span></span>
+            <span class="card-foot">
+              <span class="card-title">FinSynth AI &mdash; Product
+                <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              </span>
+              <span class="card-sub">An AI research agent for analysts.</span>
+            </span>
+          </a>
+
+          <a class="card" href="https://finsynth.ai/" target="_blank" rel="noopener">
+            <span class="card-art"><span class="card-mark"><i>/</i>finsynth<i>/</i>landing</span></span>
+            <span class="card-foot">
+              <span class="card-title">FinSynth AI &mdash; Landing page
+                <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              </span>
+              <span class="card-sub">Live at finsynth.ai.</span>
+            </span>
+          </a>
+
+          <a class="card" href="https://ritikamazicv1.framer.website/" target="_blank" rel="noopener">
+            <span class="card-art"><span class="card-mark"><i>/</i>mazic</span></span>
+            <span class="card-foot">
+              <span class="card-title">Mazic
+                <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              </span>
+              <span class="card-sub">AI demo videos, taken past 200 users.</span>
+            </span>
+          </a>
+
+          <a class="card" href="case.html?c=eventbeep">
+            <span class="card-art"><span class="card-mark"><i>/</i>eventbeep</span></span>
+            <span class="card-foot">
+              <span class="card-title">Event Beep
+                <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              </span>
+              <span class="card-sub">App redesign and recruiter dashboard.</span>
+            </span>
+          </a>
+        </div>
+
+        <div class="cards" id="panel-side" role="tabpanel" aria-labelledby="tab-side" hidden>
+
+          <a class="card" href="animation-curator/" target="_blank" rel="noopener">
+            <span class="card-art"><span class="card-mark"><i>/</i>curator</span></span>
+            <span class="card-foot">
+              <span class="card-title">Animation Curator
+                <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              </span>
+              <span class="card-sub">Vibe-coded gallery of motion effects.</span>
+            </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EXPERIENCE ===== -->
+    <section id="experience">
+      <div class="wrap reveal">
+        <p class="sec-label">Experience</p>
         <div class="rows">
 
-          <button type="button" class="row" data-case="finsynth">
+          <a class="row" href="https://finsynth.ai/" target="_blank" rel="noopener">
             <span class="row-name">FinSynth AI</span>
             <span class="row-role">Founding Product Designer &middot; AI research agent for analysts</span>
             <span class="row-divider"></span>
             <span class="row-end">
               <span class="row-years">2025 — Now</span>
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
             </span>
-          </button>
+          </a>
 
-          <button type="button" class="row" data-case="scream">
+          <div class="row row-flat">
             <span class="row-name">Scream</span>
             <span class="row-role">Product Design Intern &middot; three MVPs as sole designer</span>
             <span class="row-divider"></span>
-            <span class="row-end">
-              <span class="row-years">2024 — 2025</span>
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
-            </span>
-          </button>
+            <span class="row-end"><span class="row-years">2024 — 2025</span></span>
+          </div>
 
-          <button type="button" class="row row-sub" data-case="mazic">
+          <a class="row row-sub" href="https://mazicio.framer.website/" target="_blank" rel="noopener">
             <span class="row-name">Mazic</span>
             <span class="row-role">AI-powered demo videos &middot; 200+ users</span>
             <span class="row-divider"></span>
             <span class="row-end">
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
             </span>
-          </button>
+          </a>
 
-          <button type="button" class="row row-sub" data-case="yomo">
+          <div class="row row-sub row-flat">
             <span class="row-name">Yomo</span>
             <span class="row-role">User insights platform redesign</span>
             <span class="row-divider"></span>
-            <span class="row-end">
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
-            </span>
-          </button>
+            <span class="row-end"></span>
+          </div>
 
-          <button type="button" class="row row-sub" data-case="slyce">
+          <div class="row row-sub row-flat">
             <span class="row-name">Slyce</span>
             <span class="row-role">Bug reporting for QA and design</span>
             <span class="row-divider"></span>
-            <span class="row-end">
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
-            </span>
-          </button>
+            <span class="row-end"></span>
+          </div>
 
-          <button type="button" class="row" data-case="eventbeep">
+          <a class="row" href="https://www.eventbeep.com/en" target="_blank" rel="noopener">
             <span class="row-name">Event Beep</span>
             <span class="row-role">UI Design Intern &middot; app redesign and recruiter dashboard</span>
             <span class="row-divider"></span>
             <span class="row-end">
               <span class="row-years">2023</span>
-              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
+              <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
             </span>
-          </button>
+          </a>
 
         </div>
       </div>
@@ -707,16 +1262,476 @@
     </div>
   </footer>
 
-  <!-- ===== CASE STUDY OVERLAY ===== -->
-  <div class="case" id="caseOverlay" hidden>
-    <div class="case-backdrop" data-close></div>
-    <div class="case-panel" role="dialog" aria-modal="true" aria-labelledby="caseTitle" tabindex="-1">
-      <button type="button" class="case-close" data-close aria-label="Close case study">&times;</button>
-      <div id="caseBody"></div>
-    </div>
-  </div>
-
   <script>
+  // ——— Light / dark theme ———
+  // The head script already picked the theme; this wires the switch, keeps the
+  // address-bar colour in step, and follows the OS while no choice is stored.
+  (function() {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function stored() {
+      try { return localStorage.getItem('theme'); } catch (e) { return null; }
+    }
+    function apply(t) {
+      root.setAttribute('data-theme', t);
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
+      if (btn) {
+        var label = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
+    }
+    apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
+    mq.addEventListener('change', function(e) {
+      if (stored() !== 'light' && stored() !== 'dark') apply(e.matches ? 'dark' : 'light');
+    });
+    if (btn) btn.addEventListener('click', function() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      apply(next);
+    });
+  })();
+
+  // ——— Wordmark intro: the mark writes itself, then becomes the logo ———
+  // A nib walks the wordmark's own paths at a constant speed, laying hot ink
+  // that a second, identical layer overwrites COOL_MS later — so a stroke
+  // cools from its start forward and the colour only ever lives just behind
+  // the nib. When the last stroke closes, the finished mark flies onto the
+  // header logo's measured box and the curtain dissolves over it, which makes
+  // the landing a cross-fade into the real mark rather than a swap.
+  // Adapted from gyanl.com's signature intro; see the INTRO block in the CSS
+  // for what was deliberately changed and why.
+  (function() {
+    var intro = document.getElementById('intro');
+    if (!intro) return;
+    // The head script already decided (reduced motion, or already seen this
+    // session). If it said no, there is nothing to play and nothing to hold.
+    if (document.documentElement.getAttribute('data-intro') !== 'on' ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (intro.parentNode) intro.parentNode.removeChild(intro);
+      return;
+    }
+    // Hold the pixel field: assembling it behind an opaque curtain would spend
+    // the entire animation where nobody can see it. Released the moment the
+    // mark starts flying, so the two overlap instead of queueing.
+    window.__introHold = true;
+
+    var DRAW_MS = 1150;   // nib down to last stroke closed
+    var COOL_MS = 300;    // how far the ink lags the nib
+    var POP_MS  = 110;    // a filled glyph blooming out of the nib
+    var LIFT_MS = 70;     // pen in the air between letters
+    var HOLD_MS = 130;    // stillness on the finished mark
+    var FLY_MS  = 620;    // must match .intro-flier's transition duration
+    var BACK_C1 = 1.70158, BACK_C3 = BACK_C1 + 1;
+
+    var svg   = document.getElementById('introMark');
+    var flier = document.getElementById('introFlier');
+    var nib   = document.getElementById('introNib');
+    var hot   = svg.querySelector('.intro-hot');
+
+    var ink = hot.cloneNode(true);
+    ink.classList.remove('intro-hot');
+    ink.classList.add('intro-ink');
+    svg.insertBefore(ink, nib);   // over the hot layer, under the nib
+
+    function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+    // A pen accelerates off a start and decelerates into a stop; linear reads
+    // like a wipe. Kept mild so the word still has one steady pace overall.
+    function penEase(p) { return 0.5 - Math.cos(Math.PI * p) / 2; }
+    function popEase(p) { var q = p - 1; return 1 + BACK_C3 * q * q * q + BACK_C1 * q * q; }
+
+    // Time is handed out in proportion to stroke length, which is what makes
+    // the whole thing read as writing rather than as nine separate reveals:
+    // the nib moves at one speed and long strokes simply take longer.
+    function build(layer) {
+      var kids = [].slice.call(layer.children);
+      var penLen = 0, pops = 0;
+      var segs = kids.map(function(el) {
+        if (el.classList.contains('ipop')) {
+          pops++;
+          var b = el.getBBox();
+          return { el: el, pop: true, at: { x: b.x + b.width / 2, y: b.y + b.height / 2 } };
+        }
+        var len = el.getTotalLength();
+        penLen += len;
+        el.style.strokeDasharray = len + 'px';
+        el.style.strokeDashoffset = len + 'px';
+        return { el: el, len: len, a: el.getPointAtLength(0), b: el.getPointAtLength(len) };
+      });
+      var penMs = Math.max(240, DRAW_MS - pops * POP_MS - Math.max(segs.length - 1, 0) * LIFT_MS);
+      var t = 0;
+      segs.forEach(function(sg, i) {
+        sg.t0 = t;
+        sg.t1 = t + (sg.pop ? POP_MS : penMs * sg.len / penLen);
+        t = sg.t1 + (i < segs.length - 1 ? LIFT_MS : 0);
+      });
+      segs.end = t;
+      return segs;
+    }
+
+    function paint(segs, ms) {
+      for (var i = 0; i < segs.length; i++) {
+        var sg = segs[i], p = clamp((ms - sg.t0) / (sg.t1 - sg.t0));
+        if (sg.pop) {
+          sg.el.style.opacity = p > 0 ? 1 : 0;
+          sg.el.style.transform = 'scale(' + (0.24 + 0.76 * popEase(p || 0.0001)) + ')';
+        } else {
+          sg.el.style.strokeDashoffset = (sg.len * (1 - penEase(p))) + 'px';
+        }
+      }
+    }
+
+    // Where the nib is right now — on the stroke it is drawing, sitting on a
+    // glyph it is popping, or in the air on its way to the next one.
+    function nibAt(segs, ms) {
+      for (var i = 0; i < segs.length; i++) {
+        var sg = segs[i];
+        if (ms >= sg.t0) {
+          if (ms > sg.t1 && i < segs.length - 1) continue;
+          if (sg.pop) return sg.at;
+          return sg.el.getPointAtLength(sg.len * penEase(clamp((ms - sg.t0) / (sg.t1 - sg.t0))));
+        }
+        var prev = segs[i - 1];
+        var from = prev ? (prev.pop ? prev.at : prev.b) : (sg.pop ? sg.at : sg.a);
+        var to = sg.pop ? sg.at : sg.a;
+        var q = clamp((ms - (prev ? prev.t1 : 0)) / LIFT_MS);
+        return { x: from.x + (to.x - from.x) * q, y: from.y + (to.y - from.y) * q };
+      }
+      return null;
+    }
+
+    var hotSegs = build(hot), inkSegs = build(ink);
+    var penEnd = hotSegs.end;                 // nib lifts for good
+    var settled = penEnd + COOL_MS + HOLD_MS; // last of the hot ink has cooled
+    var t0 = null, raf = 0, flown = false;
+
+    function frame(now) {
+      if (t0 == null) t0 = now;
+      var e = now - t0;
+      paint(hotSegs, e);
+      paint(inkSegs, e - COOL_MS);
+      if (e < penEnd) {
+        var pt = nibAt(hotSegs, e);
+        if (pt) {
+          nib.setAttribute('cx', pt.x);
+          nib.setAttribute('cy', pt.y);
+          nib.setAttribute('opacity', '1');
+        }
+      } else {
+        nib.setAttribute('opacity', '0');   // the round cap is the head now
+      }
+      if (e >= settled) { fly(); return; }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function fly() {
+      if (flown) return;
+      flown = true;
+      cancelAnimationFrame(raf);
+      // Snap to the settled frame first: whether we got here by finishing or
+      // by someone skipping, the mark that flies has to be the finished mark.
+      paint(hotSegs, 1e7);
+      paint(inkSegs, 1e7);
+      nib.setAttribute('opacity', '0');
+      // Let the pixel field start now, behind the curtain, so it is most of
+      // the way home by the time the curtain has gone.
+      if (typeof window.__introRelease === 'function') window.__introRelease();
+
+      // FLIP onto the real header mark. Measured here rather than at load so a
+      // late webfont, a resize, or a restored scroll position cannot leave it
+      // landing off-target; the header is sticky, so its box is stable.
+      var dst = document.querySelector('.nav-name .riri-logo');
+      var a = svg.getBoundingClientRect();
+      var b = dst && dst.getBoundingClientRect();
+      if (b && b.width > 1 && a.width > 1) {
+        flier.style.transform = 'translate(' +
+          ((b.left + b.width / 2) - (a.left + a.width / 2)) + 'px,' +
+          ((b.top + b.height / 2) - (a.top + a.height / 2)) + 'px) scale(' +
+          (b.width / a.width) + ')';
+      }
+      // Dissolve over the back half of the flight, so the mark cross-fades
+      // into the real one underneath instead of being swapped for it.
+      setTimeout(function() { intro.classList.add('done'); }, Math.round(FLY_MS * 0.34));
+      setTimeout(function() {
+        if (intro.parentNode) intro.parentNode.removeChild(intro);
+      }, FLY_MS + 460);
+    }
+
+    // Nothing to aim at behind an opaque curtain, so a click is a request to
+    // get on with it: skip to the settled mark and fly.
+    intro.addEventListener('pointerdown', fly);
+    window.addEventListener('keydown', fly, { once: true });
+    raf = requestAnimationFrame(frame);
+  })();
+
+  // ——— Loading animation: pixel assemble ———
+  // One brick field across the whole first screen, inked two ways: the hero's
+  // spotlight photo in the side margins (outside the dashed column guides), and
+  // the page's own ground tone — faintly jittered so the grid reads — over the
+  // content column. No photo behind the copy: that was tried and a picture under
+  // the text is a different effect from a pixel field. The ground bricks are
+  // opaque by the time they land, so the copy is pixel-erased for about a second
+  // and returns crisp when the field fades. Pixels first, on purpose.
+  // One grid and one set of landing beats across both inks, which is what makes
+  // it read as a single field: cells land bottom-to-top on deterministic
+  // scattered beats (a `sin` hash, never Math.random, so the order is identical
+  // on every load), each dropping in from just above its slot and popping home
+  // with an ease-out-back overshoot. Nothing is painted behind them, so they
+  // assemble over the live page rather than replacing it behind a curtain.
+  // Once the last brick settles the field holds — waiting on window load, up to
+  // WAIT_CAP_MS — then fades off. It stays a mosaic the whole way: no crossfade
+  // to the sharp photo, which is the spotlight lens's job. The photo's colour is
+  // kept, not drained — it is chosen for holding colour edge-to-edge, and a grey
+  // sunset reads as a broken image. Kept brisk: an intro the reader is looking
+  // past should be over in about a second, not announced.
+  (function() {
+    var loader = document.getElementById('loader');
+    if (!loader) return;
+
+    function drop() {
+      if (loader.parentNode) loader.parentNode.removeChild(loader);
+    }
+    function dismiss() {
+      loader.classList.add('done');
+      setTimeout(drop, 520); // outlast the opacity transition, then stop existing
+    }
+
+    var cv = loader.querySelector('.loader-canvas');
+    var ctx = cv && cv.getContext('2d');
+    // Mirrors the CSS media query that hides .loader
+    if (!ctx || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { drop(); return; }
+
+    var TILE = 8;             // approximate brick size (css px)
+    var FOCUS_X = 0.5;        // crop anchor — matches the spotlight's centred `cover`
+    var FOCUS_Y = 0.5;
+    var START_MS = 40;        // hold on the bare page before the first brick
+    var ASSEMBLE_MS = 780;    // last brick lands here
+    var HOLD_MS = 130;        // stillness on the finished field
+    // A short timeline needs a wide per-brick window, or each brick's drop and
+    // pop is too quick to read as a landing.
+    var REVEAL_WINDOW = 0.22; // share of the timeline one brick takes to drop and settle
+    var WAIT_CAP_MS = 900;    // longest the field waits on a slow page before leaving
+    var IMG_CAP_MS = 900;     // photo slower than this and the field plays without it
+    var MIN_BAND = 72;        // margins narrower than this get no photo at all
+    var JITTER = 9;           // tonal spread of the ground bricks, per channel
+    var BACK_C1 = 1.70158, BACK_C3 = BACK_C1 + 1;
+
+    // deterministic per-cell hash → scattered landing order
+    function seed(i, j) {
+      var s = Math.sin(i * 127.1 + j * 311.7) * 43758.5453;
+      return s - Math.floor(s);
+    }
+    // a second hash, decorrelated from the first, so the ground bricks' tonal
+    // jitter doesn't line up with the beat pattern and stripe the column
+    function seed2(i, j) {
+      var s = Math.sin(i * 269.5 + j * 183.3) * 24634.6345;
+      return s - Math.floor(s);
+    }
+
+    // The page's own ground, read off the resolved theme. It is both the fill
+    // behind the offscreen sampling canvas and the ink the content column is
+    // bricked in, so the column always matches the page it sits on.
+    var bg = /(\d+)[,\s]+(\d+)[,\s]+(\d+)/.exec(getComputedStyle(document.body).backgroundColor);
+    var gr = bg ? +bg[1] : 252, gg = bg ? +bg[2] : 252, gb = bg ? +bg[3] : 252;
+    var GROUND = 'rgb(' + gr + ',' + gg + ',' + gb + ')';
+    // Which way the jitter goes: lift off a dark ground, sink into a light one, so
+    // the grid always reads instead of clamping flat against 0 or 255.
+    var LIFT = (gr + gg + gb) / 3 < 128 ? 1 : -1;
+    function chan(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+    function groundTone(i, j) {
+      var d = Math.round(seed2(i, j) * JITTER) * LIFT;
+      return 'rgb(' + chan(gr + d) + ',' + chan(gg + d) + ',' + chan(gb + d) + ')';
+    }
+
+    // Where the content column ends and the margins begin: the same expression
+    // body::before/::after use for the dashed guides, off the same tokens, so the
+    // two inks change over exactly at the guide rather than near it.
+    function guides(w) {
+      var cs = getComputedStyle(document.documentElement);
+      var C = parseFloat(cs.getPropertyValue('--content')) || 572;
+      var G = parseFloat(cs.getPropertyValue('--gutter')) || 24;
+      return {
+        l: Math.max(G, w / 2 - C / 2 - G),
+        r: Math.min(w - G, w / 2 + C / 2 + G)
+      };
+    }
+    function bandWidth(w) {
+      var g = guides(w);
+      return Math.min(g.l, w - g.r);
+    }
+
+    // Single source of truth for the photo: the same token the spotlight lens uses.
+    var tok = getComputedStyle(document.documentElement).getPropertyValue('--spotlight-hero-img');
+    var m = /url\(\s*['"]?(.*?)['"]?\s*\)/.exec(tok);
+    var src = m ? m[1] : 'assets/spotlight-hero.jpg';
+
+    var dpr = 1, vw = 0, vh = 0, cols = 0, rows = 0, cell = 0, oy = 0;
+    var tones = null;   // 'r,g,b' per cell
+    var thresh = null;  // per-cell start point on the timeline
+    var img = new Image();
+    var imgReady = false, started = false, raf = 0, t0 = null, settledAt = null, gone = false;
+
+    function build() {
+      // One screen tall: what the reader can actually see at load. Absolute, so it
+      // scrolls away with the page rather than following them down it.
+      loader.style.height = window.innerHeight + 'px';
+
+      vw = Math.max(loader.clientWidth, 1);
+      vh = Math.max(loader.clientHeight, 1);
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.style.width = vw + 'px';
+      cv.style.height = vh + 'px';
+      cv.width = Math.floor(vw * dpr);
+      cv.height = Math.floor(vh * dpr);
+
+      cols = Math.max(1, Math.round(vw / TILE));
+      cell = vw / cols;                    // exact fit across the width
+      // rows from the real cell size, rounded up, and the grid hung off the
+      // bottom edge — so it always overflows the viewport rather than leaving a
+      // strip of bare page along one edge at some window heights.
+      rows = Math.max(1, Math.ceil(vh / cell));
+      oy = Math.min(0, vh - rows * cell);
+
+      // A narrow window has no margins to put a photo in — 24px slivers of sunset
+      // down each edge read as noise, not as an image — so it plays ground-only.
+      var g = guides(vw);
+      var usePhoto = imgReady && Math.min(g.l, vw - g.r) >= MIN_BAND;
+      var d = null;
+
+      if (usePhoto) {
+        // Lay the photo out as object-fit: cover across the whole width and read
+        // one tone per cell. Sampling across the full width (not per band) is what
+        // makes the two margins halves of one photo; the middle is sampled too and
+        // simply overwritten with ground tone.
+        var iw = img.naturalWidth, ih = img.naturalHeight;
+        var scale = Math.max(cols / iw, rows / ih);
+        var dw = iw * scale, dh = ih * scale;
+        var dx = (cols - dw) * FOCUS_X, dy = (rows - dh) * FOCUS_Y;
+
+        var small = document.createElement('canvas');
+        small.width = cols; small.height = rows;
+        var sc = small.getContext('2d', { willReadFrequently: true });
+        if (sc) {
+          sc.fillStyle = GROUND;
+          sc.fillRect(0, 0, cols, rows);
+          sc.drawImage(img, dx, dy, dw, dh);
+          d = sc.getImageData(0, 0, cols, rows).data;
+        }
+      }
+
+      tones = new Array(cols * rows);
+      thresh = new Float32Array(cols * rows);
+      var span = 1 - REVEAL_WINDOW; // keep the last brick's window in range
+      for (var j = 0; j < rows; j++) {
+        for (var i = 0; i < cols; i++) {
+          var k = j * cols + i;
+          // Ink by region, decided on the cell's centre so the changeover lands on
+          // the guide: photo outside it, page ground within the content column.
+          var cx = (i + 0.5) * cell;
+          tones[k] = (d && (cx < g.l || cx > g.r))
+            ? 'rgb(' + d[k * 4] + ',' + d[k * 4 + 1] + ',' + d[k * 4 + 2] + ')'
+            : groundTone(i, j);
+          // mostly row-driven (bottom rows first) with a little jitter, so bricks
+          // within a band still land one-by-one rather than in a rigid line
+          var rowBias = 1 - j / (rows - 1 || 1);
+          thresh[k] = Math.min(span, Math.max(0, (0.85 * rowBias + 0.15 * seed(i, j)) * span));
+        }
+      }
+    }
+
+    function draw(pA) {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, cv.width, cv.height); // the live page is the ground
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (!tones) return;
+
+      // A hair of bleed on each brick kills the hairline seams that sub-pixel
+      // cell widths would otherwise leave between neighbours.
+      var bleed = 0.75;
+      for (var j = 0; j < rows; j++) {
+        for (var i = 0; i < cols; i++) {
+          var k = j * cols + i;
+          var t = Math.min(1, Math.max(0, (pA - thresh[k]) / REVEAL_WINDOW));
+          if (t <= 0) continue;
+
+          var a = 1 - (1 - t) * (1 - t);   // ease-out alpha
+          var u = t - 1;
+          var back = 1 + BACK_C3 * u * u * u + BACK_C1 * u * u;
+          var sc = 0.24 + 0.76 * back;     // grow small → settle at 1 with a pop
+          var dropIn = (1 - t) * cell * 0.9; // fall in from just above the slot
+
+          var w = cell * sc + bleed, h = cell * sc + bleed;
+          ctx.globalAlpha = a;
+          ctx.fillStyle = tones[k];
+          ctx.fillRect(i * cell + (cell - w) / 2, oy + j * cell + (cell - h) / 2 - dropIn, w, h);
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    var pageDone = document.readyState === 'complete';
+    if (!pageDone) window.addEventListener('load', function() { pageDone = true; });
+
+    function frame(now) {
+      if (gone) return;
+      if (t0 == null) t0 = now;
+      var e = now - t0 - START_MS;
+      draw(Math.min(1, Math.max(0, e / ASSEMBLE_MS)));
+      if (e >= ASSEMBLE_MS + HOLD_MS) {
+        if (settledAt == null) settledAt = now;
+        // the field is the wait state: hold it until the page is actually ready
+        if (pageDone || now - settledAt > WAIT_CAP_MS) { gone = true; dismiss(); return; }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    // The wordmark intro holds this field while its curtain is up: a pixel
+    // assembly playing behind something opaque is an animation nobody sees.
+    // It releases us as the mark starts flying, which is also why the photo
+    // gets the whole intro to arrive in. The failsafe means a broken intro
+    // costs the loader nothing — it just plays a beat late.
+    var held = window.__introHold === true, wanted = false;
+    window.__introRelease = function() {
+      if (!held) return;
+      held = false;
+      if (wanted) start();
+    };
+    if (held) setTimeout(window.__introRelease, 3200);
+
+    function start() {
+      if (started || gone) return;
+      if (held) { wanted = true; return; }   // asked for; plays on release
+      started = true;
+      build();
+      raf = requestAnimationFrame(frame);
+    }
+
+    // The ground bricks need no network, so a slow or missing photo no longer
+    // costs the reader the intro — the field just plays without the margins'
+    // picture. Whatever the photo does after we have started is ignored: swapping
+    // ink in mid-assembly would pop.
+    var bail = setTimeout(start, IMG_CAP_MS);
+
+    img.onload = function() {
+      clearTimeout(bail);
+      if (started || gone) return;
+      imgReady = true;
+      start();
+    };
+    img.onerror = function() { clearTimeout(bail); start(); };
+
+    // Nothing to wait for when there are no margins: play immediately, ground-only.
+    if (bandWidth(window.innerWidth) < MIN_BAND) { clearTimeout(bail); start(); }
+    img.src = src;
+
+    window.addEventListener('resize', function() {
+      if (gone || !started) return;
+      build();
+    });
+  })();
+
   // ——— Header hairline on scroll ———
   (function() {
     var header = document.getElementById('siteHeader');
@@ -737,7 +1752,12 @@
         if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
       });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-    els.forEach(function(el) { io.observe(el); });
+    els.forEach(function(el) {
+      // Content already in the first viewport shouldn't animate in on load.
+      var r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight - 40 && r.bottom > 0) { el.classList.add('in'); return; }
+      io.observe(el);
+    });
   })();
 
   // ——— Smooth scroll ———
@@ -752,182 +1772,34 @@
     });
   });
 
-  // ——— Case studies ———
-  // Content lives here as plain data; rows reference an entry via data-case.
+  // ——— Legacy case-study deep links ———
+  // The case studies used to open as a modal here, addressed as #case-<key>.
+  // They are real pages now, so any old link forwards to one.
   (function() {
-    var CASES = {
-      finsynth: {
-        eyebrow: 'Founding Product Designer · 2025 — Now',
-        title: 'FinSynth AI',
-        lead: 'An AI research agent for public-equity analysts, running in two places at once — an add-in inside Excel, where the analyst actually works, and a web app around it.',
-        meta: ['Product design', 'AI UX', 'Fintech', '0→1'],
-        sections: [
-          { h: 'Where it started', p: ['When I joined, FinSynth already worked — as a set of predefined workflows. Topic search across filings. Trend analysis on a ticker. Model update. Every one of them started the same way: you already knew what you wanted, you found the workflow that did it, you ran it.', 'That was the shape of the product and it was also the ceiling. It couldn’t discover a problem the user was having.'] },
-          { h: 'My role', p: ['Founding designer on a small team, through the shift from fixed workflows to an agent that takes an open-ended goal and works out the steps itself. The spreadsheet isn’t where analysts work — it’s what they deliver. Engineering made the AI reliable. I made the reliability usable.'] },
-          { h: 'Two decisions', list: [
-            'Plan Mode — before the agent builds anything, it shows you the plan, and the plan is editable. A revise flow keeps you asking. An editable plan lets you correct.',
-            'Tool calls in the open — while it works, you watch it choose. What the analyst reads is never generated; it’s derived from what actually happened.'
-          ] },
-          { h: 'What I learned', p: ['Both decisions turned out to be the same move: put the design intervention upstream of the interface, where the information already is. Designing on a non-deterministic system means designing the doubt as carefully as the answer — analysts won’t take speed if it costs them the ability to defend a number in a meeting.'] }
-        ]
-      },
-      scream: {
-        eyebrow: 'Product Design Intern · 2024 — 2025',
-        title: 'Scream',
-        lead: 'Sole designer across three products in a year — an AI video tool, a user-insights platform, and a bug reporting tool for QA and design.',
-        meta: ['0→1', 'Sole designer', 'Design systems'],
-        sections: [
-          { h: 'Context', p: ['A small studio shipping several bets at once. There was no design team, no system, and no shared language between the three products — just three codebases moving fast in different directions.'] },
-          { h: 'My role', p: ['Every design decision across all three: research, wireframes, UI, prototypes, handoff, and QA. I also built the shared foundation the products now sit on.'] },
-          { h: 'What I worked on', list: [
-            'Mazic — AI-powered demo videos, taken from an empty file to 200+ users.',
-            'Yomo — a redesign of the user-insights platform around how teams actually read feedback.',
-            'Slyce — bug reporting built for the handoff between QA, design, and engineering.',
-            'One set of tokens and components reused across all three, so a fix in one landed everywhere.'
-          ] },
-          { h: 'Outcome', p: ['Three MVPs shipped, a design system that outlived my internship, and a much shorter distance between "we should try this" and something in front of users.'] }
-        ],
-        link: { href: 'https://ritikamazicv1.framer.website/', label: 'See the Mazic case study →' }
-      },
-      mazic: {
-        eyebrow: 'Scream · 2024 — 2025',
-        title: 'Mazic',
-        lead: 'A tool that turns a product walkthrough into a polished demo video, without opening an editor.',
-        meta: ['0→1', 'AI video', '200+ users'],
-        sections: [
-          { h: 'Problem', p: ['Founders and PMs need demo videos constantly — for launches, for investors, for support. Editing one properly takes a day. Most people give up and ship a raw screen recording.'] },
-          { h: 'Approach', list: [
-            'Record once, then let the tool cut, zoom, and caption based on what happened on screen.',
-            'Editing as review, not authoring — you approve or nudge the cut rather than building it.',
-            'Templates that keep output on-brand without asking anyone to make design decisions.'
-          ] },
-          { h: 'Outcome', p: ['Grew past 200 users. The demo-to-video path went from most of a day to a few minutes, and the tool became the main way the studio itself made product videos.'] }
-        ],
-        link: { href: 'https://ritikamazicv1.framer.website/', label: 'View the full case study →' }
-      },
-      yomo: {
-        eyebrow: 'Scream · 2024 — 2025',
-        title: 'Yomo',
-        lead: 'A redesign of a user-insights platform around a simple question: what do you do the morning after the feedback arrives?',
-        meta: ['Redesign', 'Research', 'Data-dense UI'],
-        sections: [
-          { h: 'Problem', p: ['The product collected feedback well and surfaced it badly. Teams exported everything into spreadsheets to make sense of it, which meant the platform lost the room the moment the data was in.'] },
-          { h: 'Approach', list: [
-            'Reframed the core object from "a response" to "a theme" — grouping first, reading second.',
-            'Rebuilt the list and detail views for scanning volume, not admiring individual entries.',
-            'Made every insight exportable into the artefacts teams actually present in.'
-          ] },
-          { h: 'Outcome', p: ['Fewer trips out to spreadsheets, and a structure the team could keep building features onto instead of bolting views on top of.'] }
-        ]
-      },
-      slyce: {
-        eyebrow: 'Scream · 2024 — 2025',
-        title: 'Slyce',
-        lead: 'Bug reporting designed for the handoff between QA, design, and engineering — where most bug reports quietly die.',
-        meta: ['Internal tools', 'Workflow design', '0→1'],
-        sections: [
-          { h: 'Problem', p: ['A bug report is written by one person and read by three. Most tools optimise for the writing. The reading — reproducing it, assigning it, closing it — is where the time actually goes.'] },
-          { h: 'Approach', list: [
-            'Capture that collects context automatically, so the reporter writes one sentence instead of ten fields.',
-            'A triage view built for the person deciding, not the person reporting.',
-            'Visual diffing so a design bug can be shown rather than described.'
-          ] },
-          { h: 'Outcome', p: ['Reports arrived with enough context to be actioned without a follow-up thread — which was the whole point.'] }
-        ]
-      },
-      eventbeep: {
-        eyebrow: 'UI Design Intern · 2023',
-        title: 'Event Beep',
-        lead: 'A mobile app redesign for students, and a recruiter-facing dashboard built alongside it.',
-        meta: ['Mobile', 'Dashboard', 'First design role'],
-        sections: [
-          { h: 'Context', p: ['Event Beep connected students with campus events and opportunities. The app had grown feature by feature until the navigation could not hold it, and recruiters had no interface of their own at all.'] },
-          { h: 'What I worked on', list: [
-            'Restructured the app around what students came back for, rather than what had shipped most recently.',
-            'A visual refresh — type scale, spacing, components — that made the app feel like one product.',
-            'A recruiter dashboard from scratch: posting, tracking applicants, and reading results.'
-          ] },
-          { h: 'What I learned', p: ['My first design role, and the one that taught me that most redesigns are really information-architecture problems wearing a visual-design costume.'] }
-        ]
-      }
-    };
+    if (location.hash.indexOf('#case-') !== 0) return;
+    var key = location.hash.slice(6);
+    if (/^[a-z0-9-]+$/.test(key)) location.replace('case.html?c=' + key);
+  })();
 
-    var overlay = document.getElementById('caseOverlay');
-    var body = document.getElementById('caseBody');
-    var panel = overlay.querySelector('.case-panel');
-    var lastFocus = null;
-
-    function esc(s) {
-      return String(s).replace(/[&<>]/g, function(c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+  // ——— Work / Side-projects toggle ———
+  (function() {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.work-tab'));
+    function select(tab) {
+      tabs.forEach(function(t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
       });
     }
-
-    function render(c) {
-      var html = '<p class="case-eyebrow">' + esc(c.eyebrow) + '</p>'
-        + '<h2 class="case-title" id="caseTitle">' + esc(c.title) + '</h2>'
-        + '<p class="case-lead">' + esc(c.lead) + '</p>';
-
-      if (c.meta && c.meta.length) {
-        html += '<ul class="case-meta">' + c.meta.map(function(m) {
-          return '<li>' + esc(m) + '</li>';
-        }).join('') + '</ul>';
-      }
-
-      c.sections.forEach(function(s) {
-        html += '<div class="case-section"><h3>' + esc(s.h) + '</h3>';
-        if (s.p) html += s.p.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('');
-        if (s.list) {
-          html += '<ul>' + s.list.map(function(li) {
-            return '<li>' + esc(li) + '</li>';
-          }).join('') + '</ul>';
-        }
-        html += '</div>';
+    tabs.forEach(function(tab, i) {
+      tab.addEventListener('click', function() { select(tab); });
+      tab.addEventListener('keydown', function(e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        var next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus();
+        select(next);
       });
-
-      if (c.link) {
-        html += '<a class="case-link" href="' + esc(c.link.href) + '" target="_blank" rel="noopener">'
-          + esc(c.link.label) + '</a>';
-      }
-
-      body.innerHTML = html;
-    }
-
-    function open(key, trigger) {
-      var c = CASES[key];
-      if (!c) return;
-      lastFocus = trigger || document.activeElement;
-      render(c);
-      overlay.hidden = false;
-      document.body.classList.add('case-open');
-      overlay.scrollTop = 0;
-      requestAnimationFrame(function() {
-        overlay.classList.add('in');
-        panel.focus();
-      });
-    }
-
-    function close() {
-      if (overlay.hidden) return;
-      overlay.classList.remove('in');
-      document.body.classList.remove('case-open');
-      setTimeout(function() {
-        overlay.hidden = true;
-        body.innerHTML = '';
-        if (lastFocus) lastFocus.focus();
-      }, 250);
-    }
-
-    document.querySelectorAll('[data-case]').forEach(function(el) {
-      el.addEventListener('click', function() { open(el.getAttribute('data-case'), el); });
-    });
-
-    overlay.addEventListener('click', function(e) {
-      if (e.target.hasAttribute('data-close')) close();
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') close();
     });
   })();
 
@@ -961,7 +1833,7 @@
     // Pre-create cat elements
     for (var i = 0; i < catPoolSize; i++) {
       var cel = document.createElement('div');
-      cel.className = 'paw';
+      cel.className = 'paw paw-cat';
       document.body.appendChild(cel);
       catPool.push(cel);
     }
@@ -1055,7 +1927,7 @@
       var t = e.target.closest('a, button, .row, .pair, .nav-name');
       if (!t) return;
       var now = Date.now();
-      if (now - lastHover < 400) return;
+      if (now - lastHover < 2500) return;
       lastHover = now;
       var rect = t.getBoundingClientRect();
       var cx = rect.left + rect.width * (0.3 + Math.random() * 0.4);
@@ -1064,150 +1936,195 @@
     });
   })();
 
-  // ——— Interactive hide-and-seek cat (SVG illustrated) ———
+  // ——— Interactive hide-and-seek cat (pixel-art sprout kitty) ———
   (function() {
-    // Cute fluffy kitten SVGs inspired by the pencil illustration
-    var svgSitting = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      // --- Tail ---
-      + '<path class="cat-tail-sit" d="M12 42 C4 38, 2 30, 8 26 C12 23, 16 28, 14 34" stroke="#555" stroke-width="2.5" stroke-linecap="round" fill="none"/>'
-      // --- Body (fluffy round) ---
-      + '<ellipse cx="32" cy="44" rx="16" ry="13" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Chest fluff ---
-      + '<path d="M26 38 C28 34, 36 34, 38 38" stroke="#ccc" stroke-width="1" fill="none"/>'
-      + '<path d="M27 41 C29 37, 35 37, 37 41" stroke="#ccc" stroke-width="1" fill="none"/>'
-      // --- Head ---
-      + '<circle cx="32" cy="26" r="13" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Left ear ---
-      + '<path d="M21 18 L18 6 L26 14 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M20.5 15 L19.5 9 L24 13 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Right ear ---
-      + '<path d="M43 18 L46 6 L38 14 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M43.5 15 L44.5 9 L40 13 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Head fluff ---
-      + '<path d="M25 16 C28 13, 32 12, 32 14" stroke="#555" stroke-width="1" fill="none"/>'
-      + '<path d="M39 16 C36 13, 33 12, 33 14" stroke="#555" stroke-width="1" fill="none"/>'
-      // --- Eyes (big cute) ---
-      + '<ellipse cx="27" cy="25" rx="3.5" ry="4" fill="#333"/>'
-      + '<ellipse cx="37" cy="25" rx="3.5" ry="4" fill="#333"/>'
-      + '<circle cx="28.2" cy="23.8" r="1.3" fill="#fff"/>'
-      + '<circle cx="38.2" cy="23.8" r="1.3" fill="#fff"/>'
-      + '<circle cx="26" cy="25.5" r="0.6" fill="#fff" opacity="0.5"/>'
-      + '<circle cx="36" cy="25.5" r="0.6" fill="#fff" opacity="0.5"/>'
-      // --- Nose ---
-      + '<path d="M31 29 L32 30.5 L33 29 Z" fill="#e8a0a0"/>'
-      // --- Mouth ---
-      + '<path d="M32 30.5 C31 32, 29.5 32, 29 31" stroke="#555" stroke-width="0.8" fill="none" stroke-linecap="round"/>'
-      + '<path d="M32 30.5 C33 32, 34.5 32, 35 31" stroke="#555" stroke-width="0.8" fill="none" stroke-linecap="round"/>'
-      // --- Whiskers ---
-      + '<line x1="18" y1="28" x2="25" y2="29" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="17" y1="31" x2="25" y2="30.5" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="39" y1="29" x2="46" y2="28" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="39" y1="30.5" x2="47" y2="31" stroke="#999" stroke-width="0.6"/>'
-      // --- Front paws ---
-      + '<ellipse cx="26" cy="54" rx="5" ry="3.5" fill="#e8e0d8" stroke="#555" stroke-width="1.2"/>'
-      + '<ellipse cx="38" cy="54" rx="5" ry="3.5" fill="#e8e0d8" stroke="#555" stroke-width="1.2"/>'
-      // --- Paw lines ---
-      + '<path d="M24.5 54.5 L25.5 52.5" stroke="#555" stroke-width="0.6"/>'
-      + '<path d="M26.5 54.5 L26.5 52.5" stroke="#555" stroke-width="0.6"/>'
-      + '<path d="M36.5 54.5 L37.5 52.5" stroke="#555" stroke-width="0.6"/>'
-      + '<path d="M38.5 54.5 L38.5 52.5" stroke="#555" stroke-width="0.6"/>'
-      // --- Hearts ---
-      + '<g class="cat-hearts" opacity="0.6">'
-      + '<path d="M46 12 C46 10, 48 9, 49 10.5 C50 9, 52 10, 52 12 C52 14, 49 16, 49 16 C49 16, 46 14, 46 12Z" fill="#e8a0a0" stroke="none" transform="scale(0.6) translate(68 8)"/>'
-      + '<path d="M46 12 C46 10, 48 9, 49 10.5 C50 9, 52 10, 52 12 C52 14, 49 16, 49 16 C49 16, 46 14, 46 12Z" fill="#e8a0a0" stroke="none" transform="scale(0.4) translate(118 18)"/>'
-      + '</g>'
-      + '</svg>';
+    // Pixel-art sprout kitty (32x32 grid, 2px cells) — kawaii pixel style
+    var PAL = {
+      o: '#4a4036', c: '#f5efdc', d: '#e9e1c8', t: '#dcbf94', e: '#2e2a25',
+      w: '#ffffff', p: '#f0b9ac', n: '#e0857a', m: '#d78e7f', W: '#b9b2a2',
+      g: '#a4c065', G: '#7d9c45', s: '#8a6f4b', b: '#a9d4e6', l: '#d9d3c3'
+    };
+    function pxRects(rows, ox, oy) {
+      var out = '';
+      for (var y = 0; y < rows.length; y++) {
+        for (var x = 0; x < rows[y].length; x++) {
+          if (PAL[rows[y][x]]) out += '<rect x="' + (x + (ox || 0)) * 2 + '" y="' + (y + (oy || 0)) * 2 + '" width="2" height="2" fill="' + PAL[rows[y][x]] + '"/>';
+        }
+      }
+      return out;
+    }
+    function pxSvg(rows, extra) {
+      return '<svg viewBox="0 0 64 64" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">'
+        + pxRects(rows) + (extra || '') + '</svg>';
+    }
 
-    var svgChasing = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      // --- Tail (alert, up) ---
-      + '<path d="M10 36 C4 30, 3 22, 8 18 C11 16, 13 20, 12 28" stroke="#555" stroke-width="2.5" stroke-linecap="round" fill="none"/>'
-      // --- Body (crouched, elongated) ---
-      + '<ellipse cx="32" cy="46" rx="18" ry="11" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Head (lower, stalking) ---
-      + '<circle cx="34" cy="28" r="12" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Left ear (alert) ---
-      + '<path d="M24 20 L20 7 L28 16 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M23.5 17 L21.5 10 L26 15 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Right ear (alert) ---
-      + '<path d="M44 20 L48 7 L40 16 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M44.5 17 L46.5 10 L42 15 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Eyes (wide, focused) ---
-      + '<ellipse cx="29" cy="27" rx="4" ry="4.5" fill="#333"/>'
-      + '<ellipse cx="39" cy="27" rx="4" ry="4.5" fill="#333"/>'
-      + '<circle cx="30.5" cy="25.5" r="1.5" fill="#fff"/>'
-      + '<circle cx="40.5" cy="25.5" r="1.5" fill="#fff"/>'
-      + '<circle cx="28" cy="27.5" r="0.7" fill="#fff" opacity="0.4"/>'
-      + '<circle cx="38" cy="27.5" r="0.7" fill="#fff" opacity="0.4"/>'
-      // --- Nose ---
-      + '<path d="M33 31 L34 32.5 L35 31 Z" fill="#e8a0a0"/>'
-      // --- Mouth (determined) ---
-      + '<path d="M34 32.5 C33 33.5, 32 33.5, 31.5 33" stroke="#555" stroke-width="0.8" fill="none"/>'
-      + '<path d="M34 32.5 C35 33.5, 36 33.5, 36.5 33" stroke="#555" stroke-width="0.8" fill="none"/>'
-      // --- Whiskers (forward) ---
-      + '<line x1="20" y1="29" x2="27" y2="30" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="19" y1="32" x2="27" y2="31.5" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="41" y1="30" x2="48" y2="29" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="41" y1="31.5" x2="49" y2="32" stroke="#999" stroke-width="0.6"/>'
-      // --- Legs (walking pose) ---
-      + '<g class="cat-legs-chase">'
-      + '<path d="M22 52 L18 60" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M28 53 L26 61" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M38 53 L40 61" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M44 52 L48 60" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '</g>'
-      + '</svg>';
+    // Sitting: front-facing, whiskers + muzzle + paws, sway tail + heart
+    var svgSitting = pxSvg([
+      '...........ggg....GGG...........',
+      '.............g.ss.G.............',
+      '...............ss...............',
+      '...............ss...............',
+      '.........o.....ss.....o.........',
+      '........oco....ss....oco........',
+      '........oppo...ss...oppo........',
+      '.......oppcco..ss..occppo.......',
+      '.......oooooooooooooooooo.......',
+      '......occcccccccttttttttto......',
+      '.....occcccccccctttttttttto.....',
+      '.....occccewccccccccewcccco.....',
+      '..WWWocccceecccccccceeccccoWWW..',
+      '.....occcceecccnnccceecccco.....',
+      '..WWWocppcccccoccocccccppcoWWW..',
+      '.....occcccccccooccccccccco.....',
+      '.....occcccccccccccccccccco.....',
+      '......occcccccccccccccccco......',
+      '.......occcccccccccccccco.......',
+      '.......odccccccccccccccdo.......',
+      '.......ottccccccccccccddo.......',
+      '.......ottcccccggcccccddo.......',
+      '.......ottcccccggcccccddo.......',
+      '.......ottccccccccccccddo.......',
+      '.......occccoccccccocccco.......',
+      '.......occccoccccccocccco.......',
+      '.......occccoccccccocccco.......',
+      '........occcoccccccoccco........',
+      '........oooooooooooooooo........'
+    ],
+      '<g class="cat-tail-sit">' + pxRects([
+        '....oo.',
+        '...occo',
+        'oooocco',
+        'cccccco',
+        'ooooooo'
+      ], 25, 23) + '</g>'
+      + '<g class="cat-hearts">' + pxRects([
+        '.pp.pp',
+        'pppppp',
+        'pwpppp',
+        '.pppp.',
+        '..pp..'
+      ], 25, 0) + '</g>');
 
-    var svgFleeing = '<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
-      // --- Speed lines ---
-      + '<line x1="0" y1="30" x2="8" y2="30" stroke="#ccc" stroke-width="1" opacity="0.5"/>'
-      + '<line x1="2" y1="38" x2="10" y2="38" stroke="#ccc" stroke-width="1" opacity="0.4"/>'
-      + '<line x1="1" y1="46" x2="7" y2="46" stroke="#ccc" stroke-width="1" opacity="0.3"/>'
-      // --- Tail (puffed, panicked) ---
-      + '<path d="M10 34 C2 28, 0 20, 4 16 C7 13, 10 16, 9 22 C8 26, 10 30, 12 32" stroke="#555" stroke-width="3" stroke-linecap="round" fill="none"/>'
-      // --- Body (stretched, running) ---
-      + '<ellipse cx="34" cy="40" rx="19" ry="10" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Head (looking back, scared) ---
-      + '<circle cx="38" cy="24" r="12" fill="#e8e0d8" stroke="#555" stroke-width="1.5"/>'
-      // --- Left ear (flat/scared) ---
-      + '<path d="M28 18 L22 10 L30 15 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M28 16 L24 11 L29 14.5 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Right ear (flat/scared) ---
-      + '<path d="M48 18 L54 10 L46 15 Z" fill="#e8e0d8" stroke="#555" stroke-width="1.5" stroke-linejoin="round"/>'
-      + '<path d="M48 16 L52 11 L47 14.5 Z" fill="#f0b8b8" opacity="0.5"/>'
-      // --- Eyes (wide scared) ---
-      + '<ellipse cx="33" cy="23" rx="4.5" ry="5" fill="#fff" stroke="#555" stroke-width="1"/>'
-      + '<ellipse cx="43" cy="23" rx="4.5" ry="5" fill="#fff" stroke="#555" stroke-width="1"/>'
-      + '<circle cx="33" cy="23" r="2.8" fill="#333"/>'
-      + '<circle cx="43" cy="23" r="2.8" fill="#333"/>'
-      + '<circle cx="34" cy="21.8" r="1.2" fill="#fff"/>'
-      + '<circle cx="44" cy="21.8" r="1.2" fill="#fff"/>'
-      // --- Eyebrows (worried) ---
-      + '<path d="M29 17 C31 15.5, 34 16, 35 17" stroke="#555" stroke-width="1" fill="none"/>'
-      + '<path d="M41 17 C43 15.5, 46 16, 47 17" stroke="#555" stroke-width="1" fill="none"/>'
-      // --- Nose ---
-      + '<path d="M37 28 L38 29.5 L39 28 Z" fill="#e8a0a0"/>'
-      // --- Mouth (open, panicked) ---
-      + '<ellipse cx="38" cy="31" rx="2.5" ry="1.8" fill="#f0c0c0" stroke="#555" stroke-width="0.8"/>'
-      // --- Whiskers (blown back) ---
-      + '<line x1="22" y1="26" x2="28" y2="28" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="21" y1="30" x2="28" y2="29" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="47" y1="28" x2="54" y2="26" stroke="#999" stroke-width="0.6"/>'
-      + '<line x1="47" y1="29" x2="55" y2="30" stroke="#999" stroke-width="0.6"/>'
-      // --- Legs (running fast) ---
-      + '<g class="cat-legs-flee">'
-      + '<path d="M20 46 L14 58" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M28 48 L22 59" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M42 48 L48 59" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '<path d="M50 46 L56 58" stroke="#555" stroke-width="2.5" stroke-linecap="round"/>'
-      + '</g>'
-      // --- Sweat drop ---
-      + '<path d="M52 14 C52 12, 54 10, 54 12 C54 14, 52 16, 52 14Z" fill="#a0d0e8" opacity="0.7"/>'
-      + '</svg>';
+    // Caught: same pose, happy closed ^^ eyes — shown while being petted
+    var svgCaught = pxSvg([
+      '...........ggg....GGG...........',
+      '.............g.ss.G.............',
+      '...............ss...............',
+      '...............ss...............',
+      '.........o.....ss.....o.........',
+      '........oco....ss....oco........',
+      '........oppo...ss...oppo........',
+      '.......oppcco..ss..occppo.......',
+      '.......oooooooooooooooooo.......',
+      '......occcccccccttttttttto......',
+      '.....occcccccccctttttttttto.....',
+      '.....occcceecccccccceecccco.....',
+      '..WWWoccceccecccccceccecccoWWW..',
+      '.....occcccccccnnccccccccco.....',
+      '..WWWocppcccccoccocccccppcoWWW..',
+      '.....occcccccccooccccccccco.....',
+      '.....occcccccccccccccccccco.....',
+      '......occcccccccccccccccco......',
+      '.......occcccccccccccccco.......',
+      '.......odccccccccccccccdo.......',
+      '.......ottccccccccccccddo.......',
+      '.......ottcccccggcccccddo.......',
+      '.......ottcccccggcccccddo.......',
+      '.......ottccccccccccccddo.......',
+      '.......occccoccccccocccco.......',
+      '.......occccoccccccocccco.......',
+      '.......occccoccccccocccco.......',
+      '........occcoccccccoccco........',
+      '........oooooooooooooooo........'
+    ],
+      '<g class="cat-tail-sit">' + pxRects([
+        '....oo.',
+        '...occo',
+        'oooocco',
+        'cccccco',
+        'ooooooo'
+      ], 25, 23) + '</g>'
+      + '<g class="cat-hearts">' + pxRects([
+        '.pp.pp',
+        'pppppp',
+        'pwpppp',
+        '.pppp.',
+        '..pp..'
+      ], 25, 0) + '</g>');
+
+    // Chasing: side-profile stalking cat, tail raised, four legs
+    var svgChasing = pxSvg([
+      '...................ggg....GGG...',
+      '.....................g.ss.G.....',
+      '.......................ss.......',
+      '...................o...ss...o...',
+      '..oo..............opo..ss..opo..',
+      '.oco.............oppco.ss.ocppo.',
+      '.oco.............oooooooooooooo.',
+      '.oco............occccccccttttto.',
+      '.oco...........occcccccccttttto.',
+      '.oco...........occccewccccewcco.',
+      '.oco...........occcceecccceecco.',
+      '.oco...........occcceecccceeccoW',
+      '.oco...........occccccccnncccco.',
+      '.ocoooooooooooooccccccccocccccoW',
+      '...ottttttccccccccccccccccccco..',
+      '...ottttttcccccccccccccccccco...',
+      '...ottttttttcccccccccccccco.....',
+      '...ottttttcccccccccccccccco.....',
+      '...occcccccccccccccccccccco.....',
+      '...occcccccccccccccccccccco.....',
+      '...occcccccccccccccccccccco.....',
+      '...occcccccccccccccccccccco.....',
+      '...oddddddddddddddddddddddo.....',
+      '...oooooooooooooooooooooooo.....',
+      '.....oco.oco......oco..oco......',
+      '.....oco.oco......oco..oco......',
+      '.....oco.oco......oco..oco......',
+      '.....owo.owo......owo..owo......',
+      '.....ooo.ooo......ooo..ooo......'
+    ]);
+
+    // Fleeing: stretched run, ears flat, tail streaming, sweat + speed lines
+    var svgFleeing = pxSvg([
+      '.................ggg..GGG.......',
+      '....................g.ss........',
+      '.......................ss.......',
+      '........................s.....b.',
+      '.................ooo......ooo..b',
+      '.................oooooooooooooo.',
+      '................occccccccccccco.',
+      '...............occcccccccccccco.',
+      '...............occccooccccoocco.',
+      '...............occccweccccwecco.',
+      '.oooooo........occccewccccewcco.',
+      'oooooo.........occcccccommoccco.',
+      '...ooooooooooooccccccccommoccco.',
+      '..occccccccccccccccccccooooooo..',
+      '..ottttttcccccccccccccccco......',
+      '..ottttttccccccccccccccco.......',
+      '..occcccccccccccccccccco........',
+      '..occcccccccccccccccccco........',
+      '..oooooooooooooooooooooo........'
+    ],
+      '<rect x="0" y="16" width="8" height="2" fill="' + PAL.l + '" opacity="0.8"/>'
+      + '<rect x="0" y="30" width="4" height="2" fill="' + PAL.l + '" opacity="0.6"/>'
+      + '<rect x="0" y="34" width="4" height="2" fill="' + PAL.l + '" opacity="0.5"/>'
+      + '<g class="cat-legs-flee">' + pxRects([
+        '...oo..........oo...',
+        '.ooo..oo......oo.ooo',
+        'oo.....oo....oo....o'
+      ], 2, 19) + '</g>');
 
     var cat = document.createElement('div');
     cat.className = 'hide-seek-cat sitting';
     cat.innerHTML = svgSitting;
     document.body.appendChild(cat);
+
+    var bubble = document.createElement('div');
+    bubble.className = 'cat-bubble';
+    bubble.textContent = 'Purrrr';
+    document.body.appendChild(bubble);
 
     var catX = window.innerWidth * 0.85;
     var catY = window.innerHeight * 0.7;
@@ -1220,13 +2137,23 @@
     var facingLeft = false;
     var lastMouseX = mouseX, lastMouseY = mouseY;
     var mouseSpeed = 0;
+    var purrStart = 0;
+    var purrImmuneUntil = 0;
 
-    cat.style.left = catX + 'px';
-    cat.style.top = catY + 'px';
+    cat.style.translate = catX + 'px ' + catY + 'px';
 
     document.addEventListener('mousemove', function(e) {
       mouseX = e.clientX;
       mouseY = e.clientY;
+    });
+
+    // Catch by click/tap: works on touch devices where the cursor never "lands"
+    var caughtBoost = 0;
+    document.addEventListener('click', function(e) {
+      var half = cat.offsetWidth / 2;
+      var bdx = e.clientX - (catX + half);
+      var bdy = e.clientY - (catY + half);
+      if (Math.sqrt(bdx * bdx + bdy * bdy) < half + 24) caughtBoost = performance.now() + 1800;
     });
 
     window.addEventListener('scroll', function() {
@@ -1248,7 +2175,34 @@
 
       var prevState = state;
 
-      if (isUserScrolling) {
+      // Caught check: cursor on the cat (hysteresis so it doesn't flicker),
+      // or a recent tap on it. Purrs up to 3s, then wriggles free.
+      var half = cat.offsetWidth / 2;
+      var cdx = mouseX - (catX + half);
+      var cdy = mouseY - (catY + half);
+      var catchDist = Math.sqrt(cdx * cdx + cdy * cdy);
+      var now = performance.now();
+      var isCaught = (catchDist < (state === 'caught' ? half + 20 : half + 4) || now < caughtBoost) && now > purrImmuneUntil;
+      if (isCaught && state !== 'caught') purrStart = now;
+      if (isCaught && now - purrStart > 3000) {
+        isCaught = false;
+        caughtBoost = 0;
+        purrImmuneUntil = now + 1500;
+        if (catchDist > 1) {
+          velX -= (cdx / catchDist) * 7;
+          velY -= (cdy / catchDist) * 7;
+        } else {
+          // cursor dead-center on the cat: hop toward the nearest open side
+          velX += (catX + half < window.innerWidth / 2 ? 7 : -7);
+          velY -= 3;
+        }
+      }
+
+      if (isCaught) {
+        state = 'caught';
+        velX *= 0.5;
+        velY *= 0.5;
+      } else if (isUserScrolling) {
         state = 'chasing';
         if (dist > 60) {
           velX += (dx / dist) * 1.8 * 0.12;
@@ -1284,19 +2238,23 @@
 
       if (Math.abs(velX) > 0.3) facingLeft = velX < 0;
 
-      cat.style.left = catX + 'px';
-      cat.style.top = catY + 'px';
+      cat.style.translate = catX + 'px ' + catY + 'px';
 
       // Flip direction
       var svgEl = cat.querySelector('svg');
       if (svgEl) svgEl.style.transform = facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
 
       // Swap SVG on state change
+      // "Purrrr" bubble tracks the cat, visible only while caught
+      bubble.style.translate = (catX + half * 0.7) + 'px ' + (catY + 4) + 'px';
+      bubble.classList.toggle('show', state === 'caught');
+
       if (prevState !== state) {
         cat.className = 'hide-seek-cat ' + state;
         if (state === 'sitting') cat.innerHTML = svgSitting;
         else if (state === 'chasing') cat.innerHTML = svgChasing;
         else if (state === 'fleeing') cat.innerHTML = svgFleeing;
+        else if (state === 'caught') cat.innerHTML = svgCaught;
         // Re-apply flip
         var newSvg = cat.querySelector('svg');
         if (newSvg) newSvg.style.transform = facingLeft ? 'scaleX(-1)' : 'scaleX(1)';
@@ -1306,6 +2264,82 @@
     }
 
     requestAnimationFrame(updateCat);
+  })();
+
+  // ——— Spotlight reveal ———
+  // Each .spotlight layer arms its parent (hero section, case panel): the lens
+  // snaps to the cursor on entry, trails it with a lerp while inside, and fades
+  // out on leave. The rAF loop only runs while there's distance left to cover.
+  (function() {
+    if (!window.matchMedia) return;
+    // Mirrors the CSS media query that hides .spotlight
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (matchMedia('(hover: none), (max-width: 640px)').matches) return;
+
+    document.querySelectorAll('.spotlight').forEach(function(layer) {
+      var lens = layer.querySelector('.spotlight-lens');
+      var img = layer.querySelector('.spotlight-img');
+      var host = layer.parentElement;
+      var half = 380;
+      var x = 0, y = 0, tx = 0, ty = 0;
+      var running = false, inside = false;
+
+      function size() {
+        // The image spans the host, so the moving lens reveals whatever
+        // part of the photo sits beneath it — the photo itself stays put.
+        img.style.width = layer.offsetWidth + 'px';
+        img.style.height = layer.offsetHeight + 'px';
+        half = lens.offsetWidth / 2;
+      }
+
+      function apply() {
+        lens.style.translate = (x - half) + 'px ' + (y - half) + 'px';
+        img.style.translate = (half - x) + 'px ' + (half - y) + 'px';
+      }
+
+      function step() {
+        x += (tx - x) * 0.09;
+        y += (ty - y) * 0.09;
+        apply();
+        if (Math.abs(tx - x) < 0.5 && Math.abs(ty - y) < 0.5) {
+          running = false; // idle — the next mousemove wakes the loop
+          return;
+        }
+        requestAnimationFrame(step);
+      }
+
+      function wake() {
+        if (!running) { running = true; requestAnimationFrame(step); }
+      }
+
+      function target(e) {
+        var r = layer.getBoundingClientRect();
+        tx = e.clientX - r.left;
+        ty = e.clientY - r.top;
+      }
+
+      host.addEventListener('mouseenter', function(e) {
+        inside = true;
+        size();
+        target(e);
+        x = tx; y = ty; // snap so the lens fades in at the cursor, not fly in
+        apply();
+        lens.classList.add('on');
+        wake();
+      });
+      host.addEventListener('mousemove', function(e) {
+        if (!inside) return;
+        target(e);
+        wake();
+      });
+      host.addEventListener('mouseleave', function() {
+        inside = false;
+        lens.classList.remove('on');
+      });
+      window.addEventListener('resize', function() {
+        if (inside) size();
+      });
+    });
   })();
   </script>
 </body>

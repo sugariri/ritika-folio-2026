@@ -1,0 +1,3036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinSynth AI — Ritika Shakkerwal</title>
+  <meta name="description" content="FinSynth helps public-equity analysts research companies, investigate financial questions, and bring the answer back into the model. A founding product designer case study.">
+  <meta property="og:title" content="FinSynth AI — Ritika Shakkerwal">
+  <meta property="og:description" content="FinSynth helps public-equity analysts turn financial research into model-ready work.">
+  <meta property="og:type" content="article">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&family=Inter:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#fcfcfc">
+  <!-- Theme resolved before first paint so the page never flashes the wrong
+       one. Stored choice wins; otherwise the OS preference. Same script and
+       same localStorage key as index.html, so the choice carries across. -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Tokens mirrored from index.html — any new colour goes here as a variable */
+    :root {
+      color-scheme: light;
+
+      --gray-1:  #fcfcfc;
+      --gray-4:  #ececef;
+      --gray-7:  #acacb9;
+      --gray-9:  #6d6d78; /* darkest step that still reads as "faint" — 4.98:1 on --bg */
+      --gray-10: #5d5d6f;
+      --gray-14: #2c2c35;
+
+      --bg: var(--gray-1);
+      --bg-card: #ffffff;
+      --bg-raised: #f6f6f7;
+      --bg-stage: linear-gradient(135deg, #f4f4f6, #fbfbfb);
+      --bg-float: var(--bg);  /* the chat, lifted off the page in dark */
+      /* The ask pill sits on the page, not in it: a true white card a
+         step off --bg so it never reads as part of the column. The
+         --glow-* set is the first-visit attract ring, in site purple. */
+      --ask-pill-bg: #ffffff;
+      --glow-ink:    #752afc;
+      --glow-strong: rgba(117, 42, 252, 0.90);
+      --glow-soft:   rgba(117, 42, 252, 0.34);
+      /* The mat the hero screen sits on. Sampled from the FinSynth
+         marketing band — core #345bc3, lifting toward the top. Artwork, so
+         it never flips; --blue-ink is the same blue for drawn diagram ink,
+         which does flip because it sits on the page's own ground. */
+      --blue-core: #345bc3;
+      --blue-ink: var(--blue-core);
+      --fail: #b3352c; /* failed-step ink in the tool-call timeline — 8.5:1 on white */
+      --mat-shade: rgba(10, 22, 66, 0.16);
+      --mat-lift:  rgba(10, 22, 66, 0.50);
+      /* macOS traffic lights — decorative browser chrome only, never UI meaning */
+      --tl-close: #ff5f57;
+      --tl-min:   #febc2e;
+      --tl-max:   #28c840;
+      /* Dia-style blush chrome — decorative browser frame only, never UI meaning */
+      --chrome-bg:    #f9e3ea;
+      --chrome-pill:  #f1cfda;
+      --chrome-ink:   #6b4a58;
+      --chrome-faint: #ab7f90;
+      /* The browser-window illustration frames real light screenshots, so its
+         chrome is artwork too: these four never flip, or a white shot would
+         sit in half-dark chrome. The blush --chrome-* above are already
+         literal for the same reason. */
+      --art-bg:    #ffffff;
+      --art-ink:   var(--gray-14);
+      --art-muted: var(--gray-10);
+      --art-line:  rgba(0, 0, 0, 0.08);
+      --text: var(--gray-14);
+      --muted: var(--gray-10);
+      --faint: var(--gray-9);
+      --line: rgba(0, 0, 0, 0.08);
+      --line-hover: rgba(0, 0, 0, 0.16); /* the hovered ask pill */
+      --logo: #752afc; /* riri wordmark — site purple (index.html --brand) */
+
+      /* Shadows are theme-dependent: on a dark page a soft black blur does
+         nothing, so the dark set is deeper and tighter. */
+      --shadow-note:   0 8px 16px -10px rgba(20, 20, 26, 0.4);
+      --shadow-pill:   0 16px 40px -10px rgba(18, 18, 28, 0.30), 0 3px 10px rgba(18, 18, 28, 0.10);
+      --shadow-drawer: -16px 0 48px rgba(0, 0, 0, 0.08);
+      --shadow-pop:    0 24px 64px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+
+      /* Diagram ink — the drawn figures read as one set because of these.
+         --dia-box is only the .slot dash now; boxes ink at full --text. */
+      --dia-box: rgba(0, 0, 0, 0.16);
+      --dia-ink: rgba(0, 0, 0, 0.66);
+      --dia-dot: rgba(0, 0, 0, 0.13);
+
+      --t-header-lg: 44px;
+      --t-header-md: 32px;
+      --t-body-lg: 17px;
+      --t-body-md: 15px;
+      --t-body-sm: 13px;
+      --t-label: 11px;   /* the mono micro-labels: chapter numbers, strip steps */
+
+      --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      /* The problem wall is the one place the page uses colour as material */
+      --hand: 'Caveat', 'Segoe Script', cursive;
+      --note-a: #fdf0b8;
+      --note-b: #d9e4fb;
+      --note-c: #d7ecdc;
+
+      --content: 660px;
+      --measure: 760px;   /* figures break out to here */
+      --gutter: 24px;
+
+      /* Spotlight reveal photo — Wall St / NYSE in b&w, this page's own
+         image (the portfolio hero keeps its sunset). Needs color or tone
+         edge-to-edge: an image that fades to white reads as an empty lens. */
+      --spotlight-img: url('assets/finsynth/spotlight-wall-st.jpg');
+    }
+
+    /* ---------- DARK ----------
+       The head script resolves the stored choice (or the OS preference) into
+       data-theme on <html> before first paint, so this is the only place a
+       dark colour is written: every rule below still reads the same token.
+       Deliberately untouched: the grey ramp (it is the fixed dark ink the
+       sticky notes and .strip-say are written in), the blush --chrome-*, the
+       --art-* set, --blue-core and the traffic lights and the pale --note-*.
+       All of those are artwork — a light product screenshot must not end up
+       framed in half-dark chrome, and a negative of a sticky note is not a
+       sticky note. Drawn figures, which are only ink on the page's own
+       ground, do flip. */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+
+      --bg: #101013;
+      --bg-card: #16161b;
+      --bg-raised: #1c1c22;
+      --bg-stage: linear-gradient(135deg, #17171d, #1b1b22);
+      /* the chat lifts off the page instead of relying on a shadow, which
+         does almost nothing against near-black */
+      --bg-float: #1a1a20;
+      --ask-pill-bg: #22222b;
+      --glow-ink:    #a97bff;
+      --glow-strong: rgba(169, 123, 255, 0.95);
+      --glow-soft:   rgba(169, 123, 255, 0.40);
+      --text: #ededf2;
+      --muted: #a6a6b6;
+      --faint: #8b8b9c;
+      --line: rgba(255, 255, 255, 0.10);
+      --line-hover: rgba(255, 255, 255, 0.24);
+      /* #345bc3 and #752afc both sink into near-black — the seam blue and the
+         wordmark lift, matching index.html's dark --brand */
+      --blue-ink: #7f9dff;
+      --fail: #ef7a70;
+      --logo: #a97bff;
+
+      /* Diagram ink inverts with the canvas it is drawn on */
+      --dia-box: rgba(255, 255, 255, 0.22);
+      --dia-ink: rgba(255, 255, 255, 0.62);
+      --dia-dot: rgba(255, 255, 255, 0.09);
+
+      --shadow-note:   0 10px 20px -10px rgba(0, 0, 0, 0.8);
+      --shadow-pill:   0 18px 44px -8px rgba(0, 0, 0, 0.72), 0 2px 8px rgba(0, 0, 0, 0.5);
+      --shadow-drawer: -18px 0 56px rgba(0, 0, 0, 0.5);
+      --shadow-pop:    0 28px 72px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      background: var(--bg);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: var(--t-body-lg);
+      line-height: 1.75;
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      max-width: calc(var(--content) + var(--gutter) * 2);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+
+    main, footer { position: relative; z-index: 1; }
+    /* The workflow track bleeds past the column by design &mdash; clip it
+       here rather than letting the page scroll sideways. */
+    main { overflow-x: clip; }
+
+    /* ---------- NAV ---------- */
+    header {
+      position: sticky; top: 0; z-index: 60;
+      background: var(--bg);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+    header.scrolled { border-bottom-color: var(--line); }
+    .nav {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 22px 0;
+      gap: 24px;
+      font-size: var(--t-body-md); line-height: 24px;
+    }
+    .nav-name { font-weight: 500; color: var(--text); }
+    /* "riri" wordmark — hand-drawn monoline SVG, colored via currentColor */
+    .riri-logo {
+      display: block; height: 28px; width: auto;
+      color: var(--logo);
+      transition: scale 0.18s ease;
+    }
+    .nav-name:hover .riri-logo { scale: 1.05; }
+    /* the cat in the second i swishes its tail on hover — a `d` morph where
+       supported, a rotate-from-the-base wag everywhere else */
+    .riri-tail { transform-box: fill-box; transform-origin: 0% 0%; }
+    @keyframes riri-tail-wag {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-10deg); }
+      65% { transform: rotate(7deg); }
+    }
+    @keyframes riri-tail-wave {
+      0%, 100% { d: path("M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61"); }
+      30% { d: path("M129 51 C138 57 144 50 149 53 C153 55 155 56 160 52"); }
+      65% { d: path("M129 51 C138 59 143 54 148 59 C152 62 153 65 157 63"); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .nav-name:hover .riri-tail,
+      .nav-name:focus-visible .riri-tail { animation: riri-tail-wag 1s ease-in-out infinite; }
+      @supports (d: path("M0 0")) {
+        .nav-name:hover .riri-tail,
+        .nav-name:focus-visible .riri-tail { animation-name: riri-tail-wave; }
+      }
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    .nav-back, .nav-next {
+      color: var(--muted);
+      transition: color 0.18s ease;
+    }
+    .nav-back:hover, .nav-next:hover { color: var(--text); }
+    .nav-back, .nav-next { white-space: nowrap; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+
+    /* Light / dark switch — same icon-button family as the chat's controls.
+       The glyph names the theme you are in; the label names the one you'd get.
+       Kept identical to index.html. */
+    .theme-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px;
+      border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: var(--faint);
+      cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .theme-toggle:hover, .theme-toggle:focus-visible {
+      color: var(--text); background: var(--bg-raised); border-color: var(--line); outline: none;
+    }
+    .theme-toggle:active { scale: 0.94; }
+    .theme-toggle svg { display: block; width: 16px; height: 16px; }
+    .theme-toggle .ico-moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .ico-moon { display: block; }
+
+    /* Narrow screens: back/next earn the space; the masthead carries identity */
+    @media (max-width: 560px) {
+      .nav-name { display: none; }
+    }
+
+    /* ---------- SECTION INDEX ----------
+       Lives in the left margin, outside the stitch line. Hairline rail with the
+       active segment inked in — no boxes, no numbers, no fill. Pinned near the
+       top rather than vertically centred, so it starts level with the masthead
+       and reads as the head of the page. Hidden below 1120px, where the margin
+       is too narrow to hold it without crowding. */
+    .index {
+      position: fixed;
+      top: 112px;
+      left: calc(50% - var(--content) / 2 - var(--gutter) - 44px - 168px);
+      width: 168px;
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.2s;
+    }
+    .index.ready { opacity: 1; }
+    .index ol {
+      list-style: none;
+      border-left: 1px solid var(--line);
+    }
+    .index a {
+      position: relative;
+      display: block;
+      padding: 7px 0 7px 18px;
+      font-size: var(--t-body-sm);
+      line-height: 1.45;
+      /* --muted, not --faint: an inactive item still has to be readable, and
+         --faint is retired as ink for informational text elsewhere in this file. */
+      color: var(--muted);
+      transition: color 0.22s ease;
+    }
+    /* scaleY from the top, not an animated height: the segment's box is the
+       full row whatever it is doing, so a chapter change stays on the
+       compositor and can never reflow the rail. */
+    .index a::before {
+      content: '';
+      position: absolute;
+      left: -1px; top: 7px; bottom: 7px;
+      width: 1px;
+      background: var(--text);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.28s cubic-bezier(0.22,0.61,0.36,1);
+    }
+    /* The three decisions are chapters inside 07, so the label steps in while
+       the inked segment stays on the one shared rail line. */
+    .index li.sub a { padding-left: 32px; font-size: 12px; }
+    .index a:hover { color: var(--text); }
+    .index a[aria-current='true'] { color: var(--text); }
+    .index a[aria-current='true']::before { transform: scaleY(1); }
+
+    @media (max-width: 1119px) {
+      .index { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .index, .index a::before { transition: none; }
+    }
+
+    /* ---------- MASTHEAD ---------- */
+    /* Section 01 is the orientation beat and reads in one rhythm:
+       what is it -> see it -> why it matters. The product screen is the
+       hero visual, so the ground stays quiet and warm and the page only
+       gets more expressive from Section 02 on. */
+    .masthead { padding: 80px 0 92px; }
+    .eyebrow {
+      font-size: var(--t-body-sm); line-height: 22px;
+      color: var(--faint); font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .masthead h1 {
+      font-size: clamp(32px, 7vw, var(--t-header-lg));
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: -0.022em; /* em, not px — the size is fluid */
+      text-wrap: balance;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .standfirst {
+      font-size: 21px; line-height: 1.55;
+      color: var(--muted);
+      letter-spacing: -0.2px;
+      text-wrap: pretty;
+    }
+    .masthead-meta {
+      font-size: var(--t-body-sm); line-height: 22px;
+      color: var(--faint); font-weight: 500;
+      margin-top: 26px;
+    }
+
+    /* ---------- SPOTLIGHT REVEAL ---------- */
+    /* Same interaction as the portfolio hero: a hidden image revealed through
+       a soft-edged lens that trails the cursor. The lens moves via `translate`
+       (compositor-only) and its inner image counter-translates so the image
+       appears pinned to the host — the lens shows whatever sits beneath it. */
+    .masthead-band { position: relative; }
+    .masthead-band > .wrap { position: relative; z-index: 1; } /* copy above the lens */
+    .spotlight {
+      position: absolute; inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .spotlight-lens {
+      position: absolute; left: 0; top: 0;
+      width: 760px; height: 760px;
+      opacity: 0;
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1);
+      will-change: translate;
+      -webkit-mask-image: radial-gradient(circle closest-side, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 42%, transparent 72%);
+      mask-image: radial-gradient(circle closest-side, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.55) 42%, transparent 72%);
+    }
+    .spotlight-lens.on { opacity: 1; }
+    .spotlight-img {
+      position: absolute; left: 0; top: 0;
+      /* Width/height set from JS to match the host band */
+      background-image: var(--spotlight-img);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      will-change: translate;
+    }
+    @media (prefers-reduced-motion: reduce), (hover: none), (max-width: 640px) {
+      .spotlight { display: none; }
+    }
+
+    /* Dark theme only: with the lens open, the grey Wall St plate passes
+       directly under the copy, and --muted/--faint sit in the same tonal band
+       as the building — the standfirst and meta line vanish into it. While the
+       lens is on, the secondary copy lifts to full text ink and every line gets
+       a --bg halo, so it reads over the lit stone and the shadowed side alike.
+       (The halo is invisible off-photo: it is the page ground on the page
+       ground.) The one place colour is allowed to transition — it matches the
+       lens fade, and the masthead is nowhere near the chat squeeze. */
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .eyebrow,
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .standfirst,
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-meta {
+      color: var(--text);
+    }
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .eyebrow,
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead h1,
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .standfirst,
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-meta {
+      text-shadow: 0 0 4px var(--bg), 0 0 16px var(--bg), 0 0 28px var(--bg);
+    }
+    :root[data-theme="dark"] .eyebrow,
+    :root[data-theme="dark"] .masthead h1,
+    :root[data-theme="dark"] .standfirst,
+    :root[data-theme="dark"] .masthead-meta {
+      transition: color 0.5s cubic-bezier(0.16,1,0.3,1),
+                  text-shadow 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    /* ---------- CHAPTERS ---------- */
+    /* No rules, no labels, no numbered sections — rhythm carries the reader. */
+    .chapter { padding: 76px 0 0; scroll-margin-top: 76px; }
+    .chapter:first-of-type { padding-top: 88px; }
+
+    p { margin-bottom: 22px; }
+    p:last-child { margin-bottom: 0; }
+    i { font-style: italic; }
+
+    h2 {
+      font-size: 26px; line-height: 1.32;
+      font-weight: 500; letter-spacing: -0.5px;
+      text-wrap: balance;
+      color: var(--text);
+      margin-bottom: 26px;
+    }
+
+    /* A line that gets its own air, not a heading */
+    .beat { margin-bottom: 0; }
+
+    .pull {
+      font-size: clamp(24px, 5.2vw, 30px);
+      line-height: 1.3;
+      letter-spacing: -0.024em; /* em, not px — the size is fluid */
+      font-weight: 500;
+      text-wrap: balance;
+      color: var(--text);
+      margin: 56px 0;
+    }
+
+    /* The moment of noticing — set as dialogue, not as another paragraph */
+    .voice { margin: 46px 0 46px 28px; }
+    .voice p {
+      font-size: 19px; line-height: 1.9;
+      margin: 0; color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .voice p.turn { margin-top: 22px; }
+
+
+    /* ---------- CHAPTER HEADS ----------
+       The number is the map's promise being kept. The name is compelling
+       rather than procedural; the gloss says what the reader is about to
+       get, so no chapter has to be read to find out whether it matters. */
+    .chapter-head { margin-bottom: 34px; }
+    .chapter-num {
+      display: block;
+      font-family: var(--mono); font-size: var(--t-label);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .chapter-head h2 {
+      font-size: var(--t-header-md);
+      letter-spacing: -0.7px;
+      margin-bottom: 10px;
+    }
+    .chapter-gloss {
+      font-size: var(--t-body-md); line-height: 24px;
+      color: var(--muted);
+      text-wrap: pretty;
+      margin-bottom: 0;
+    }
+
+    /* The decisions inside chapter 07: a design problem, and the thing that
+       shipped because of it. Stated as a pair so the product name never has
+       to carry the story on its own. */
+    .decision-map { list-style: none; margin: 30px 0 0; }
+    .decision-map li { border-top: 1px solid var(--line); }
+    .decision-map li:last-child { border-bottom: 1px solid var(--line); }
+    .decision-map a {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+      padding: 13px 0;
+      font-size: var(--t-body-md); line-height: 22px;
+      color: var(--muted);
+    }
+    .decision-map .problem { color: var(--text); font-weight: 500; }
+    .decision-map .to { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+    .decision-map a:hover .problem { text-decoration: underline; text-underline-offset: 3px; }
+
+    .decision-head { margin-bottom: 30px; }
+    .decision-num {
+      display: block;
+      font-family: var(--mono); font-size: var(--t-label);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .decision-head h3 {
+      font-size: 26px; line-height: 1.32;
+      font-weight: 500; letter-spacing: -0.5px;
+      text-wrap: balance;
+      color: var(--text);
+    }
+    @media (max-width: 560px) {
+      .decision-head h3 { font-size: 23px; }
+    }
+
+    /* ---------- FIGURES ---------- */
+    figure { margin: 44px 0; }
+    figure svg { display: block; width: 100%; height: auto; }
+    figcaption {
+      font-size: var(--t-body-sm); line-height: 22px;
+      color: var(--faint);
+      text-wrap: pretty;
+      margin-top: 14px;
+    }
+    .fig-wide {
+      margin-left: calc((var(--content) - var(--measure)) / 2);
+      margin-right: calc((var(--content) - var(--measure)) / 2);
+    }
+    @media (max-width: 720px) {
+      .fig-wide { margin-left: 0; margin-right: 0; }
+    }
+
+    /* Whiteboard language for the drawn figures: a dotted canvas, rounded
+       boxes in full ink, and the wall's handwriting for every label — the
+       diagrams and the sticky notes are the same hand. Blue means one thing
+       across all of them: where the product hands control to a person. */
+    .canvas {
+      overflow-x: auto;
+      scrollbar-width: none;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 30px 24px;
+      background-color: var(--bg-raised);
+      background-image: radial-gradient(var(--dia-dot) 1px, transparent 1.4px);
+      background-size: 20px 20px;
+    }
+    .canvas::-webkit-scrollbar { display: none; }
+    /* Below ~620px the labels would scale into illegibility — hold a floor
+       and let the canvas scroll sideways, same move as the workflow track. */
+    .dia { min-width: 620px; }
+    .dia text { font-family: var(--hand); font-weight: 500; fill: var(--text); }
+    .dia .box { fill: var(--bg-card); stroke: var(--text); stroke-width: 1.4; }
+    .dia .box-on { fill: var(--bg-card); stroke: var(--blue-ink); stroke-width: 1.6; }
+    /* `color` feeds the currentColor arrowhead markers */
+    .dia .arrow { fill: none; stroke: var(--dia-ink); stroke-width: 1.2; color: var(--dia-ink); }
+    .dia .dim { fill: var(--muted); }
+    /* `.label`/`.seam` sit on <g> wrappers too — target their <text> children
+       explicitly or the `.dia text` handwriting rule out-specifics inheritance */
+    .dia .label, .dia .label text { font-family: var(--mono); font-weight: 400; fill: var(--faint); }
+    .dia .seam, .dia .seam text { fill: var(--blue-ink); }
+    .dia .seam-tick { stroke: var(--blue-ink); color: var(--blue-ink); }
+
+    .term {
+      font-family: var(--mono);
+      font-size: var(--t-body-sm); line-height: 1.85;
+      border: 1px solid var(--line);
+      background: var(--bg-raised);
+      padding: 18px 20px;
+      border-radius: 8px;
+      color: var(--muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .term.after { background: var(--bg); color: var(--text); }
+    .term .faded { color: var(--faint); }
+
+    /* ---------- TOOL-CALL TIMELINE ----------
+       The 07.3 evidence, built in markup rather than shipped as a bitmap:
+       the derived status line at every scale — live spinner, per-step
+       record, resolved summary. Same rule as the copy it sits under:
+       nothing in it is generated prose. */
+    .tcall-fig { margin: 48px 0; }
+    .tcall {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--bg-card);
+    }
+    .tcall-row {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      gap: 26px;
+      padding: 24px 26px;
+    }
+    .tcall-row + .tcall-row { border-top: 1px solid var(--line); }
+    .tcall-key {
+      font-family: var(--mono);
+      font-size: var(--t-label);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      padding-top: 3px;
+    }
+    .tcall p { margin: 0; }
+    .tcall-live, .tcall-head, .tcall-done {
+      display: flex; align-items: center; gap: 12px;
+      font-size: var(--t-body-lg);
+    }
+    .tcall-live { color: var(--muted); }
+    .tcall-head { color: var(--muted); }
+    .tcall .tcall-head { margin: 0 0 22px; }
+    .tcall-done { color: var(--text); font-weight: 500; }
+    .tcall-steps {
+      list-style: none; margin: 0; padding: 0;
+      font-size: var(--t-body-md); color: var(--text);
+    }
+    .tcall-steps li {
+      position: relative;
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 0 0 24px;
+    }
+    .tcall-steps li:last-child { padding-bottom: 2px; }
+    /* the thread between step icons */
+    .tcall-steps li:not(:last-child)::after {
+      content: "";
+      position: absolute; left: 9.5px; top: 24px; bottom: 4px;
+      width: 1px; background: var(--line);
+    }
+    /* the global `figure svg` rule stretches to 100% — pin the icons back */
+    .tcall svg { flex: none; width: 20px; height: 20px; }
+    .tcall svg.tc-chev { width: 14px; height: 14px; }
+    .tcall-steps svg { margin-top: 1px; }
+    .tc-ok   { color: var(--faint); }
+    .tc-fail { color: var(--fail); }
+    .tc-run  { color: var(--muted); }
+    .tc-spin { color: var(--muted); }
+    .tc-chev { color: var(--faint); }
+    @keyframes tc-turn { to { transform: rotate(1turn); } }
+    .tc-spin { animation: tc-turn 1.4s steps(8) infinite; }
+    .tc-run  { animation: tc-turn 1.6s linear infinite; }
+    @media (max-width: 560px) {
+      .tcall-row { grid-template-columns: 1fr; gap: 12px; padding: 18px 16px; }
+      .tcall-key { padding-top: 0; }
+    }
+
+    /* ---------- PRODUCT EVIDENCE ----------
+       Product frames are the narrative punctuation: a short claim, then
+       something real enough to inspect. They intentionally sit outside the
+       text measure without becoming a gallery detached from the story. */
+    /* ---------- MAT ----------
+       The house treatment for product screenshots, and the default for every
+       visual asset from here on. A mat, not a frame: FinSynth's own glass
+       panel with the screen sitting on it, padded on three sides and flush
+       at the bottom, so it reads as a window cut into the panel rather than
+       a picture floating in the middle of one.
+
+       Two ways to use it, both correct:
+
+         <figure class="mat fig-wide"><img ...></figure>
+              — no caption; the figure is the panel
+
+         <figure class="fig-wide">
+           <div class="mat"><img ...></div>
+           <figcaption>…</figcaption>
+         </figure>
+              — with a caption, which belongs to the page, not to the panel
+
+       Modifiers:
+         .mat-inset  pads all four sides. Use it for tall or portrait screens,
+                     where bleeding off the bottom crops the thing being
+                     pointed at.
+         --mat-pad   set it on the element to give one asset more or less air. */
+    .mat {
+      --mat-pad: 34px;
+      padding: var(--mat-pad) var(--mat-pad) 0;
+      border-radius: 18px;
+      overflow: hidden;
+      /* stretched rather than cropped: the asset's colour lives in its
+         corners, and `cover` throws exactly that away at these ratios */
+      background: var(--blue-core) url('assets/finsynth/hero-mat.webp') center / 100% 100% no-repeat;
+    }
+    .mat > img, .mat > .fiag-window {
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 2px 6px var(--mat-shade),
+                  0 30px 60px -22px var(--mat-lift);
+    }
+    .mat > img { display: block; width: 100%; height: auto; }
+    .mat-inset { padding-bottom: var(--mat-pad); }
+    .mat-inset > img, .mat-inset > .fiag-window { border-radius: 8px; }
+
+    /* ---------- BROWSER WINDOW (ChatWindow port) ----------
+       Straight HTML port of the ChatWindow() chrome: traffic lights, a
+       pinned-tab group, a resting tab, the active tab naming the webapp,
+       a plus, window controls on the right — and the page floating inset
+       below with its own back/forward/reload toolbar. All chrome is
+       aria-hidden; the shot's alt text carries the figure. Narrow surfaces
+       shed chrome the way a shrinking browser does: pins and window
+       controls first (see the .evo-shot and 560px rules below). */
+    .fiag-window {
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--chrome-bg);
+      font-size: 12px; font-weight: 500; line-height: 1;
+      color: var(--chrome-ink);
+    }
+    .fiag-chrome {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    /* the global `figure svg` rule stretches to 100% — pin every glyph */
+    .fiag-chrome svg, .fiag-toolbar svg { flex: none; width: 13px; height: 13px; }
+    .fiag-lights { display: inline-flex; gap: 6px; flex: none; margin-right: 4px; }
+    .fiag-lights i { width: 10px; height: 10px; border-radius: 50%; }
+    .fiag-lights i:nth-child(1) { background: var(--tl-close); }
+    .fiag-lights i:nth-child(2) { background: var(--tl-min); }
+    .fiag-lights i:nth-child(3) { background: var(--tl-max); }
+    .fiag-pins {
+      display: inline-flex; align-items: center; gap: 9px;
+      padding: 6px 11px;
+      border-radius: 99px;
+      background: var(--chrome-pill);
+    }
+    .fiag-pins svg { color: var(--chrome-faint); }
+    .fiag-tab {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      background: var(--art-bg);
+      color: var(--art-ink);
+      box-shadow: 0 0 0 1px var(--art-line);
+    }
+    .fiag-tab--rest { background: transparent; color: var(--chrome-faint); box-shadow: none; }
+    .fiag-favicon { width: 10px; height: 10px; border-radius: 3px; background: var(--blue-core); flex: none; }
+    .fiag-tab-add { display: inline-flex; padding: 4px; color: var(--chrome-faint); }
+    .fiag-chrome-right { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; color: var(--chrome-faint); }
+    /* the page floats inset inside the window */
+    .fiag-page {
+      margin: 0 8px 8px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--art-bg);
+      box-shadow: 0 0 0 1px var(--art-line);
+    }
+    .fiag-toolbar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--art-line);
+      color: var(--art-muted);
+    }
+    .fiag-toolbar svg { width: 14px; height: 14px; }
+    .fiag-tool-dim { opacity: 0.4; }
+    .fiag-crumb { font-size: 12px; }
+    .fiag-crumb strong { color: var(--art-ink); font-weight: 500; }
+    .fiag-shot { display: block; width: 100%; height: auto; }
+    @media (max-width: 560px) {
+      .fiag-pins, .fiag-chrome-right { display: none; }
+      .fiag-tab { padding: 5px 10px; }
+    }
+
+    /* The opening screen gets more mat and more width than the figures that
+       follow — it is the reader's first look inside, and the Excel screen
+       needs the pixels. */
+    .hero-product {
+      --mat-pad: 46px;
+      margin: 60px calc((var(--content) - var(--measure)) / 2) 0;
+      border-radius: 20px;
+    }
+    /* The last beat of Section 01, and it lands after the screen, not before */
+    .masthead .pull { margin: 60px 0 0; max-width: 26ch; }
+    @media (min-width: 1360px) {
+      .hero-product { margin-left: -120px; margin-right: -120px; }
+    }
+    @media (max-width: 720px) {
+      .hero-product { margin-left: 0; margin-right: 0; }
+    }
+    /* ---------- THE THREE WORKFLOWS ----------
+       One block per predefined workflow: a one-line label, then the real
+       screen. The screenshots carry the evidence — no diagram, no chrome,
+       identical framing across the three. */
+    .wf {
+      list-style: none;
+      margin: 52px 0 0;
+      display: flex;
+      gap: 24px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      /* Bleed to the right only — the section index sits fixed on the left,
+         so the track clips at the column&rsquo;s left edge instead of sliding
+         under it. The cut last frame is the scroll affordance. */
+      margin-right: calc(50% - 50vw);
+      padding: 2px max(var(--gutter), calc(50vw - var(--content) / 2)) 2px 0;
+    }
+    .wf::-webkit-scrollbar { display: none; }
+    .wf > li { flex: 0 0 auto; scroll-snap-align: start; }
+    .wf-head {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px;
+      margin-bottom: 12px;
+      font-size: var(--t-body-md); line-height: 24px;
+    }
+    .wf-head .n { font-family: var(--mono); font-size: var(--t-label); letter-spacing: 0.12em; color: var(--faint); }
+    .wf-head .name { font-weight: 500; color: var(--text); }
+    .wf-head .desc { color: var(--muted); margin-left: auto; }
+    /* Stage panel + browser window. Shared fixed image height, natural
+       width per screen — a forced aspect ratio would crop panes that have
+       different proportions; the identical chrome keeps the framing
+       uniform instead. width/height attributes on each img give the track
+       its widths before the lazy load lands. */
+    .wf-frame {
+      --wf-h: clamp(280px, 34vw, 420px);
+      margin: 0;
+      border-radius: 14px;
+      background: var(--blue-core) url('assets/finsynth/hero-mat.webp') center / 100% 100% no-repeat;
+      padding: clamp(14px, 1.8vw, 22px);
+    }
+    .wf-frame .fiag-window {
+      box-shadow: 0 2px 6px var(--mat-shade),
+                  0 30px 60px -22px var(--mat-lift);
+    }
+    .wf-frame .fiag-shot { width: auto; height: var(--wf-h); }
+    @media (max-width: 720px) {
+      .wf { gap: 16px; }
+      .wf-head .desc { margin-left: 0; flex-basis: 100%; margin-top: -6px; }
+    }
+
+    /* The turn out of the chapter: a hairline, then the sentence the next
+       chapter picks up — a transition, not a takeaway card. */
+    .turn { border: 0; border-top: 1px solid var(--line); margin: 72px 0 0; }
+    .catch {
+      margin: 44px 0 0;
+      font-size: 21px; line-height: 1.5; font-weight: 500;
+      letter-spacing: -0.3px; color: var(--text);
+      text-wrap: balance;
+    }
+    .catch-sub { margin: 10px 0 0; color: var(--muted); text-wrap: pretty; }
+
+    /* ---------- INTERACTION STRIP ----------
+       Chapter 04's visual: the old interaction model drawn as one strip —
+       know, find, run, get. The first two stages belong to the analyst (the
+       need in the wall's handwriting, the pick from the workflow list); the
+       last two are the product's, shown as small crops of the real screens.
+       Cards share a fixed height so the connecting arrows sit on one
+       centreline; the step labels get a fixed two-line slot for the same
+       reason. */
+    .strip {
+      --strip-card: 118px;
+      --strip-mid: 96px; /* label slot + half a card, where the arrows run */
+      list-style: none;
+      margin: 52px 0 0;
+      display: flex; align-items: flex-start;
+    }
+    .strip li { flex: 1 1 0; min-width: 0; position: relative; }
+    .strip li + li { margin-left: 36px; }
+    .strip li + li::before {
+      content: ""; position: absolute;
+      left: -30px; top: var(--strip-mid);
+      width: 23px; height: 1px;
+      background: var(--dia-ink);
+    }
+    .strip li + li::after {
+      content: ""; position: absolute;
+      left: -13px; top: calc(var(--strip-mid) - 3px);
+      width: 6px; height: 6px;
+      border-top: 1px solid var(--dia-ink);
+      border-right: 1px solid var(--dia-ink);
+      transform: rotate(45deg);
+    }
+    .strip-step {
+      display: block; height: 28px; margin-bottom: 9px;
+      font-family: var(--mono); font-size: var(--t-label); line-height: 14px;
+      letter-spacing: 0.11em; text-transform: uppercase;
+      color: var(--faint);
+    }
+    .strip-card {
+      height: var(--strip-card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+    /* The need arrives the way chapter 02 wrote it: by hand, on a note */
+    .strip-say {
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px 12px;
+      background: var(--note-a); border-color: transparent;
+    }
+    .strip-say p {
+      margin: 0; text-align: center;
+      font-family: var(--hand); font-weight: 500; /* the only Caveat face loaded */
+      font-size: 21px; line-height: 1.25;
+      color: var(--gray-14);
+    }
+    .strip-pick {
+      display: flex; flex-direction: column; justify-content: center; gap: 5px;
+      padding: 10px 16px;
+      font-size: 12.5px; line-height: 1.4;
+      color: var(--faint);
+    }
+    .strip-pick .on { color: var(--text); font-weight: 500; }
+    .strip-crop img {
+      display: block; width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    /* The supporting line under a .pull turning point */
+    .pull-sub { color: var(--muted); }
+    .pull + .pull-sub { margin-top: -36px; }
+    @media (max-width: 640px) {
+      .strip { flex-direction: column; align-items: stretch; }
+      .strip li + li { margin-left: 0; margin-top: 34px; }
+      .strip li + li::before {
+        left: 50%; top: -28px;
+        width: 1px; height: 21px;
+      }
+      .strip li + li::after {
+        left: calc(50% - 3px); top: -13px;
+        transform: rotate(135deg);
+      }
+      .strip-step { height: auto; }
+    }
+
+
+    /* ---------- THE HINGE ----------
+       Two real product states side by side, with the question between them.
+       Deliberately not a diagram: the screenshots are the evidence, the
+       labels are the only annotation, and nothing here is drawn. Both shots
+       are cropped to one aspect so the two states carry the same weight —
+       the old panel from the top (where the steps are), the agent panel from
+       the right (where the agent is). */
+    .evo { padding-top: 68px; }
+    .evo-grid {
+      display: grid;
+      grid-template-columns: 1fr minmax(120px, 168px) 1fr;
+      align-items: start;
+      gap: 0 20px;
+      margin-left: calc((var(--content) - var(--measure)) / 2);
+      margin-right: calc((var(--content) - var(--measure)) / 2);
+    }
+    .evo-state { margin: 0; }
+    .evo-label {
+      margin: 0 0 14px;
+      font-size: var(--t-label); line-height: 1.5;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .evo-shot { --mat-pad: 16px; }
+    /* One ratio for both states, so neither carries more weight than the
+       other. 5/4 is not arbitrary: with `cover` from the top, the crop depth
+       is (source width / ratio) regardless of how wide the column gets, so
+       5/4 always cuts the old panel at 880px of 2047 — the empty gutter
+       below Step 3, rather than through a line of type. */
+    .evo-shot img {
+      aspect-ratio: 5 / 4;
+      object-fit: cover;
+      object-position: top center;
+    }
+    .evo-state:last-of-type .evo-shot img { object-position: top right; }
+    /* narrow columns shed the pinned group and window controls */
+    .evo-shot .fiag-pins, .evo-shot .fiag-chrome-right { display: none; }
+    .evo-shot .fiag-page { margin: 0 6px 6px; }
+    /* The supporting sequence stays secondary on purpose — it is a caption,
+       not a second diagram. */
+    .evo-seq {
+      display: flex; flex-wrap: wrap;
+      list-style: none;
+      margin: 14px 0 0;
+      font-family: var(--mono);
+      font-size: var(--t-label); line-height: 1.7;
+      color: var(--faint);
+      letter-spacing: 0.01em;
+    }
+    /* the arrow ends a line rather than starting one, so a wrapped
+       sequence never opens with a dangling arrow */
+    .evo-seq li:not(:last-child)::after { content: '\2192'; margin: 0 7px; opacity: 0.7; }
+
+    /* The hinge itself: a hairline through the middle, the question on it. */
+    .evo-hinge {
+      align-self: stretch;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding-top: 25px;   /* clears the labels, so the rule centres on the shots */
+      text-align: center;
+    }
+    .evo-rule { flex: 1 1 auto; width: 1px; background: var(--line); min-height: 18px; }
+    .evo-hinge p {
+      margin: 0;
+      font-size: 15px; line-height: 1.45;
+      letter-spacing: -0.2px;
+      color: var(--muted);
+      text-wrap: balance;
+    }
+    .evo-close {
+      margin: 40px 0 0;
+      font-size: clamp(20px, 4vw, 24px); line-height: 1.35;
+      letter-spacing: -0.021em; /* em, not px — the size is fluid */
+      font-weight: 500;
+      text-wrap: balance;
+      color: var(--text);
+      max-width: 30ch;
+    }
+    /* The two shots need width before the breakout is worth anything */
+    @media (min-width: 1360px) {
+      .evo-grid { margin-left: -120px; margin-right: -120px; }
+    }
+    /* Stacked, but the hinge stays between the two states rather than
+       being dropped — it is the whole point of the comparison. */
+    @media (max-width: 760px) {
+      .evo-grid { grid-template-columns: 1fr; margin-left: 0; margin-right: 0; gap: 0; }
+      .evo-hinge {
+        flex-direction: row;
+        padding: 26px 0;
+        gap: 16px;
+      }
+      .evo-rule { width: auto; height: 1px; min-height: 0; flex: 1 1 auto; }
+      .evo-hinge p { flex: 0 1 auto; font-size: 14px; }
+    }
+
+    /* Design boundaries: a hairline list in the same family as the decision
+       map, so the anatomy and the decisions read as one system. */
+    .bounds { list-style: none; margin: 34px 0 44px; }
+    .bounds li {
+      border-top: 1px solid var(--line);
+      padding: 13px 0;
+      font-size: var(--t-body-md); line-height: 24px;
+      color: var(--muted);
+    }
+    .bounds li:last-child { border-bottom: 1px solid var(--line); }
+    .bounds strong { color: var(--text); font-weight: 500; }
+    .product-frame {
+      margin: 48px 0;
+      border-radius: 14px;
+      background: var(--blue-core) url('assets/finsynth/hero-mat.webp') center / 100% 100% no-repeat;
+      padding: clamp(14px, 1.8vw, 22px);
+    }
+    .product-frame .fiag-window {
+      box-shadow: 0 2px 6px var(--mat-shade),
+                  0 30px 60px -22px var(--mat-lift);
+    }
+    .product-frame .asset-stage {
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      padding: 32px;
+      text-align: center;
+      background: var(--art-bg);
+    }
+    .product-frame .asset-stage p { max-width: 300px; margin: 0; color: var(--art-muted); font-family: var(--mono); font-size: 12px; line-height: 1.6; }
+    .product-frame figcaption { padding: 14px 2px 0; margin: 0; }
+    .product-frame figcaption strong { color: var(--text); font-weight: 500; }
+
+    /* Placeholder for a screenshot that does not exist yet.
+       This is the merge gate: the page is not publishable while one is on screen. */
+    .slot {
+      font-family: var(--mono);
+      font-size: 12px; line-height: 1.6;
+      color: var(--faint);
+      letter-spacing: 0.02em;
+      border: 1px dashed var(--dia-box);
+      border-radius: 8px;
+      padding: 34px 20px;
+      text-align: center;
+      margin: 44px 0;
+    }
+
+    /* ---------- PROBLEM WALL ----------
+       Chapter 02's visual: the analyst's day as sticky notes. Real text on
+       tinted cards rather than an image — the questions ARE the content.
+       Rotation and offset vary by nth-child so the scatter costs no markup. */
+    .wall {
+      list-style: none;
+      display: flex; flex-wrap: wrap;
+      justify-content: center; align-items: flex-start;
+      gap: 22px 16px;
+      padding: 46px 30px 52px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      /* same dotted canvas as the drawn diagrams — one whiteboard language */
+      background-image: radial-gradient(var(--dia-dot) 1px, transparent 1.4px), var(--bg-stage);
+      background-size: 20px 20px, auto;
+    }
+    .wall li {
+      flex: 0 0 150px;
+      min-height: 112px;
+      padding: 13px 14px 15px;
+      font-family: var(--hand); font-weight: 500; /* the only Caveat face loaded */
+      font-size: 19px; line-height: 1.28;
+      color: var(--gray-14);
+      background: var(--note-a);
+      border-radius: 2px;
+      box-shadow: var(--shadow-note);
+      transform: rotate(-1.8deg);
+    }
+    .wall li:nth-child(2n)   { transform: rotate(1.5deg); margin-top: 16px; }
+    .wall li:nth-child(3n)   { background: var(--note-b); }
+    .wall li:nth-child(4n+1) { background: var(--note-c); }
+    .wall li:nth-child(5n+3) { transform: rotate(-3deg); margin-top: -6px; }
+    /* The one note the chapter is heading toward — it gets the product's blue */
+    .wall li.better { background: var(--note-a); color: var(--blue-core); transform: rotate(2.4deg); margin-top: 20px; }
+    @media (max-width: 560px) {
+      .wall { gap: 16px 12px; padding: 34px 18px 40px; }
+      .wall li { flex-basis: 128px; min-height: 100px; font-size: 17px; }
+    }
+
+    /* ---------- CLOSE ---------- */
+    .close { padding: 88px 0 0; scroll-margin-top: 76px; }
+    .close p { color: var(--text); }
+
+    footer {
+      border-top: 1px solid var(--line);
+      margin-top: 96px;
+      padding: 48px 0 64px;
+    }
+    .footer-row {
+      display: flex; flex-wrap: wrap; gap: 12px;
+      align-items: baseline; justify-content: space-between;
+      font-size: var(--t-body-md); line-height: 24px;
+    }
+    .footer-row a { color: var(--muted); transition: color 0.18s ease; }
+    .footer-row a:hover { color: var(--text); }
+    .footer-copy { font-size: var(--t-body-sm); color: var(--faint); }
+
+    /* ---------- REVEAL ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      .tc-spin, .tc-run { animation: none; }
+    }
+
+    @media (max-width: 560px) {
+      .masthead { padding: 56px 0 68px; }
+      .mat { --mat-pad: 18px; border-radius: 14px; }
+      .hero-product { --mat-pad: 20px; margin-top: 40px; }
+      .masthead .pull { margin-top: 44px; max-width: none; }
+      .chapter { padding-top: 60px; }
+      .standfirst { font-size: 19px; }
+      .voice { margin-left: 0; }
+      .voice p { font-size: 18px; line-height: 1.85; }
+    }
+
+    /* ---------- ASK-ME CHAT ----------
+       Mirrored from index.html's case-overlay chat — keep the two in sync
+       if the interaction changes. Here the pill floats on the page itself. */
+    .ask-pill {
+      position: fixed; left: 50%; bottom: 20px; z-index: 70;
+      translate: -50% 0;
+      display: flex; align-items: center; gap: 10px;
+      width: min(520px, calc(100vw - 32px));
+      padding: 9px 9px 9px 10px;
+      background: var(--ask-pill-bg);
+      border: 1px solid var(--line-hover); border-radius: 999px;
+      box-shadow: var(--shadow-pill);
+      font: inherit; font-size: var(--t-body-md); line-height: 22px; font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      cursor: text; /* reads as an input; clicking opens the real one */
+      transition: color 0.18s ease, border-color 0.18s ease, opacity 0.25s ease, scale 0.15s ease-out;
+    }
+    .ask-pill:hover { border-color: var(--glow-strong); }
+    .ask-pill:active { scale: 0.98; }
+    .ask-pill:focus-visible { outline: 2px solid var(--glow-ink); outline-offset: 3px; }
+
+    /* First-visit attract: the pill is easy to read past, so on a reader's
+       first landing (and only if they have never opened the chat) its border
+       breathes in site purple three times and pings one expanding ring. Drawn
+       on pseudo-elements so the resting hairline border is untouched; both are
+       out of flow, so they are not flex items of the pill. */
+    .ask-pill::before, .ask-pill::after {
+      content: ''; position: absolute; inset: -1px;
+      border-radius: 999px; pointer-events: none;
+      border: 2px solid transparent;
+    }
+    .ask-pill::after { opacity: 0; }
+    .ask-pill.attract::before { animation: ask-breathe 2.2s ease-in-out 3; }
+    .ask-pill.attract::after { animation: ask-ping 2.2s ease-out 3; }
+    .ask-pill.attract .ask-pill-send { animation: ask-send-glow 2.2s ease-in-out 3; }
+    @keyframes ask-breathe {
+      0%, 100% { border-color: transparent; box-shadow: 0 0 0 0 transparent; }
+      42%      { border-color: var(--glow-strong);
+                 box-shadow: 0 0 0 4px var(--glow-soft), 0 0 34px 8px var(--glow-soft); }
+    }
+    @keyframes ask-ping {
+      0%       { opacity: 1; box-shadow: 0 0 0 0 var(--glow-strong); }
+      60%, 100% { opacity: 0; box-shadow: 0 0 0 20px var(--glow-strong); }
+    }
+    @keyframes ask-send-glow {
+      0%, 100% { background: var(--text); }
+      42%      { background: var(--glow-ink); }
+    }
+    .ask-pill .ask-avatar { width: 32px; height: 32px; font-size: 13px; }
+    .ask-pill-send {
+      flex: none; width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--text); color: var(--bg);
+    }
+    .ask-pill-send svg { width: 14px; height: 14px; }
+    body.chat-open .ask-pill { opacity: 0; pointer-events: none; }
+    .ask-avatar {
+      flex: none; width: 26px; height: 26px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--text); color: var(--bg);
+      font-size: 12px; font-weight: 500; line-height: 1;
+    }
+    .ask-pill-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .ask-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 80;
+      width: min(var(--ask-w, 360px), 100vw);
+      display: flex; flex-direction: column;
+      background: var(--bg-float);
+      border-left: 1px solid var(--line);
+      box-shadow: var(--shadow-drawer);
+      transform: translateX(calc(100% + 24px));
+      visibility: hidden;
+      transition: transform 0.4s cubic-bezier(.22,.61,.36,1), visibility 0s 0.4s;
+    }
+    .ask-drawer.in {
+      transform: none; visibility: visible;
+      transition: transform 0.4s cubic-bezier(.22,.61,.36,1);
+    }
+    /* Drag handle on the drawer's left edge — width lives in --ask-w so the
+       page squeeze below tracks it 1:1. Pointer-only affordance; keyboard
+       users resize with arrow keys on the focused separator. */
+    .ask-resize {
+      position: absolute; top: 0; bottom: 0; left: -5px; width: 10px;
+      cursor: ew-resize; touch-action: none; z-index: 2;
+    }
+    .ask-resize::after {
+      content: ''; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+      background: var(--text); opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+    .ask-resize:hover::after, .ask-resize:focus-visible::after,
+    body.ask-dragging .ask-resize::after { opacity: 0.22; }
+    .ask-resize:focus-visible { outline: none; }
+    /* The popped window clips overflow for its rounded corners, so the
+       handle tucks fully inside its left edge there. */
+    .ask-drawer.pop .ask-resize { left: 0; }
+    .ask-drawer.pop .ask-resize::after { left: 0; }
+    /* Popped out: a floating chat window, Zoom-style. Positioned by
+       --ask-x/--ask-y (set from JS), dragged by its header. */
+    .ask-drawer.pop {
+      top: var(--ask-y, 24px); left: var(--ask-x, calc(100vw - 400px));
+      right: auto; bottom: auto;
+      height: min(600px, calc(100vh - 48px));
+      border: 1px solid var(--line); border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow-pop);
+      transform: none;
+      opacity: 0; scale: 0.98;
+      transition: opacity 0.25s ease, scale 0.25s ease, visibility 0s 0.25s;
+    }
+    .ask-drawer.pop.in {
+      opacity: 1; scale: 1;
+      transition: opacity 0.25s ease, scale 0.25s ease;
+    }
+    .ask-drawer.pop .ask-head { cursor: grab; user-select: none; touch-action: none; }
+    body.ask-dragging .ask-drawer.pop .ask-head { cursor: grabbing; }
+    /* No page squeeze while transitions are killed mid-drag */
+    body.ask-dragging, body.ask-dragging .ask-drawer { transition: none !important; }
+    .ask-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 0;
+    }
+    .ask-head .ask-avatar { width: 28px; height: 28px; }
+    .ask-head-actions { display: flex; align-items: center; gap: 4px; }
+    .ask-head-close, .ask-head-pop {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid transparent; border-radius: 8px;
+      background: transparent; color: var(--faint);
+      font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .ask-head-close:hover, .ask-head-pop:hover { color: var(--text); background: var(--bg-raised); border-color: var(--line); }
+    .ask-head-close:active, .ask-head-pop:active { scale: 0.96; }
+    .ask-head-pop svg { width: 14px; height: 14px; display: block; }
+    .ask-head-pop .ico-dock { display: none; }
+    .ask-drawer.pop .ask-head-pop .ico-dock { display: block; }
+    .ask-drawer.pop .ask-head-pop .ico-pop { display: none; }
+    .ask-note {
+      padding: 10px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      font-size: var(--t-body-sm); line-height: 18px; color: var(--faint);
+    }
+    .ask-log {
+      flex: 1; overflow-y: auto; overscroll-behavior: contain;
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 18px 16px;
+    }
+    .ask-msg-user {
+      align-self: flex-end; max-width: 85%;
+      background: var(--bg-raised); color: var(--text);
+      padding: 8px 14px; border-radius: 16px 16px 4px 16px;
+      font-size: var(--t-body-sm); line-height: 20px;
+    }
+    .ask-msg-a { display: flex; gap: 10px; }
+    .ask-msg-a .ask-avatar { width: 22px; height: 22px; font-size: 10px; margin-top: 1px; }
+    .ask-msg-body { min-width: 0; font-size: var(--t-body-sm); line-height: 21px; color: var(--muted); }
+    .ask-msg-body p + p { margin-top: 10px; }
+    .ask-typing { display: flex; gap: 4px; padding: 6px 0; }
+    .ask-typing span {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--faint);
+      animation: askDot 1.1s ease-in-out infinite;
+    }
+    .ask-typing span:nth-child(2) { animation-delay: 0.18s; }
+    .ask-typing span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes askDot {
+      0%, 60%, 100% { opacity: 0.35; transform: none; }
+      30% { opacity: 1; transform: translateY(-2px); }
+    }
+    .ask-chips {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+      padding: 0 16px 12px;
+    }
+    .ask-chip {
+      max-width: 100%;
+      background: var(--bg-float); border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 14px;
+      font: inherit; font-size: var(--t-body-sm); line-height: 20px; color: var(--muted);
+      text-align: right; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out,
+                  opacity 0.3s ease, translate 0.3s ease;
+    }
+    .ask-chip:hover { color: var(--text); background: var(--bg-raised); }
+    .ask-chip:active { scale: 0.97; }
+    .ask-chip.pre { opacity: 0; translate: 0 6px; }
+    .ask-form {
+      display: flex; align-items: center; gap: 8px;
+      border-top: 1px solid var(--line);
+      padding: 10px 12px 10px 16px;
+    }
+    .ask-input {
+      flex: 1; min-width: 0;
+      border: 0; background: transparent; outline: none;
+      font: inherit; font-size: var(--t-body-md); line-height: 22px; color: var(--text);
+    }
+    .ask-input::placeholder { color: var(--faint); }
+    .ask-send {
+      flex: none; width: 30px; height: 30px;
+      border: 1px solid var(--line); border-radius: 50%;
+      background: var(--bg-float); color: var(--muted);
+      font: inherit; font-size: 14px; line-height: 1; cursor: pointer;
+      transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out;
+    }
+    .ask-send:hover { color: var(--text); background: var(--bg-raised); }
+    .ask-send:active { scale: 0.94; }
+    .ask-sr {
+      position: absolute; width: 1px; height: 1px;
+      overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    /* Wide screens: the page slides left to make room, like the reference.
+       The squeezed column collides with the fixed section rail below ~1440px,
+       so the rail steps aside while the chat is open. */
+    @media (min-width: 1100px) {
+      body { transition: padding-right 0.4s cubic-bezier(.22,.61,.36,1); }
+      /* Pane mode only — a popped-out window floats over the page instead */
+      body.chat-open:not(.chat-popped) { padding-right: var(--ask-w, 360px); }
+      body.chat-open:not(.chat-popped) .index { opacity: 0; pointer-events: none; transition-delay: 0s; }
+      /* …but it peeks back in when the cursor visits its home corner
+         (.rail-peek is set by the ask script's mousemove hotspot). The flat
+         page-colored halo keeps it legible when the squeezed column has
+         slid underneath it. */
+      body.chat-open:not(.chat-popped).rail-peek .index {
+        opacity: 1;
+        pointer-events: auto;
+        background: var(--bg);
+        box-shadow: 0 0 0 14px var(--bg);
+      }
+      /* The squeezed column also steps its scale down (zoom re-lays out, unlike
+         transform), so the page reads as fitting beside the pane rather than
+         being cramped by it. --ask-zoom comes from applyPane(): it shrinks as
+         the pane widens so the column always fits in the space that's left. */
+      body.chat-open:not(.chat-popped) main,
+      body.chat-open:not(.chat-popped) footer { zoom: var(--ask-zoom, 0.85); }
+    }
+    /* Resize + pop-out need room to be useful; below this the drawer just
+       takes the viewport, so hide both affordances. */
+    @media (max-width: 699px) {
+      .ask-resize, .ask-head-pop { display: none; }
+    }
+    @media (max-width: 560px) {
+      .ask-pill { bottom: 12px; width: calc(100vw - 24px); }
+      .ask-drawer { width: 100vw; border-left: 0; }
+      .ask-input { font-size: 16px; } /* under 16px iOS zooms the field on focus */
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ask-drawer, .ask-drawer.in, .ask-drawer.pop, .ask-drawer.pop.in, body, .ask-chip { transition: none; }
+      .ask-typing span { animation: none; }
+      .ask-pill.attract::before, .ask-pill.attract::after,
+      .ask-pill.attract .ask-pill-send { animation: none; }
+      .ask-pill.attract::before { border-color: var(--glow-strong); }
+      .ask-chip.pre { opacity: 1; translate: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header id="siteHeader">
+    <div class="wrap">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="index.html" class="nav-name" aria-label="Riri — Ritika Shakkerwal, back to portfolio">
+            <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21v32"/>
+                <path d="M12 41c0-14 17-23 26-15"/>
+              </g>
+              <!-- first i: plain dotted stem -->
+              <circle cx="57" cy="6.5" r="6" fill="currentColor"/>
+              <path d="M57 21v32" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M80 21v32"/>
+                <path d="M80 41c0-14 17-23 26-15"/>
+              </g>
+              <g fill="currentColor" stroke="none" transform="translate(0 2)">
+                <path d="M112 10 C112 5 113 3 113 1 L118 5 C119.3 4.6 120.7 4.6 122 5 L127 1 C127 3 128 5 128 10 C128 15.5 124.5 18 120 18 C115.5 18 112 15.5 112 10 Z"/>
+                <path d="M120 21 C115 30 108 37 108 45 C108 51.5 113.5 56 120 56 C126.5 56 132 51.5 132 45 C132 37 125 30 120 21 Z"/>
+              </g>
+              <path class="riri-tail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </a>
+          <a href="index.html#work" class="nav-back">&larr; Back</a>
+        </div>
+        <div class="nav-right">
+          <a href="case.html?c=scream" class="nav-next">Next &middot; Scream <span aria-hidden="true">&rarr;</span></a>
+          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
+            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="4.2"/>
+              <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
+            </svg>
+            <svg class="ico-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== SECTION INDEX ===== -->
+  <nav class="index" id="caseIndex" aria-label="Sections of this case study">
+    <ol>
+      <li><a href="#job">The analyst</a></li>
+      <li><a href="#problems">The problems</a></li>
+      <li><a href="#start">The existing product</a></li>
+      <li><a href="#ceiling">The ceiling</a></li>
+      <li><a href="#shift">The shift</a></li>
+      <li><a href="#fia">Introducing FIA</a></li>
+      <li><a href="#system">Designing for an agent</a></li>
+      <li class="sub"><a href="#edit-query">Edit Query</a></li>
+      <li class="sub"><a href="#plan-mode">Plan Mode</a></li>
+      <li class="sub"><a href="#tool-calls">Tool calls</a></li>
+      <li><a href="#close">Where it stands</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- ===== SECTION 01 — WHAT IS FINSYNTH =====
+         The whole job of the opening: what the product is, who it is for,
+         and what it helps them do — readable in about five seconds.
+         Evolution framing on purpose: "research agent" is a later reveal,
+         not the first line. Everything else (AI Assist, Model Update,
+         Plan Mode, FIA, process) waits until the reader knows the product. -->
+    <section class="masthead-band">
+      <div class="spotlight" aria-hidden="true">
+        <div class="spotlight-lens"><div class="spotlight-img"></div></div>
+      </div>
+      <div class="wrap">
+        <div class="masthead">
+          <p class="eyebrow">FinSynth AI</p>
+          <h1>Turning financial research into model&#8209;ready work.</h1>
+          <p class="standfirst">
+            FinSynth helps public-equity analysts research companies, investigate
+            financial questions, and bring the answer back into the model.
+          </p>
+          <p class="masthead-meta">Founding Product Designer &middot; March 2025 &ndash; Present &middot; Web + Excel</p>
+
+          <!-- The first look inside. One whole-product screen, unannotated on
+               purpose &mdash; the annotated shots belong to the decision sections. -->
+          <figure class="hero-product mat">
+            <div class="fiag-window">
+              <div class="fiag-chrome" aria-hidden="true">
+                <span class="fiag-lights"><i></i><i></i><i></i></span>
+                <span class="fiag-pins">
+                  Work
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                </span>
+                <span class="fiag-tab fiag-tab--rest">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                  Docs
+                </span>
+                <span class="fiag-tab">
+                  <span class="fiag-favicon"></span>
+                  FinSynth
+                </span>
+                <span class="fiag-tab-add">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                </span>
+                <span class="fiag-chrome-right">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </span>
+              </div>
+              <div class="fiag-page">
+                <div class="fiag-toolbar" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                  <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                  <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                </div>
+              <img class="fiag-shot" src="assets/finsynth/hero-agent.png" width="2000" height="1107"
+                   alt="The FinSynth AI agent docked beside a free cash flow model in Excel, introducing itself as an auditable spreadsheet co-worker with the selected cell already in the composer"
+                   fetchpriority="high" decoding="async">
+              </div>
+            </div>
+          </figure>
+
+          <p class="pull">The spreadsheet isn&rsquo;t where analysts work. It&rsquo;s what they deliver.</p>
+      </div>
+      </div>
+    </section>
+
+    <!-- ===== 01 — THE ANALYST ===== -->
+    <div class="wrap">
+      <section id="job" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">01 &mdash; The analyst</span>
+          <h2>The work this has to survive</h2>
+          <p class="chapter-gloss">An analyst isn&rsquo;t buying an answer. They&rsquo;re buying an answer they can defend.</p>
+        </div>
+        <p>An equity analyst&rsquo;s day is one loop, run until the coverage list is done.</p>
+
+        <figure class="fig-wide">
+          <div class="canvas">
+          <svg class="dia" viewBox="0 0 660 196" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The analyst's loop before FinSynth: find the filing, read the right section, pull the figure, cross-reference live data, type it into the model, then repeat for the next name, across a coverage list of 40.">
+            <defs>
+              <marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1"/>
+              </marker>
+            </defs>
+            <g font-size="16" text-anchor="middle">
+              <rect class="box" rx="9" x="10"  y="18" width="112" height="58"/>
+              <text x="66"  y="42">Find the</text><text x="66"  y="61">filing</text>
+              <rect class="box" rx="9" x="142" y="18" width="112" height="58"/>
+              <text x="198" y="42">Read the right</text><text x="198" y="61">section</text>
+              <rect class="box" rx="9" x="274" y="18" width="112" height="58"/>
+              <text x="330" y="42">Pull the</text><text x="330" y="61">figure</text>
+              <rect class="box" rx="9" x="406" y="18" width="112" height="58"/>
+              <text x="462" y="42">Cross-reference</text><text x="462" y="61">live data</text>
+              <rect class="box" rx="9" x="538" y="18" width="112" height="58"/>
+              <text x="594" y="42">Type it into</text><text x="594" y="61">the model</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah)">
+              <path d="M122,47 L138,47"/><path d="M254,47 L270,47"/>
+              <path d="M386,47 L402,47"/><path d="M518,47 L534,47"/>
+              <path d="M594,76 L594,132 L66,132 L66,82"/>
+            </g>
+            <text class="dim" x="330" y="158" font-size="16" text-anchor="middle">next name</text>
+            <text class="label" x="330" y="184" font-size="10.5" letter-spacing="1.4" text-anchor="middle">&times; A COVERAGE LIST OF 40</text>
+          </svg>
+          </div>
+        </figure>
+
+        <p>It&rsquo;s exactly the kind of work you&rsquo;d hand to an AI. So why don&rsquo;t analysts just use ChatGPT?</p>
+        <p>They can. Some do.</p>
+        <p>But an analyst isn&rsquo;t buying an answer. They&rsquo;re buying an answer they can defend &mdash; to a portfolio manager, to an investment committee, to compliance. Copy a number out of a chat window into a model and the trail back to where it came from is gone.</p>
+        <p>In this job that isn&rsquo;t a productivity gain. It&rsquo;s a liability.</p>
+
+        <p>So the AI had to come to the model, not the other way around.</p>
+      </section>
+    </div>
+
+    <!-- ===== 02 — THE PROBLEMS =====
+         The loop above is the tidy version. This chapter is the honest one:
+         the day as it actually arrives, one note per question. The notes are
+         real text, not an image, so the wall reads on every screen and each
+         question can be edited like copy. -->
+    <div class="wrap">
+      <section id="problems" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">02 &mdash; The problems</span>
+          <h2>They don&rsquo;t arrive one at a time</h2>
+          <p class="chapter-gloss">Research, analysis, model upkeep, validation &mdash; and the doubt running under all of it &mdash; land together, for every name on the list.</p>
+        </div>
+        <p>The loop is the tidy version. A real day doesn&rsquo;t queue its problems &mdash; they land together, and they interrupt each other.</p>
+
+        <figure class="fig-wide">
+          <ul class="wall" aria-label="The questions on an analyst's desk on one day">
+            <li>Why did gross margin step down in Q3?</li>
+            <li>One-off, or the new run rate?</li>
+            <li>Which filing has the segment split?</li>
+            <li>Did guidance change, or just the tone on the call?</li>
+            <li>The 10&#8209;K dropped &mdash; what breaks in the model?</li>
+            <li>Did the share count restate?</li>
+            <li>Does the model still tie to the filing?</li>
+            <li>Where did this number come from?</li>
+            <li>Can I defend this to the PM tomorrow?</li>
+            <li>If this assumption moves, what else moves?</li>
+            <li>Earnings week &mdash; all 40 report at once.</li>
+            <li class="better">There has to be a better way.</li>
+          </ul>
+          <figcaption>One coverage name, one day. Multiply by forty.</figcaption>
+        </figure>
+
+        <p>Three threads run through every note on that wall. Uncertainty about what&rsquo;s actually being asked. The cost of being wrong on work that carries your name. And a live model that moves when you touch it. Keep hold of those three &mdash; the second half of this case study is what each one turned into.</p>
+      </section>
+    </div>
+
+    <!-- ===== 03 — THE EXISTING PRODUCT =====
+         The baseline chapter: the three predefined workflows, each carried
+         by a real product screen. Evidence first, one claim per block. The
+         ceiling is deliberately split out into its own chapter. -->
+    <div class="wrap">
+      <section id="start" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">03 &mdash; The existing product</span>
+          <h2>FinSynth already solved parts of the analyst&rsquo;s job.</h2>
+          <p class="chapter-gloss">Before the agent, analysts could use predefined workflows to find information, compare companies, and update their models.</p>
+        </div>
+
+        <ul class="wf" aria-label="The three predefined workflows">
+          <li>
+            <p class="wf-head"><span class="n">01</span><span class="name">AI Assist</span><span class="desc">Find information across filings.</span></p>
+            <figure class="wf-frame">
+              <div class="fiag-window">
+                <div class="fiag-chrome" aria-hidden="true">
+                  <span class="fiag-lights"><i></i><i></i><i></i></span>
+                  <span class="fiag-pins">
+                    Work
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                  </span>
+                  <span class="fiag-tab fiag-tab--rest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                    Docs
+                  </span>
+                  <span class="fiag-tab">
+                    <span class="fiag-favicon"></span>
+                    FinSynth
+                  </span>
+                  <span class="fiag-tab-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  </span>
+                  <span class="fiag-chrome-right">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </div>
+                <div class="fiag-page">
+                  <div class="fiag-toolbar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                    <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                    <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                  </div>
+                <img class="fiag-shot" src="assets/finsynth/ai-assist.png" width="1784" height="1350" alt="The AI Assist panel for Crocs: a topic search across documents with fiscal period and source filters, and results for Revenue Growth grouped by quarter, each with a source link" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </figure>
+          </li>
+          <li>
+            <p class="wf-head"><span class="n">02</span><span class="name">Trend Analysis</span><span class="desc">Compare companies and trends.</span></p>
+            <figure class="wf-frame">
+              <div class="fiag-window">
+                <div class="fiag-chrome" aria-hidden="true">
+                  <span class="fiag-lights"><i></i><i></i><i></i></span>
+                  <span class="fiag-pins">
+                    Work
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                  </span>
+                  <span class="fiag-tab fiag-tab--rest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                    Docs
+                  </span>
+                  <span class="fiag-tab">
+                    <span class="fiag-favicon"></span>
+                    FinSynth
+                  </span>
+                  <span class="fiag-tab-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  </span>
+                  <span class="fiag-chrome-right">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </div>
+                <div class="fiag-page">
+                  <div class="fiag-toolbar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                    <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                    <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                  </div>
+                <img class="fiag-shot" src="assets/finsynth/shipped-6-trend.png" width="1700" height="984" alt="The Cross Company AI Assist trend view comparing Revenue Growth across Crocs, Nike and Deckers month by month, each summary linked to its source" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </figure>
+          </li>
+          <li>
+            <p class="wf-head"><span class="n">03</span><span class="name">Model Update</span><span class="desc">Bring changes into the model.</span></p>
+            <figure class="wf-frame">
+              <div class="fiag-window">
+                <div class="fiag-chrome" aria-hidden="true">
+                  <span class="fiag-lights"><i></i><i></i><i></i></span>
+                  <span class="fiag-pins">
+                    Work
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                  </span>
+                  <span class="fiag-tab fiag-tab--rest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                    Docs
+                  </span>
+                  <span class="fiag-tab">
+                    <span class="fiag-favicon"></span>
+                    FinSynth
+                  </span>
+                  <span class="fiag-tab-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  </span>
+                  <span class="fiag-chrome-right">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </div>
+                <div class="fiag-page">
+                  <div class="fiag-toolbar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                    <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                    <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                  </div>
+                <img class="fiag-shot" src="assets/finsynth/update-model.png" width="1114" height="658" alt="The Model Update flow: high-confidence matches for Q3 2024 reviewed row by row, then before-and-after values confirmed before updating the model" loading="lazy" decoding="async">
+                </div>
+              </div>
+            </figure>
+          </li>
+        </ul>
+
+        <hr class="turn" aria-hidden="true">
+        <p class="catch">The catch: each workflow started with a problem the analyst already knew how to define.</p>
+        <p class="catch-sub">That was the ceiling of the old interaction model.</p>
+      </section>
+    </div>
+
+    <!-- ===== 04 — THE CEILING =====
+         The old interaction model drawn as one strip: know, find, run, get.
+         The strip is the argument; the pull under it is the turn the rest of
+         the case study hinges on. Still the old product — no FIA here. -->
+    <div class="wrap">
+      <section id="ceiling" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">04 &mdash; The ceiling</span>
+          <h2>Where the workflows stopped</h2>
+          <p class="chapter-gloss">Predefined workflows worked on one condition: the need already matched one.</p>
+        </div>
+        <p>All three workflows ran on the same contract. You already knew what you wanted. You found the workflow that did it. You ran it. You got the output.</p>
+
+        <figure class="fig-wide">
+          <ol class="strip" aria-label="The old interaction model in four stages: know what you need, find the workflow, run the workflow, get the output">
+            <li>
+              <span class="strip-step">01 &mdash; Know what you need</span>
+              <div class="strip-card strip-say">
+                <p>&ldquo;Update Apple&rsquo;s EPS&rdquo;</p>
+              </div>
+            </li>
+            <li>
+              <span class="strip-step">02 &mdash; Find the workflow</span>
+              <div class="strip-card strip-pick" role="img" aria-label="The workflow list with Model Update selected">
+                <span>AI Assist</span>
+                <span>Trend Analysis</span>
+                <span class="on">Model Update</span>
+              </div>
+            </li>
+            <li>
+              <span class="strip-step">03 &mdash; Run the workflow</span>
+              <div class="strip-card strip-crop">
+                <img src="assets/finsynth/shipped-4-update.png" style="object-position: 50% 68%"
+                     alt="Detail of the Model Update workflow running: the update form with the current cell and fiscal period set"
+                     loading="lazy" decoding="async">
+              </div>
+            </li>
+            <li>
+              <span class="strip-step">04 &mdash; Get the output</span>
+              <div class="strip-card strip-crop">
+                <img src="assets/finsynth/shipped-5-confirm.png" style="object-position: 50% 38%"
+                     alt="Detail of the workflow's output: before-and-after values confirmed into the model"
+                     loading="lazy" decoding="async">
+              </div>
+            </li>
+          </ol>
+          <figcaption>One interaction model behind all three workflows. The product picked up at step three &mdash; getting there was the analyst&rsquo;s job.</figcaption>
+        </figure>
+
+        <p>An analyst whose need fit that strip got a good answer. An analyst whose need didn&rsquo;t got nothing, and there was no way to say <i>here&rsquo;s what I&rsquo;m trying to do &mdash; work out how to help me.</i></p>
+        <p class="pull">It couldn&rsquo;t discover a problem the user was having.</p>
+        <p class="pull-sub beat">The product&rsquo;s capability was the set of workflows somebody had already thought to design.</p>
+      </section>
+    </div>
+
+
+    <!-- ===== 04.1 — THE HINGE (visual) =====
+         The interaction model changing, shown rather than described: the old
+         workflow panel on the left, the agent on the right, the question
+         between them. Real screenshots only — nothing here is recreated. -->
+    <div class="wrap">
+      <section class="chapter reveal evo" aria-label="From choosing a workflow to describing a goal">
+        <div class="evo-grid">
+          <figure class="evo-state">
+            <figcaption class="evo-label">You chose the workflow.</figcaption>
+            <div class="mat evo-shot">
+              <div class="fiag-window">
+                <div class="fiag-chrome" aria-hidden="true">
+                  <span class="fiag-lights"><i></i><i></i><i></i></span>
+                  <span class="fiag-pins">
+                    Work
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                  </span>
+                  <span class="fiag-tab fiag-tab--rest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                    Docs
+                  </span>
+                  <span class="fiag-tab">
+                    <span class="fiag-favicon"></span>
+                    FinSynth
+                  </span>
+                  <span class="fiag-tab-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  </span>
+                  <span class="fiag-chrome-right">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </div>
+                <div class="fiag-page">
+                  <div class="fiag-toolbar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                    <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                    <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                  </div>
+                <img class="fiag-shot" src="assets/finsynth/shipped-4-update.png" width="1100" height="2047"
+                   alt="The old FinSynth panel: Steps to Update the Model, listing step one select the time period, step two review and confirm the matches, step three confirm the line items, above a form of fiscal period, range and document selectors"
+                   loading="lazy" decoding="async">
+                </div>
+              </div>
+            </div>
+            <ol class="evo-seq">
+              <li>Know what you need</li><li>Choose workflow</li><li>Run</li><li>Output</li>
+            </ol>
+          </figure>
+
+          <div class="evo-hinge">
+            <span class="evo-rule"></span>
+            <p>What if the product figured out the workflow?</p>
+            <span class="evo-rule"></span>
+          </div>
+
+          <figure class="evo-state">
+            <figcaption class="evo-label">The agent determines the work.</figcaption>
+            <div class="mat evo-shot">
+              <div class="fiag-window">
+                <div class="fiag-chrome" aria-hidden="true">
+                  <span class="fiag-lights"><i></i><i></i><i></i></span>
+                  <span class="fiag-pins">
+                    Work
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+                  </span>
+                  <span class="fiag-tab fiag-tab--rest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                    Docs
+                  </span>
+                  <span class="fiag-tab">
+                    <span class="fiag-favicon"></span>
+                    FinSynth
+                  </span>
+                  <span class="fiag-tab-add">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                  </span>
+                  <span class="fiag-chrome-right">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </span>
+                </div>
+                <div class="fiag-page">
+                  <div class="fiag-toolbar" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                    <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                    <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                  </div>
+                <img class="fiag-shot" src="assets/finsynth/hero-agent.png" width="2000" height="1107"
+                   alt="The FinSynth AI agent docked beside a financial model in Excel, with an open composer asking what the analyst wants rather than a list of workflows"
+                   loading="lazy" decoding="async">
+                </div>
+              </div>
+            </div>
+            <ol class="evo-seq">
+              <li>Describe the goal</li><li>FIA determines the steps</li><li>Tools</li><li>Output</li>
+            </ol>
+          </figure>
+        </div>
+
+        <p class="evo-close">The product stopped waiting to be told which workflow to run.</p>
+      </section>
+    </div>
+
+    <!-- ===== 05 — THE SHIFT =====
+         The hinge, kept short: the routing moves from the person to the
+         product. Everything FIA-specific waits for the next chapter. -->
+    <div class="wrap">
+      <section id="shift" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">05 &mdash; The shift</span>
+          <h2>The routing changed hands</h2>
+          <p class="chapter-gloss">From finding the right workflow to stating the goal.</p>
+        </div>
+        <p>Then the product stopped waiting to be told which workflow to run. You described what you were trying to do, and it worked out the steps.</p>
+
+        <figure class="fig-wide">
+          <div class="canvas">
+          <svg class="dia" viewBox="0 0 660 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before: the analyst routes their own need — analyst, known workflow, output; you had to know which one. With FIA: goal, agent, plan, tools, result, model — the product works out the steps.">
+            <defs>
+              <marker id="ah3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1"/>
+              </marker>
+            </defs>
+
+            <!-- before: the person does the routing -->
+            <text class="label" x="10" y="14" font-size="10.5" letter-spacing="1.3">BEFORE</text>
+            <g font-size="16.5" text-anchor="middle">
+              <rect class="box" rx="9" x="10"  y="28" width="140" height="38"/>
+              <text x="80"  y="53">Analyst</text>
+              <rect class="box" rx="9" x="210" y="28" width="160" height="38"/>
+              <text x="290" y="53">Known workflow</text>
+              <rect class="box" rx="9" x="430" y="28" width="140" height="38"/>
+              <text x="500" y="53">Output</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah3)">
+              <path d="M150,47 L206,47"/>
+              <path d="M370,47 L426,47"/>
+            </g>
+            <text class="dim" x="290" y="94" font-size="16" text-anchor="middle">you had to know which one</text>
+
+            <!-- with FIA: the product does the routing -->
+            <text class="label" x="10" y="128" font-size="10.5" letter-spacing="1.3">WITH FIA</text>
+            <g font-size="16.5" text-anchor="middle">
+              <rect class="box" rx="9" x="10"  y="142" width="90" height="38"/>
+              <text x="55"  y="167">Goal</text>
+              <rect class="box-on" rx="9" x="120" y="142" width="90" height="38"/>
+              <text x="165" y="167">Agent</text>
+              <rect class="box" rx="9" x="230" y="142" width="90" height="38"/>
+              <text x="275" y="167">Plan</text>
+              <rect class="box" rx="9" x="340" y="142" width="90" height="38"/>
+              <text x="385" y="167">Tools</text>
+              <rect class="box" rx="9" x="450" y="142" width="90" height="38"/>
+              <text x="495" y="167">Result</text>
+              <rect class="box" rx="9" x="560" y="142" width="90" height="38"/>
+              <text x="605" y="167">Model</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah3)">
+              <path d="M100,161 L116,161"/>
+              <path d="M210,161 L226,161"/>
+              <path d="M320,161 L336,161"/>
+              <path d="M430,161 L446,161"/>
+              <path d="M540,161 L556,161"/>
+            </g>
+            <text class="dim" x="330" y="208" font-size="16" text-anchor="middle">the product works out the steps</text>
+          </svg>
+          </div>
+          <figcaption>The same analyst, the same model. What moved is who does the routing.</figcaption>
+        </figure>
+      </section>
+    </div>
+
+    <!-- ===== 06 — INTRODUCING FIA =====
+         The reveal the opening deliberately held back. FIA gets its own
+         chapter break so the decisions that follow have something to be
+         decisions about. -->
+    <div class="wrap">
+      <section id="fia" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">06 &mdash; Introducing FIA</span>
+          <h2>Not a fourth workflow. An agent.</h2>
+          <p class="chapter-gloss">FIA chooses its own steps, uses tools, produces work &mdash; and what it produces can land in a live model.</p>
+        </div>
+        <p>FIA is FinSynth&rsquo;s research agent. It isn&rsquo;t another workflow alongside the first three &mdash; it&rsquo;s a different kind of product. Given a goal, it decides which steps to take. It calls tools and reads what comes back. It produces work &mdash; an answer, a table, a set of changes &mdash; and that work can reach a live financial model, the artifact the analyst&rsquo;s name is on.</p>
+        <p>Each of those abilities is what removes the ceiling. Each is also a new way for the product to be wrong somewhere the analyst can&rsquo;t see.</p>
+        <p class="beat">Which put the hard questions somewhere the old product never had them &mdash; before the work starts, and while it runs.</p>
+      </section>
+    </div>
+
+    <!-- ===== 07 — DESIGNING FOR AN AGENT =====
+         The shared rationale for everything that follows. The anatomy sets
+         the boundaries; the boundaries demand the checkpoints; the
+         checkpoints are the decisions. -->
+    <div class="wrap">
+      <section id="system" class="chapter reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">07 &mdash; Designing for an agent</span>
+          <h2>The anatomy set the boundaries</h2>
+          <p class="chapter-gloss">What the system actually is, what that constrains, and the three places a person can step in.</p>
+        </div>
+        <p>I was designing this without a PM or a design team, directly with the founders and the engineers. Engineering made the AI reliable. My job was making the reliability usable: deciding what the agent should do, how it should show its work, and when to put a human in the loop.</p>
+        <p>With an agent, that job has a precise shape &mdash; because the system does.</p>
+
+        <figure class="fig-wide">
+          <div class="canvas">
+          <svg class="dia" viewBox="0 0 660 116" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The FIA system end to end: analyst intent, agent reasoning, editable plan, tool calls, result, Excel model — the model is live. Three numbered seams mark where a person can step in: 07.1 between intent and reasoning, 07.2 at the editable plan, 07.3 at the tool calls.">
+            <defs>
+              <marker id="ah4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1"/>
+              </marker>
+            </defs>
+
+            <!-- the seams a person can reach into, numbered as the decisions below -->
+            <g class="label seam" font-size="10.5" letter-spacing="1.3" text-anchor="middle">
+              <text x="106" y="14">07.1</text>
+              <text x="274" y="14">07.2</text>
+              <text x="386" y="14">07.3</text>
+            </g>
+            <g class="arrow seam-tick">
+              <path d="M106,20 L106,32"/>
+              <path d="M274,20 L274,32"/>
+              <path d="M386,20 L386,32"/>
+            </g>
+
+            <g font-size="15" text-anchor="middle">
+              <rect class="box" rx="9" x="4" y="36" width="92" height="48"/>
+              <text x="50" y="56">Analyst</text><text x="50" y="74">intent</text>
+              <rect class="box" rx="9" x="116" y="36" width="92" height="48"/>
+              <text x="162" y="56">Agent</text><text x="162" y="74">reasoning</text>
+              <rect class="box-on" rx="9" x="228" y="36" width="92" height="48"/>
+              <text x="274" y="56">Editable</text><text x="274" y="74">plan</text>
+              <rect class="box-on" rx="9" x="340" y="36" width="92" height="48"/>
+              <text x="386" y="56">Tool</text><text x="386" y="74">calls</text>
+              <rect class="box" rx="9" x="452" y="36" width="92" height="48"/>
+              <text x="498" y="65">Result</text>
+              <rect class="box" rx="9" x="564" y="36" width="92" height="48"/>
+              <text x="610" y="56">Excel</text><text x="610" y="74">model</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah4)">
+              <path d="M96,60 L112,60"/>
+              <path d="M208,60 L224,60"/>
+              <path d="M320,60 L336,60"/>
+              <path d="M432,60 L448,60"/>
+              <path d="M544,60 L560,60"/>
+            </g>
+            <text class="dim" x="610" y="106" font-size="15" text-anchor="middle">live</text>
+          </svg>
+          </div>
+          <figcaption>The system, end to end. The numbered seams are where a person can inspect, correct, or stop the work &mdash; each one is a decision below.</figcaption>
+        </figure>
+
+        <ul class="bounds">
+          <li><strong>The agent decides the steps.</strong> The analyst no longer does the routing, so they can no longer predict what will run.</li>
+          <li><strong>Tools return structured events.</strong> A factual record of what actually happened exists, if the interface chooses to use it.</li>
+          <li><strong>Writes can reach a live model.</strong> A wrong step doesn&rsquo;t stay inside the product.</li>
+          <li><strong>So the analyst needs places to inspect, correct, or stop the work</strong> &mdash; not one safety screen at the end, a checkpoint at every seam.</li>
+        </ul>
+
+        <p>The three decisions that follow are those checkpoints.</p>
+        <ol class="decision-map">
+          <li><a href="#edit-query">
+            <span class="problem">Shaping the ask</span>
+            <span class="to">&rarr;</span>
+            <span>Edit Query</span>
+          </a></li>
+          <li><a href="#plan-mode">
+            <span class="problem">Planning the work</span>
+            <span class="to">&rarr;</span>
+            <span>Plan Mode</span>
+          </a></li>
+          <li><a href="#tool-calls">
+            <span class="problem">Making the agent legible</span>
+            <span class="to">&rarr;</span>
+            <span>Tool calls</span>
+          </a></li>
+        </ol>
+      </section>
+    </div>
+
+    <!-- ===== 07.1 &mdash; EDIT QUERY ===== -->
+    <div class="wrap">
+      <section id="edit-query" class="chapter reveal">
+        <div class="decision-head">
+          <span class="decision-num">07.1 &mdash; Shaping the ask</span>
+          <h3>What is the agent actually being asked to do?</h3>
+        </div>
+        <p>A goal arrives the way people talk. <i>How has marketing spend trended?</i> &mdash; for which company? Over what period? Trended against what?</p>
+        <p>The old workflows never had this problem, because a form can&rsquo;t be ambiguous. Free text can, and with an agent an ambiguous ask doesn&rsquo;t fail &mdash; it runs, and comes back with confident work about the wrong thing.</p>
+        <p>Edit Query is the seam between the analyst&rsquo;s words and the agent&rsquo;s instruction. FIA reads the request back as the constrained version it is about to act on &mdash; company resolved, period pinned, scope explicit &mdash; and every part of it can be corrected before a plan is drawn or a tool runs.</p>
+        <p>It&rsquo;s the cheapest checkpoint in the system: the wrong question, caught before any work exists to be undone.</p>
+
+        <figure class="product-frame">
+          <!-- Reserved for the real product capture: the restated query with
+               its resolved company, period and scope, still editable. Kept as
+               an empty stage for now — drop the image in here when it exists. -->
+          <div class="fiag-window">
+            <div class="fiag-chrome" aria-hidden="true">
+              <span class="fiag-lights"><i></i><i></i><i></i></span>
+              <span class="fiag-pins">
+                Work
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+              </span>
+              <span class="fiag-tab fiag-tab--rest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                Docs
+              </span>
+              <span class="fiag-tab">
+                <span class="fiag-favicon"></span>
+                FinSynth
+              </span>
+              <span class="fiag-tab-add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </span>
+              <span class="fiag-chrome-right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </div>
+            <div class="fiag-page">
+              <div class="fiag-toolbar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                <span class="fiag-crumb"><strong>FinSynth</strong></span>
+              </div>
+            <div class="asset-stage" data-asset-slot="edit-query-restated-state"></div>
+            </div>
+          </div>
+        </figure>
+      </section>
+    </div>
+
+    <!-- ===== 07.2 &mdash; PLAN MODE ===== -->
+    <div class="wrap">
+      <section id="plan-mode" class="chapter reveal">
+        <div class="decision-head">
+          <span class="decision-num">07.2 &mdash; Planning the work</span>
+          <h3>How do you turn a raw capability into something a person can rely on?</h3>
+        </div>
+
+        <div class="voice">
+          <p>I&rsquo;d been watching how Claude handled the same shape of problem.</p>
+          <p>It plans before it acts. You can push back before anything happens.</p>
+          <p class="turn">In a chat window that&rsquo;s a nice touch.</p>
+          <p>In a spreadsheet I wasn&rsquo;t convinced.</p>
+          <p>The cost of changing your mind is completely different.</p>
+        </div>
+
+        <figure class="fig-wide">
+          <div class="canvas">
+          <svg class="dia" viewBox="0 0 660 316" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two paths. Generate first: prompt, generate the spreadsheet, then compare two versions, check the formulas and validate the assumptions, then loop back to the prompt. Plan first: prompt, plan, edit the plan in place, generate once.">
+            <defs>
+              <marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+                <path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1"/>
+              </marker>
+            </defs>
+            <g class="label" font-size="10.5" letter-spacing="1.3">
+              <text x="150" y="12" text-anchor="middle">GENERATE FIRST</text>
+              <text x="510" y="12" text-anchor="middle">PLAN FIRST</text>
+            </g>
+
+            <!-- left path -->
+            <g font-size="16.5" text-anchor="middle">
+              <rect class="box" rx="9" x="60" y="30" width="180" height="38"/>
+              <text x="150" y="55">Prompt</text>
+              <rect class="box" rx="9" x="60" y="98" width="180" height="38"/>
+              <text x="150" y="123">Generate the spreadsheet</text>
+              <rect class="box" rx="9" x="60" y="166" width="180" height="76"/>
+              <text x="150" y="189">Compare two versions</text>
+              <text x="150" y="209">Check the formulas</text>
+              <text x="150" y="229">Validate the assumptions</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah2)">
+              <path d="M150,68 L150,94"/>
+              <path d="M150,136 L150,162"/>
+              <path d="M60,204 L26,204 L26,49 L56,49"/>
+            </g>
+            <text class="dim" x="150" y="300" font-size="16" text-anchor="middle">the loop runs after the work exists</text>
+
+            <!-- right path -->
+            <g font-size="16.5" text-anchor="middle">
+              <rect class="box" rx="9" x="420" y="30" width="180" height="38"/>
+              <text x="510" y="55">Prompt</text>
+              <rect class="box" rx="9" x="420" y="98" width="180" height="38"/>
+              <text x="510" y="123">Plan</text>
+              <rect class="box-on" rx="9" x="420" y="166" width="180" height="38"/>
+              <text x="510" y="191">Edit the plan</text>
+              <rect class="box" rx="9" x="420" y="234" width="180" height="38"/>
+              <text x="510" y="259">Generate once</text>
+            </g>
+            <g class="arrow" marker-end="url(#ah2)">
+              <path d="M510,68 L510,94"/>
+              <path d="M510,136 L510,162"/>
+              <path d="M510,204 L510,230"/>
+              <path d="M602,176 Q644,186 604,196"/>
+            </g>
+            <text class="dim" x="510" y="300" font-size="16" text-anchor="middle">the loop runs before it</text>
+          </svg>
+          </div>
+          <figcaption>Both paths iterate. Only one of them iterates on something that costs nothing to change.</figcaption>
+        </figure>
+
+        <p>A revise flow keeps you asking. An editable plan lets you correct.</p>
+        <p>I decided it had to be built that way &mdash; regeneration would have destroyed the cheapness the planning step existed to create.</p>
+        <p>The product still has no revise concept anywhere in it. A plan can be edited, executed, or discarded.</p>
+
+        <figure class="product-frame">
+          <!-- Reserved for the real product capture: the plan exists, is
+               editable, and has not generated the spreadsheet yet. Kept as an
+               empty stage for now — drop the image in here when it exists. -->
+          <div class="fiag-window">
+            <div class="fiag-chrome" aria-hidden="true">
+              <span class="fiag-lights"><i></i><i></i><i></i></span>
+              <span class="fiag-pins">
+                Work
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+              </span>
+              <span class="fiag-tab fiag-tab--rest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                Docs
+              </span>
+              <span class="fiag-tab">
+                <span class="fiag-favicon"></span>
+                FinSynth
+              </span>
+              <span class="fiag-tab-add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </span>
+              <span class="fiag-chrome-right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </div>
+            <div class="fiag-page">
+              <div class="fiag-toolbar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                <span class="fiag-crumb"><strong>FinSynth</strong></span>
+              </div>
+            <div class="asset-stage" data-asset-slot="plan-mode-editable-state"></div>
+            </div>
+          </div>
+        </figure>
+      </section>
+    </div>
+
+    <!-- ===== 07.3 &mdash; TOOL CALLS ===== -->
+    <div class="wrap">
+      <section id="tool-calls" class="chapter reveal">
+        <div class="decision-head">
+          <span class="decision-num">07.3 &mdash; Making the agent legible</span>
+          <h3>Where does trust live &mdash; in the answer, or in the product?</h3>
+        </div>
+        <p>Edit Query fixed the ask. The plan fixed the moment before the work. Then the work ran &mdash; and the analyst was now watching a system make a sequence of choices they hadn&rsquo;t chosen.</p>
+        <p>The easy version of AI trust is conversational. The model tells you how confident it is, apologises when it&rsquo;s wrong, explains itself in a paragraph. None of that survives contact with someone who has to defend the number.</p>
+        <p>The agent was doing everything right. Nobody could tell.</p>
+
+        <figure>
+          <div class="term">mcp__finsynth-data__get_events
+<span class="faded">{ "entity_id": "8f2a91c4-6b3d-4e17-9a02-c05e7b1f", "window": "4Q" }</span></div>
+          <figcaption>What the analyst saw while the agent resolved the company, found the filing, and read the right section.</figcaption>
+        </figure>
+
+        <p>Ask the model to describe each tool before it calls it. One prompt, it reads well, and it could have shipped that week.</p>
+        <p>Then: you&rsquo;d be asking it to describe an action before anyone &mdash; including the model &mdash; knows what that action is going to be.</p>
+        <p>A guess dressed as a status update, inside a product whose entire argument is that you can check its work.</p>
+        <p>So I went the other way. I took what the backend was already sending, sat with it, and worked out the pattern in the fields &mdash; a name in there, something displayable, something that might actually be useful to the person watching.</p>
+
+        <figure>
+          <div class="term after">Looking up earnings events  &middot;  Apple Inc.  &middot;  last 4 quarters</div>
+          <figcaption>Reconstructed from the shipped behaviour, not a screenshot &mdash; replace before publishing. Every word on that line is read out of the fields above it.</figcaption>
+        </figure>
+
+        <p>What the analyst reads is never generated. It&rsquo;s derived from what actually happened.</p>
+
+        <figure class="tcall-fig">
+          <div class="tcall">
+            <div class="tcall-row">
+              <span class="tcall-key">Thinking</span>
+              <p class="tcall-live">
+                <svg class="tc-spin" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                  <path d="M10 2.5v3" opacity=".95"/><path d="M15.3 4.7l-2.1 2.1" opacity=".8"/><path d="M17.5 10h-3" opacity=".65"/><path d="M15.3 15.3l-2.1-2.1" opacity=".5"/><path d="M10 17.5v-3" opacity=".4"/><path d="M4.7 15.3l2.1-2.1" opacity=".3"/><path d="M2.5 10h3" opacity=".2"/><path d="M4.7 4.7l2.1 2.1" opacity=".12"/>
+                </svg>
+                Thinking&hellip;
+              </p>
+            </div>
+            <div class="tcall-row">
+              <span class="tcall-key">Timeline</span>
+              <div>
+                <p class="tcall-head">
+                  Checking workbook for errors&hellip;
+                  <svg class="tc-chev" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 8.5 7 5l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </p>
+                <ul class="tcall-steps">
+                  <li>
+                    <svg class="tc-ok" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6.4 10.4l2.5 2.5 4.7-5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Opened Airbus 2024.xlsx &middot; 4 sheets
+                  </li>
+                  <li>
+                    <svg class="tc-ok" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6.4 10.4l2.5 2.5 4.7-5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Read Model!A1:J75
+                  </li>
+                  <li>
+                    <svg class="tc-fail" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M7.2 7.2l5.6 5.6M12.8 7.2l-5.6 5.6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Failed to read Airbus 20-F &middot; filing not available
+                  </li>
+                  <li>
+                    <svg class="tc-ok" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6.4 10.4l2.5 2.5 4.7-5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Read Q4 Earnings &middot; 10Q
+                  </li>
+                  <li>
+                    <svg class="tc-ok" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.25" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M6.4 10.4l2.5 2.5 4.7-5.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Wrote 12 cells to Dashboard
+                  </li>
+                  <li>
+                    <svg class="tc-run" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.75A8.25 8.25 0 1 0 18.25 10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                    Checking Model!A1:J75 for errors
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="tcall-row">
+              <span class="tcall-key">Resolved</span>
+              <p class="tcall-done">
+                Checked Model!A1:J75 for errors &middot; 3 found
+                <svg class="tc-chev" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 5.5 7 9l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </p>
+            </div>
+          </div>
+          <figcaption>A failed step stays on the timeline &mdash; the agent keeps going, and so does the record.</figcaption>
+        </figure>
+
+        <p>The number still has to be defended. What changed is what you can hold up when it is &mdash; a plan you corrected before the work started, and a line that says what actually happened when it ran.</p>
+      </section>
+    </div>
+
+    <!-- ===== 08 — WHERE IT STANDS =====
+         Honest about the pilot, specific about what already changed:
+         the product model, not the metrics. -->
+    <div class="wrap">
+      <section id="close" class="close reveal">
+        <div class="chapter-head">
+          <span class="chapter-num">08 &mdash; Where it stands</span>
+        </div>
+        <p>FinSynth is in pilot. There&rsquo;s no adoption curve to show you yet.</p>
+        <p>What has already changed is the product&rsquo;s contract with the analyst. They no longer have to begin by knowing the correct workflow. They state an objective &mdash; and at every point where the agent could go wrong, the question it heard, the plan it drew, the tools it ran, there is a place to inspect it, correct it, or stop it.</p>
+        <p class="beat">On day one you had to already know what you wanted. Now the product asks what you&rsquo;re trying to do.</p>
+      </section>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-row">
+        <a href="index.html#work">&larr; Back to work</a>
+        <a href="mailto:Ritikashofficial2511@gmail.com">Ritikashofficial2511@gmail.com</a>
+      </div>
+      <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
+    </div>
+  </footer>
+
+  <!-- ===== ASK-ME CHAT — mirrored from index.html's case-overlay chat ===== -->
+  <button type="button" class="ask-pill" id="askPill">
+    <span class="ask-avatar" aria-hidden="true">R</span>
+    <span class="ask-pill-label">Search anything about me</span>
+    <span class="ask-pill-send" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg></span>
+  </button>
+  <div class="ask-drawer" id="askDrawer" role="dialog" aria-modal="false" aria-label="Ask Ritika about this case study">
+    <div class="ask-resize" id="askResize" role="separator" aria-orientation="vertical" aria-label="Resize chat panel" tabindex="0"></div>
+    <div class="ask-head" id="askHead">
+      <span class="ask-avatar" aria-hidden="true">R</span>
+      <div class="ask-head-actions">
+        <button type="button" class="ask-head-pop" id="askPop" aria-label="Pop out chat">
+          <svg class="ico-pop" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2.5H3.5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V8"/>
+            <path d="M8.5 2.5h3v3M11.5 2.5 7 7"/>
+          </svg>
+          <svg class="ico-dock" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="1.5" y="2.5" width="11" height="9" rx="1.2"/>
+            <path d="M8.5 2.5v9"/>
+          </svg>
+        </button>
+        <button type="button" class="ask-head-close" id="askClose" aria-label="Close chat">&times;</button>
+      </div>
+    </div>
+    <p class="ask-note">Nothing here is generated &mdash; every answer is scripted in advance.</p>
+    <div class="ask-log" id="askLog"></div>
+    <div class="ask-chips" id="askChips"></div>
+    <form class="ask-form" id="askForm">
+      <input class="ask-input" id="askInput" type="text" placeholder="Ask me anything&hellip;" autocomplete="off" aria-label="Ask a question about this case study">
+      <button class="ask-send" type="submit" aria-label="Send question">&rarr;</button>
+    </form>
+    <div class="ask-sr" aria-live="polite" id="askLive"></div>
+  </div>
+
+  <script>
+  // ——— Light / dark theme ———
+  // The head script already picked the theme; this wires the switch, keeps the
+  // address-bar colour in step, and follows the OS while no choice is stored.
+  // Same key as index.html, so a choice made on either page holds on both.
+  (function() {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+    function apply(t) {
+      root.setAttribute('data-theme', t);
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
+      if (btn) {
+        var label = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
+        btn.setAttribute('aria-label', label);
+        btn.setAttribute('title', label);
+      }
+    }
+    apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
+    mq.addEventListener('change', function(e) {
+      if (stored() !== 'light' && stored() !== 'dark') apply(e.matches ? 'dark' : 'light');
+    });
+    if (btn) btn.addEventListener('click', function() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      apply(next);
+    });
+  })();
+
+  // ——— Header hairline on scroll ———
+  (function() {
+    var header = document.getElementById('siteHeader');
+    function sync() {
+      header.classList.toggle('scrolled', window.scrollY > 8);
+    }
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+  })();
+
+  // ——— Section index: mark the chapter the reader is currently in ———
+  // Last section whose top has crossed 42% of the viewport wins. Simple
+  // position test rather than IntersectionObserver, because the chapters vary
+  // wildly in height and "most visible" reads wrong on the long ones.
+  (function() {
+    var nav = document.getElementById('caseIndex');
+    if (!nav) return;
+
+    var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
+    var targets = links.map(function(a) {
+      return document.getElementById(a.getAttribute('href').slice(1));
+    });
+    if (targets.some(function(el) { return !el; })) return;
+
+    var current = -1;
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      var line = window.innerHeight * 0.42;
+      var next = 0;
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i].getBoundingClientRect().top <= line) next = i;
+      }
+      // Bottom of the page: the last chapter is short, so pin it there.
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 4) {
+        next = targets.length - 1;
+      }
+      if (next === current) return;
+      if (current > -1) links[current].removeAttribute('aria-current');
+      links[next].setAttribute('aria-current', 'true');
+      current = next;
+      // Let the ask-me chat retarget its suggestion chips to this chapter
+      window.__askSection = targets[next].id;
+      document.dispatchEvent(new CustomEvent('asksection', { detail: targets[next].id }));
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+    nav.classList.add('ready');
+  })();
+
+  // ——— Reveal on scroll ———
+  (function() {
+    var items = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      items.forEach(function(el) { el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    items.forEach(function(el) { io.observe(el); });
+  })();
+
+  // ——— Spotlight reveal ———
+  // Mirrors the portfolio hero: the lens snaps to the cursor on entry, trails
+  // it with a lerp while inside, and fades out on leave. The rAF loop only
+  // runs while there's distance left to cover.
+  (function() {
+    if (!window.matchMedia) return;
+    // Mirrors the CSS media query that hides .spotlight
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (matchMedia('(hover: none), (max-width: 640px)').matches) return;
+
+    document.querySelectorAll('.spotlight').forEach(function(layer) {
+      var lens = layer.querySelector('.spotlight-lens');
+      var img = layer.querySelector('.spotlight-img');
+      var host = layer.parentElement;
+      var half = 380;
+      var x = 0, y = 0, tx = 0, ty = 0;
+      var running = false, inside = false;
+
+      function size() {
+        // The image spans the host, so the moving lens reveals whatever
+        // part of the image sits beneath it — the image itself stays put.
+        img.style.width = layer.offsetWidth + 'px';
+        img.style.height = layer.offsetHeight + 'px';
+        half = lens.offsetWidth / 2;
+      }
+
+      function apply() {
+        lens.style.translate = (x - half) + 'px ' + (y - half) + 'px';
+        img.style.translate = (half - x) + 'px ' + (half - y) + 'px';
+      }
+
+      function step() {
+        x += (tx - x) * 0.09;
+        y += (ty - y) * 0.09;
+        apply();
+        if (Math.abs(tx - x) < 0.5 && Math.abs(ty - y) < 0.5) {
+          running = false; // idle — the next mousemove wakes the loop
+          return;
+        }
+        requestAnimationFrame(step);
+      }
+
+      function wake() {
+        if (!running) { running = true; requestAnimationFrame(step); }
+      }
+
+      function target(e) {
+        var r = layer.getBoundingClientRect();
+        tx = e.clientX - r.left;
+        ty = e.clientY - r.top;
+      }
+
+      host.addEventListener('mouseenter', function(e) {
+        inside = true;
+        size();
+        target(e);
+        x = tx; y = ty; // snap so the lens fades in at the cursor, not fly in
+        apply();
+        lens.classList.add('on');
+        wake();
+      });
+      host.addEventListener('mousemove', function(e) {
+        if (!inside) return;
+        target(e);
+        wake();
+      });
+      host.addEventListener('mouseleave', function() {
+        inside = false;
+        lens.classList.remove('on');
+      });
+      window.addEventListener('resize', function() {
+        if (inside) size();
+      });
+    });
+  })();
+
+  // ——— Ask-me chat (floating pill + drawer) ———
+  // Mirrored from index.html's case-overlay chat — keep the two in sync if the
+  // interaction changes. Scripted, not generated: prepared Q&A below, keyword-
+  // matched for typed questions; misses get ASK_FALLBACK. Everything claimed
+  // here is limited to what case-study-inputs/FINSYNTH-INTAKE.md verifies.
+  (function() {
+    var QA = [
+      { q: 'What here is actually yours?', s: ['start', 'close'],
+        k: ['yours', 'your', 'role', 'credit', 'own', 'scope', 'responsible', 'contribution'],
+        a: ['Worth being precise about, because not all of it is. Topic search and its citations shipped before I joined — that’s the team’s work, and this page doesn’t claim it. Mine: the model-update workflow when I arrived, Plan Mode, the tool-call display system — which I defined as a spec that engineering then implemented in production (one of their commits literally reads “as per spec”) — and the landing page, which I built in code.',
+            'The honest split: engineering made the AI reliable. I made the reliability usable.'] },
+      { q: 'Why an editable plan instead of act-then-revise?', s: ['ceiling', 'shift', 'edit-query', 'plan-mode'],
+        k: ['plan', 'editable', 'revise', 'rerun', 'correct', 'mode', 'upfront'],
+        a: ['A revise flow keeps you asking. An editable plan lets you correct.',
+            'Correction is upstream — you fix the plan before anything gets built. Asking is downstream, and it costs the analyst a full round trip every time. So the agent shows its plan first, and the plan itself is the thing you edit.'] },
+      { q: 'Why show raw tool calls, not a summary?', s: ['system', 'tool-calls'],
+        k: ['tool', 'tools', 'calls', 'summary', 'raw', 'transparency', 'progress', 'narration', 'trust'],
+        a: ['Because a generated summary of a run is one more thing that can be wrong. What the analyst reads is never generated — it’s derived from what actually happened: a legible sequence of named events, one per tool the agent chose.',
+            'I defined that system as a design contract — a per-tool spec of templates, verbs, fallbacks, and states — and engineering implemented and iterated it in production across a dozen merged PRs.'] },
+      { q: 'What were the results?', s: ['shift', 'close'],
+        k: ['results', 'result', 'outcome', 'outcomes', 'metrics', 'numbers', 'impact', 'adoption', 'usage', 'users'],
+        a: ['FinSynth is in pilot and not public, so there are no adoption numbers I can honestly give you — and I’d rather give you no number than an invented one.',
+            'What did change is the product’s contract with the analyst: on day one you had to already know which workflow you wanted. Now you state an objective, and at every point where the agent could go wrong there’s a place to inspect it, correct it, or stop it.'] },
+      { q: 'How did you work with engineering?', s: ['system', 'tool-calls', 'close'],
+        k: ['engineering', 'engineers', 'engineer', 'collaborate', 'collaboration', 'spec', 'specs', 'handoff', 'implemented', 'prs', 'contract', 'team'],
+        a: ['Through specs that worked like contracts. The clearest example is the tool-call display system: I wrote a per-tool spec — templates, variable sources, verbs, fallbacks, three display states — and engineering implemented and iterated it in production across about a dozen merged PRs. One of their commits literally reads “as per spec”.',
+            'Working that way meant the design decisions survived implementation: the spec said what each event should read as, and the shipped product could be checked against it.'] },
+      { q: 'What is FinSynth, in one sentence?', s: ['job', 'problems', 'fia'],
+        k: ['finsynth', 'product', 'company', 'startup', 'sentence', 'about', 'summary', 'overview', 'pitch', 'elevator'],
+        a: ['An AI research agent for public-equity analysts — it helps them research companies, investigate financial questions, and bring the answer back into the model they deliver.',
+            'The rest of this page is about the harder half of that sentence: what it takes for an analyst to trust the answer enough to put their name on it.'] },
+      { q: 'What happens when it writes into a live model?', s: ['ceiling', 'fia', 'tool-calls'],
+        k: ['writes', 'write', 'approval', 'approve', 'permission', 'safety', '300', 'window', 'guardrail', 'cell'],
+        a: ['Writes into a live model never just happen. Each one goes through a permission prompt with a 300-second window for the analyst to approve or deny it — the model stays theirs, not the agent’s.'] },
+      { q: 'Where does the product actually live?', s: ['job', 'problems', 'start'],
+        k: ['excel', 'surfaces', 'web', 'app', 'add', 'addin', 'spreadsheet', 'live', 'interface'],
+        a: ['Two surfaces, not one: an Excel add-in, because that’s where the model sits, and a web app around it for the longer-running research work.',
+            'The spreadsheet isn’t where analysts work — it’s what they deliver.'] },
+      { q: 'How do I get in touch?', s: ['close'],
+        k: ['contact', 'email', 'hire', 'hiring', 'reach', 'available', 'chat', 'talk', 'connect'],
+        a: ['The email in the footer reaches me directly.',
+            'If it’s about this project specifically, mention which part caught your eye and I’ll skip straight to the interesting bits.'] }
+    ];
+    // The first five appear as suggestion chips in the drawer;
+    // the rest only answer typed questions.
+    var SEED_COUNT = 5;
+
+    var ASK_FALLBACK = ['Fair question — and past the edge of what I have written up here. This little chat runs on prepared answers, not a live model, so it only knows what I have told it.',
+                        'For the real answer, the email in the footer reaches the actual me.'];
+
+    // Brief orientation before anything else — streamed on the very first
+    // interaction (localStorage 'askIntroSeen', shared with index.html),
+    // rendered instantly after that so the log never opens empty.
+    var ASK_INTRO = ['Hi — I’m the scripted version of Ritika. This chat is a quick way to interrogate the FinSynth case study: I’ve written answers ahead of time to the questions this page tends to raise.',
+                     'The suggestions below follow you as you scroll — each chapter surfaces its own questions. And you can just type; if I don’t have an answer prepared, I’ll say so instead of making one up.'];
+
+    var askPill = document.getElementById('askPill');
+    var askDrawer = document.getElementById('askDrawer');
+    var askLog = document.getElementById('askLog');
+    var askChips = document.getElementById('askChips');
+    var askForm = document.getElementById('askForm');
+    var askInput = document.getElementById('askInput');
+    var askLive = document.getElementById('askLive');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var ask = { seeds: QA.slice(0, SEED_COUNT), asked: [], busy: false };
+
+    function esc(s) {
+      return String(s).replace(/[&<>]/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+      });
+    }
+
+    function askOpenDrawer(entry) {
+      askAttractStop();
+      document.body.classList.add('chat-open');
+      askDrawer.classList.add('in');
+      if (entry) askQuestion(entry.q, entry);
+      else {
+        if (!askLog.childNodes.length) askIntro();
+        if (window.matchMedia('(hover: hover)').matches) askInput.focus();
+      }
+    }
+
+    function askCloseDrawer() {
+      askDrawer.classList.remove('in');
+      document.body.classList.remove('chat-open');
+      askPill.focus();
+    }
+
+    function scrollLog() { askLog.scrollTop = askLog.scrollHeight; }
+
+    // Orientation message when the log is empty: streamed word-by-word the
+    // very first time (across pages, via localStorage), instant after that.
+    function askIntro() {
+      var seen = false;
+      try { seen = !!localStorage.getItem('askIntroSeen'); } catch (err) {}
+      try { localStorage.setItem('askIntroSeen', '1'); } catch (err) {}
+      if (seen) {
+        var wrap = document.createElement('div');
+        wrap.className = 'ask-msg-a';
+        wrap.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span><div class="ask-msg-body">'
+          + ASK_INTRO.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('') + '</div>';
+        askLog.appendChild(wrap);
+        renderChips();
+      } else {
+        ask.busy = true;
+        streamAnswer(ASK_INTRO, function() { ask.busy = false; renderChips(); });
+      }
+    }
+
+    function askQuestion(text, entry) {
+      if (ask.busy) return;
+      ask.busy = true;
+      entry = entry || matchQA(text);
+      if (entry && ask.asked.indexOf(entry) < 0) ask.asked.push(entry);
+      var u = document.createElement('div');
+      u.className = 'ask-msg-user';
+      u.textContent = text;
+      askLog.appendChild(u);
+      askChips.innerHTML = '';
+      var typing = document.createElement('div');
+      typing.className = 'ask-msg-a';
+      typing.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span>'
+        + '<div class="ask-typing"><span></span><span></span><span></span></div>';
+      askLog.appendChild(typing);
+      scrollLog();
+      setTimeout(function() {
+        typing.remove();
+        streamAnswer(entry ? entry.a : ASK_FALLBACK, function() {
+          ask.busy = false;
+          renderChips();
+        });
+      }, reduceMotion.matches ? 250 : 900);
+    }
+
+    function streamAnswer(paras, done) {
+      var wrap = document.createElement('div');
+      wrap.className = 'ask-msg-a';
+      wrap.innerHTML = '<span class="ask-avatar" aria-hidden="true">R</span><div class="ask-msg-body"></div>';
+      var msgBody = wrap.lastChild;
+      askLog.appendChild(wrap);
+      var finish = function() {
+        askLive.textContent = paras.join(' ');
+        scrollLog();
+        done();
+      };
+      if (reduceMotion.matches) {
+        msgBody.innerHTML = paras.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('');
+        finish();
+        return;
+      }
+      var chunks = paras.map(function(p) {
+        return { el: document.createElement('p'), words: p.split(' ') };
+      });
+      var pi = 0, wi = 0;
+      (function tick() {
+        var c = chunks[pi];
+        if (!c) { finish(); return; }
+        if (wi === 0) msgBody.appendChild(c.el);
+        c.el.textContent += (wi ? ' ' : '') + c.words[wi];
+        wi++;
+        if (wi >= c.words.length) { pi++; wi = 0; }
+        scrollLog();
+        setTimeout(tick, 22 + Math.random() * 38);
+      })();
+    }
+
+    // Suggestions follow the chapter in view: entries tagged (via `s`) with
+    // the current section lead, seed questions pad out the rest.
+    function chipPool() {
+      var sec = window.__askSection;
+      var pool = [];
+      if (sec) QA.forEach(function(s) { if (s.s && s.s.indexOf(sec) >= 0) pool.push(s); });
+      ask.seeds.forEach(function(s) { if (pool.indexOf(s) < 0) pool.push(s); });
+      return pool;
+    }
+
+    var lastChips = '';
+    function renderChips(keepScroll) {
+      var picks = chipPool().filter(function(s) { return ask.asked.indexOf(s) < 0; }).slice(0, 3);
+      var key = picks.map(function(s) { return s.q; }).join('|');
+      if (keepScroll && key === lastChips) return;
+      lastChips = key;
+      askChips.innerHTML = '';
+      picks.forEach(function(s, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ask-chip pre';
+        b.textContent = s.q;
+        b.addEventListener('click', function() { askQuestion(s.q, s); });
+        askChips.appendChild(b);
+        setTimeout(function() { b.classList.remove('pre'); }, 60 + i * 90);
+      });
+      if (!keepScroll) scrollLog();
+    }
+
+    // Retarget the chips as the reader scrolls between chapters — but never
+    // mid-answer, and never by yanking the chat log's scroll position.
+    document.addEventListener('asksection', function() {
+      if (askDrawer.classList.contains('in') && !ask.busy) renderChips(true);
+    });
+
+    var ASK_STOP = {};
+    ('a an and are but can could did do does for from how i in is it its me my of on or so ' +
+     'that the this to was were what when where which who why will would you your it\'s your').split(' ')
+      .forEach(function(w) { ASK_STOP[w] = 1; });
+
+    function askTokens(s) {
+      return s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(function(w) {
+        return w.length > 2 && !ASK_STOP[w];
+      });
+    }
+
+    function matchQA(text) {
+      var toks = askTokens(text);
+      var best = null, bestScore = 0;
+      QA.forEach(function(entry) {
+        var pool = askTokens(entry.q);
+        var keys = entry.k || [];
+        var score = 0;
+        toks.forEach(function(t) {
+          if (keys.indexOf(t) >= 0) score += 2;
+          else if (pool.indexOf(t) >= 0) score += 1;
+        });
+        if (score > bestScore) { bestScore = score; best = entry; }
+      });
+      return bestScore >= 2 ? best : null;
+    }
+
+    askPill.addEventListener('click', function() { askOpenDrawer(null); });
+
+    /* First-visit attract. The pill is quiet enough to read straight past, so
+       a reader who has never opened the chat gets one three-beat purple pulse
+       shortly after landing. Once per session (sessionStorage) so navigating
+       between case pages does not re-nudge, and never for someone who has
+       already used the chat (the shared 'askIntroSeen' flag). Any hover, focus
+       or open cancels it early; under prefers-reduced-motion the CSS holds the
+       border lit instead of pulsing, and this timer is what clears it. */
+    function askAttractStop() {
+      if (askAttract.timer) { clearTimeout(askAttract.timer); askAttract.timer = null; }
+      askPill.classList.remove('attract');
+    }
+    function askAttract() {
+      var skip = false;
+      try {
+        skip = !!localStorage.getItem('askIntroSeen') || !!sessionStorage.getItem('askPillNudged');
+        sessionStorage.setItem('askPillNudged', '1');
+      } catch (err) {}   /* no storage: nudge anyway, it is only decoration */
+      if (skip) return;
+      setTimeout(function() {
+        if (document.body.classList.contains('chat-open')) return;
+        askPill.classList.add('attract');
+        askAttract.timer = setTimeout(askAttractStop, 7000);   /* 3 x 2.2s + slack */
+      }, 1400);
+    }
+    askAttract();
+    askPill.addEventListener('pointerenter', askAttractStop);
+    askPill.addEventListener('focus', askAttractStop);
+    document.getElementById('askClose').addEventListener('click', askCloseDrawer);
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.body.classList.contains('chat-open')) askCloseDrawer();
+    });
+    askForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var v = askInput.value.trim();
+      if (!v || ask.busy) return;
+      askInput.value = '';
+      askQuestion(v);
+    });
+
+    // ——— Resize + pop-out (Zoom-style floating window) ———
+    // Width lives in --ask-w so the page squeeze tracks it; the popped
+    // window is positioned by --ask-x/--ask-y and dragged by its header.
+    // Geometry persists in localStorage ('askPane', shared with index.html).
+    var askPop = document.getElementById('askPop');
+    var askResize = document.getElementById('askResize');
+    var askHead = document.getElementById('askHead');
+    var askRoot = document.documentElement;
+    var ASK_MIN_W = 300, ASK_MAX_W = 720;
+    var pane = { w: 360, x: null, y: 24, pop: false };
+    try {
+      var savedPane = JSON.parse(localStorage.getItem('askPane') || '{}');
+      if (savedPane.w) pane.w = savedPane.w;
+      if (savedPane.x != null) { pane.x = savedPane.x; pane.y = savedPane.y; }
+    } catch (err) {}
+
+    function askMaxW() {
+      // In squeeze mode leave the column at least ~380px; overlay mode just
+      // keeps a sliver of page visible.
+      var reserve = window.innerWidth >= 1100 ? 380 : 120;
+      return Math.max(ASK_MIN_W, Math.min(ASK_MAX_W, window.innerWidth - reserve));
+    }
+    function applyPane() {
+      pane.w = Math.max(ASK_MIN_W, Math.min(pane.w, askMaxW()));
+      if (pane.x == null) pane.x = window.innerWidth - pane.w - 24;
+      pane.x = Math.max(8, Math.min(pane.x, window.innerWidth - pane.w - 8));
+      // Keep the whole popped window on screen so the input stays reachable
+      var popH = Math.min(600, window.innerHeight - 48);
+      pane.y = Math.max(8, Math.min(pane.y, Math.max(8, window.innerHeight - popH - 8)));
+      askRoot.style.setProperty('--ask-w', pane.w + 'px');
+      askRoot.style.setProperty('--ask-x', pane.x + 'px');
+      askRoot.style.setProperty('--ask-y', pane.y + 'px');
+      // Squeeze zoom: shrink the 660px column to fit whatever the pane leaves
+      var availW = window.innerWidth - pane.w;
+      var z = Math.min(0.85, Math.max(0.5, (availW - 32) / 660));
+      askRoot.style.setProperty('--ask-zoom', z.toFixed(3));
+    }
+    function savePane() {
+      try { localStorage.setItem('askPane', JSON.stringify({ w: pane.w, x: pane.x, y: pane.y })); } catch (err) {}
+    }
+    function setPop(on) {
+      pane.pop = on;
+      applyPane();
+      askDrawer.classList.toggle('pop', on);
+      document.body.classList.toggle('chat-popped', on);
+      askPop.setAttribute('aria-label', on ? 'Dock chat to side' : 'Pop out chat');
+    }
+    applyPane();
+    askPop.addEventListener('click', function() { setPop(!pane.pop); });
+
+    // Left-edge drag: pane mode resizes from the right edge of the screen;
+    // pop mode keeps the window's right edge pinned while the width changes.
+    var resizeDrag = null;
+    askResize.addEventListener('pointerdown', function(e) {
+      e.preventDefault();
+      resizeDrag = { right: pane.x + pane.w };
+      askResize.setPointerCapture(e.pointerId);
+      document.body.classList.add('ask-dragging');
+    });
+    askResize.addEventListener('pointermove', function(e) {
+      if (!resizeDrag) return;
+      if (pane.pop) {
+        pane.w = Math.max(ASK_MIN_W, Math.min(resizeDrag.right - e.clientX, askMaxW()));
+        pane.x = resizeDrag.right - pane.w;
+      } else {
+        pane.w = window.innerWidth - e.clientX;
+      }
+      applyPane();
+    });
+    function endResize() {
+      if (!resizeDrag) return;
+      resizeDrag = null;
+      document.body.classList.remove('ask-dragging');
+      savePane();
+    }
+    askResize.addEventListener('pointerup', endResize);
+    askResize.addEventListener('pointercancel', endResize);
+    askResize.addEventListener('keydown', function(e) {
+      var d = e.key === 'ArrowLeft' ? 24 : e.key === 'ArrowRight' ? -24 : 0;
+      if (!d) return;
+      e.preventDefault();
+      var right = pane.x + pane.w;
+      pane.w += d;
+      applyPane();
+      if (pane.pop) { pane.x = right - pane.w; applyPane(); }
+      savePane();
+    });
+
+    // Header drag moves the popped window anywhere on screen
+    var moveDrag = null;
+    askHead.addEventListener('pointerdown', function(e) {
+      if (!pane.pop || e.target.closest('button')) return;
+      e.preventDefault();
+      moveDrag = { dx: e.clientX - pane.x, dy: e.clientY - pane.y };
+      askHead.setPointerCapture(e.pointerId);
+      document.body.classList.add('ask-dragging');
+    });
+    askHead.addEventListener('pointermove', function(e) {
+      if (!moveDrag) return;
+      pane.x = e.clientX - moveDrag.dx;
+      pane.y = e.clientY - moveDrag.dy;
+      applyPane();
+    });
+    function endMove() {
+      if (!moveDrag) return;
+      moveDrag = null;
+      document.body.classList.remove('ask-dragging');
+      savePane();
+    }
+    askHead.addEventListener('pointerup', endMove);
+    askHead.addEventListener('pointercancel', endMove);
+
+    window.addEventListener('resize', function() {
+      // No room to float on small screens — fold back into the pane
+      if (pane.pop && window.innerWidth < 700) setPop(false);
+      else applyPane();
+    }, { passive: true });
+
+    // The squeeze hides the section rail; visiting its home corner (top-left)
+    // peeks it back in. A larger leave-threshold than enter-threshold keeps
+    // it from flickering at the edge.
+    var railEl = document.querySelector('.index');
+    if (railEl) {
+      document.addEventListener('mousemove', function(e) {
+        var paneOpen = document.body.classList.contains('chat-open')
+          && !document.body.classList.contains('chat-popped');
+        if (!paneOpen) { document.body.classList.remove('rail-peek'); return; }
+        var r = railEl.getBoundingClientRect();
+        var pad = document.body.classList.contains('rail-peek') ? 48 : 12;
+        var inside = e.clientX <= r.right + pad && e.clientY <= r.bottom + pad;
+        document.body.classList.toggle('rail-peek', inside);
+      }, { passive: true });
+    }
+  })();
+  </script>
+
+</body>
+</html>
