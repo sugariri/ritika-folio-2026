@@ -102,6 +102,33 @@
       --content: 572px;
       --gutter: 24px;
 
+      /* Work-card plates — the soft ground a project's screenshot sits on, and
+         the shadow that lifts it off. Artwork, not page furniture: these never
+         flip with the theme, because a pale plate under a light product shot
+         has to stay pale on near-black, and a negative of a screenshot's own
+         white ground reads as a glitch. Each tint is pulled from the site it
+         frames — FinSynth's indigo, its landing page's sky, Mazic's cream and
+         lilac, Beep's butter yellow — so the plate belongs to the work rather
+         than being a colour we liked. */
+      --plate-product-a: #ccdbf7;
+      --plate-product-b: #e8eefb;
+      --plate-product-c: #c4d4f2;
+      --plate-product-ground: #dee7f9;
+      --plate-landing-a: #cbe2f6;
+      --plate-landing-b: #e7f1fa;
+      --plate-landing-c: #bed8ef;
+      --plate-landing-ground: #dbe9f7;
+      --plate-mazic-a: #fdead9;
+      --plate-mazic-b: #f2e0fb;
+      --plate-mazic-c: #fbdeec;
+      --plate-mazic-ground: #fbeee6;
+      --plate-beep-a: #fdf0cf;
+      --plate-beep-b: #e4ebfd;
+      --plate-beep-c: #fde9c4;
+      --plate-beep-ground: #fcf3de;
+      /* Lives on the plate, so it is one set for both themes */
+      --shadow-shot: 0 8px 20px rgba(22, 22, 32, 0.16), 0 1px 3px rgba(22, 22, 32, 0.12);
+
       /* Hero spotlight-reveal photo. Needs color edge-to-edge — an image that
          fades to white reads as an empty lens over the white page. The case
          studies have no spotlight; only this page's hero and finsynth.html do. */
@@ -466,10 +493,15 @@
        browse, and a row list makes six projects read as six lines of a CV
        rather than six pieces of work — so Work gets tiles and the CV history
        keeps the rows (#experience, below). Kept inside the design direction:
-       hairline border, page ground, no shadow at rest, no gradient, no
-       photography. Each tile's mark is type — the project name as a lowercase
-       slug — because none of these products has a logo to show and a stock
-       glyph would be decoration standing in for content. */
+       hairline border, page ground, no shadow at rest on the card itself.
+       What the plate holds depends on whether there is work to show. Where a
+       project is live, the plate is a snapshot of the real thing — a rounded
+       screenshot floating on a soft tinted ground drawn from that site's own
+       palette (.card-art.shot), which is the one place photography earns its
+       way in: it is the work, not decoration. Where there is nothing to
+       screenshot (the side projects), the mark stays type — the project name
+       as a lowercase slug — because a stock glyph would be decoration
+       standing in for content. */
     .cards {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -512,6 +544,49 @@
     .card-mark i { font-style: normal; color: var(--faint); }
     .card:hover .card-mark, .card:focus-visible .card-mark { color: var(--text); }
 
+    /* Screenshot plate. Three soft radial lobes over a flat ground read as one
+       blurred wash without a filter or an image to download, and the tints are
+       per project so four tiles do not become four of the same picture. The
+       shot is inset on all four sides rather than bleeding off an edge: a
+       cropped screenshot reads as a mistake, a floating one reads as a screen. */
+    .card-art.shot {
+      display: block;
+      padding: 8.5%;
+      background:
+        radial-gradient(115% 90% at 14% 6%, var(--plate-a) 0%, transparent 62%),
+        radial-gradient(105% 85% at 88% 16%, var(--plate-b) 0%, transparent 64%),
+        radial-gradient(150% 130% at 46% 112%, var(--plate-c) 0%, transparent 72%),
+        var(--plate-ground);
+    }
+    .plate-product {
+      --plate-a: var(--plate-product-a); --plate-b: var(--plate-product-b);
+      --plate-c: var(--plate-product-c); --plate-ground: var(--plate-product-ground);
+    }
+    .plate-landing {
+      --plate-a: var(--plate-landing-a); --plate-b: var(--plate-landing-b);
+      --plate-c: var(--plate-landing-c); --plate-ground: var(--plate-landing-ground);
+    }
+    .plate-mazic {
+      --plate-a: var(--plate-mazic-a); --plate-b: var(--plate-mazic-b);
+      --plate-c: var(--plate-mazic-c); --plate-ground: var(--plate-mazic-ground);
+    }
+    .plate-beep {
+      --plate-a: var(--plate-beep-a); --plate-b: var(--plate-beep-b);
+      --plate-c: var(--plate-beep-c); --plate-ground: var(--plate-beep-ground);
+    }
+    /* object-position: top — a site's top is its hero, and that is what a
+       reader recognises; a centred crop lands on whatever section is halfway
+       down. Same easing as .row-arrow on hover, so the lift belongs to the
+       same family as the rows below. */
+    .card-shot {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top center;
+      border-radius: 8px;
+      box-shadow: var(--shadow-shot);
+      transition: transform 0.35s cubic-bezier(.22,.61,.36,1);
+    }
+    .card:hover .card-shot, .card:focus-visible .card-shot { transform: scale(1.02); }
+
     .card-foot {
       display: flex; flex-direction: column; gap: 2px;
       padding: 0 16px 16px;
@@ -545,12 +620,16 @@
 
     @media (max-width: 640px) {
       .cards { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-      .card-art { aspect-ratio: 5 / 2; }
+      /* Mark plates flatten; screenshot plates keep 16/9 — a site squeezed
+         into 5/2 crops to a strip of navigation bar and nothing else. */
+      .card-art:not(.shot) { aspect-ratio: 5 / 2; }
+      .card-art.shot { padding: 6.5%; }
       /* No hover on touch: the arrow is the affordance, so it stays out */
       .card-arrow { display: none; }
     }
     @media (prefers-reduced-motion: reduce) {
-      .card, .card-mark, .card-arrow { transition: none; }
+      .card, .card-mark, .card-arrow, .card-shot { transition: none; }
+      .card:hover .card-shot, .card:focus-visible .card-shot { transform: none; }
     }
 
     /* ---------- PROSE ---------- */
@@ -1057,7 +1136,7 @@
         <div class="cards" id="panel-work" role="tabpanel" aria-labelledby="tab-work">
 
           <a class="card" href="finsynth.html">
-            <span class="card-art"><span class="card-mark"><i>/</i>finsynth<i>/</i>product</span></span>
+            <span class="card-art shot plate-product"><img class="card-shot" src="assets/cards/finsynth-product.jpg" width="1000" height="553" alt="" loading="lazy" decoding="async"></span>
             <span class="card-foot">
               <span class="card-title">FinSynth AI &mdash; Product
                 <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
@@ -1067,7 +1146,7 @@
           </a>
 
           <a class="card" href="https://finsynth.ai/" target="_blank" rel="noopener">
-            <span class="card-art"><span class="card-mark"><i>/</i>finsynth<i>/</i>landing</span></span>
+            <span class="card-art shot plate-landing"><img class="card-shot" src="assets/cards/finsynth-landing.jpg" width="1000" height="562" alt="" loading="lazy" decoding="async"></span>
             <span class="card-foot">
               <span class="card-title">FinSynth AI &mdash; Landing page
                 <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
@@ -1077,7 +1156,7 @@
           </a>
 
           <a class="card" href="https://ritikamazicv1.framer.website/" target="_blank" rel="noopener">
-            <span class="card-art"><span class="card-mark"><i>/</i>mazic</span></span>
+            <span class="card-art shot plate-mazic"><img class="card-shot" src="assets/cards/mazic.jpg" width="1000" height="562" alt="" loading="lazy" decoding="async"></span>
             <span class="card-foot">
               <span class="card-title">Mazic
                 <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
@@ -1087,7 +1166,7 @@
           </a>
 
           <a class="card" href="case.html?c=eventbeep">
-            <span class="card-art"><span class="card-mark"><i>/</i>eventbeep</span></span>
+            <span class="card-art shot plate-beep"><img class="card-shot" src="assets/cards/eventbeep.jpg" width="1000" height="562" alt="" loading="lazy" decoding="async"></span>
             <span class="card-foot">
               <span class="card-title">Event Beep
                 <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
