@@ -96,13 +96,45 @@
       --dia-box: rgba(0, 0, 0, 0.16);
       --dia-ink: rgba(0, 0, 0, 0.66);
       --dia-dot: rgba(0, 0, 0, 0.13);
+      /* The anatomy wireframe (07). Drawn ink on the page's own ground, so it
+         flips with the theme like the rest of the figures. The blue is the
+         same blue the diagrams already use, and it already means one thing:
+         where the product hands control to a person. */
+      --anat-bar: rgba(0, 0, 0, 0.11);
+      --anat-bar-on: rgba(52, 91, 195, 0.32);
+      --anat-wash: rgba(52, 91, 195, 0.07);
 
-      --t-header-lg: 44px;
-      --t-header-md: 32px;
-      --t-body-lg: 17px;
-      --t-body-md: 15px;
-      --t-body-sm: 13px;
-      --t-label: 11px;   /* the mono micro-labels: chapter numbers, strip steps */
+      /* ---------- TYPE SCALE ---------- */
+      /* Six roles, and six is the whole point. Across the three pages there
+         were seventeen distinct font-sizes in play — 10, 12, 12.5, 13, 14, 15,
+         16, 17, 18, 19, 20, 21, 23, 24, 26, 30, 32 — which is not a scale, it
+         is a pile, and it is why the type read as broken (Ritika, 2026-08-22:
+         "the text type the page still feels broken"). Two of those were
+         structural, not just noise: h2 was declared at both 26px (bare) and
+         32px (.chapter-head), and h3 at 26px — the same size as the smaller h2
+         — so the heading hierarchy was inverted wherever the two met.
+
+         The ladder is a major third off a 17px reading size. Anything needing
+         a distinction the six can't make reaches for INK or WEIGHT, never a
+         seventh size. That rule was already written for the chapter heads
+         ("four levels on two type sizes, because colour and the rule do the
+         rest") — this only generalises it to the whole site.
+
+         Each role ships its line-height alongside, because a size without its
+         leading is half a decision, and that is how one 22px leading ended up
+         on 13px, 15px and 17px text alike.
+
+         What is deliberately NOT on the scale: artwork. The pixel cat, the
+         Caveat handwriting on the problem wall and the voice notes, the fake
+         browser chrome in .fiag-*, the avatar monograms, the mono labels
+         inside a .product-frame stage. Those are sized to their own box the
+         way the cat is, and a page-scale bump must not resize a mock's UI. */
+      --h1: clamp(32px, 7vw, 44px);   --h1-lh: 1.16;    /* page title */
+      --h2: 30px;                     --h2-lh: 1.28;    /* section / chapter title */
+      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, standfirst, pull */
+      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose */
+      --body2: 15px;                  --body2-lh: 1.55; /* UI, meta, captions */
+      --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
 
       --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -120,6 +152,14 @@
          image (the portfolio hero keeps its sunset). Needs color or tone
          edge-to-edge: an image that fades to white reads as an empty lens. */
       --spotlight-img: url('assets/finsynth/spotlight-wall-st.jpg');
+    }
+
+    /* The scale steps down as one thing, not rule by rule. Before this, three
+       separate rules carried their own phone size (.standfirst 19, .decision
+       h3 23, .evo-hinge 14) and drifted apart from each other; h1 already
+       stepped via its own clamp, and body1/body2 hold at any measure. */
+    @media (max-width: 720px) {
+      :root { --h2: 26px; --h3: 20px; }
     }
 
     /* ---------- DARK ----------
@@ -162,6 +202,9 @@
       --dia-box: rgba(255, 255, 255, 0.22);
       --dia-ink: rgba(255, 255, 255, 0.62);
       --dia-dot: rgba(255, 255, 255, 0.09);
+      --anat-bar: rgba(255, 255, 255, 0.15);
+      --anat-bar-on: rgba(127, 157, 255, 0.36);
+      --anat-wash: rgba(127, 157, 255, 0.10);
 
       --shadow-note:   0 10px 20px -10px rgba(0, 0, 0, 0.8);
       --shadow-pill:   0 18px 44px -8px rgba(0, 0, 0, 0.72), 0 2px 8px rgba(0, 0, 0, 0.5);
@@ -181,7 +224,7 @@
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      font-size: var(--t-body-lg);
+      font-size: var(--body1);
       line-height: 1.75;
       letter-spacing: 0;
     }
@@ -211,7 +254,7 @@
       display: flex; align-items: baseline; justify-content: space-between;
       padding: 22px 0;
       gap: 24px;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
     }
     .nav-name { font-weight: 500; color: var(--text); }
     /* "riri" wordmark — hand-drawn monoline SVG, colored via currentColor */
@@ -243,12 +286,12 @@
       }
     }
     .nav-left { display: flex; align-items: center; gap: 20px; }
-    .nav-back, .nav-next {
+    .nav-back {
       color: var(--muted);
       transition: color 0.18s ease;
     }
-    .nav-back:hover, .nav-next:hover { color: var(--text); }
-    .nav-back, .nav-next { white-space: nowrap; }
+    .nav-back:hover { color: var(--text); }
+    .nav-back { white-space: nowrap; }
     .nav-right { display: flex; align-items: center; gap: 14px; }
 
     /* Light / dark switch — same icon-button family as the chat's controls.
@@ -278,15 +321,17 @@
     }
 
     /* ---------- SECTION INDEX ----------
-       Lives in the left margin, outside the stitch line. Hairline rail with the
-       active segment inked in — no boxes, no numbers, no fill. Pinned near the
-       top rather than vertically centred, so it starts level with the masthead
-       and reads as the head of the page. Hidden below 1120px, where the margin
-       is too narrow to hold it without crowding. */
+       Parked in the top-left corner of the viewport, not tracked off the
+       content column: it is page furniture, so it sits at a fixed inset from
+       the window edge and stays put while the column recentres. Hairline rail
+       with the active segment inked in — no boxes, no numbers, no fill. Pinned
+       just under the sticky header so it starts level with the masthead and
+       reads as the head of the page. Hidden below 1120px, where the margin is
+       too narrow to hold it without crowding. */
     .index {
       position: fixed;
-      top: 112px;
-      left: calc(50% - var(--content) / 2 - var(--gutter) - 44px - 168px);
+      top: 92px;
+      left: 32px;
       width: 168px;
       z-index: 50;
       opacity: 0;
@@ -301,7 +346,7 @@
       position: relative;
       display: block;
       padding: 7px 0 7px 18px;
-      font-size: var(--t-body-sm);
+      font-size: var(--body2);
       line-height: 1.45;
       /* --muted, not --faint: an inactive item still has to be readable, and
          --faint is retired as ink for informational text elsewhere in this file. */
@@ -323,7 +368,7 @@
     }
     /* The three decisions are chapters inside 07, so the label steps in while
        the inked segment stays on the one shared rail line. */
-    .index li.sub a { padding-left: 32px; font-size: 12px; }
+    .index li.sub a { padding-left: 32px; font-size: var(--pill); }
     .index a:hover { color: var(--text); }
     .index a[aria-current='true'] { color: var(--text); }
     .index a[aria-current='true']::before { transform: scaleY(1); }
@@ -342,12 +387,12 @@
        gets more expressive from Section 02 on. */
     .masthead { padding: 80px 0 92px; }
     .eyebrow {
-      font-size: var(--t-body-sm); line-height: 22px;
+      font-size: var(--body2); line-height: 22px;
       color: var(--faint); font-weight: 500;
       margin-bottom: 18px;
     }
     .masthead h1 {
-      font-size: clamp(32px, 7vw, var(--t-header-lg));
+      font-size: var(--h1);
       font-weight: 500;
       line-height: 1.2;
       letter-spacing: -0.022em; /* em, not px — the size is fluid */
@@ -356,15 +401,100 @@
       margin-bottom: 20px;
     }
     .standfirst {
-      font-size: 21px; line-height: 1.55;
+      font-size: var(--h3); line-height: var(--h3-lh);
       color: var(--muted);
       letter-spacing: -0.2px;
       text-wrap: pretty;
     }
-    .masthead-meta {
-      font-size: var(--t-body-sm); line-height: 22px;
-      color: var(--faint); font-weight: 500;
-      margin-top: 26px;
+    /* The credit line is a labelled grid, not a run-on strip. It used to read
+       "Founding Product Designer · March 2025 – Present · Web + Excel" — three
+       unlike facts middot-welded into one sentence, all in --faint, so nothing
+       in it could be found at a glance (Ritika, 2026-08-22: show it "as clear
+       as this", pointing at a ROLE / TIMELINE / TEAM header). Now each fact
+       gets a mono micro-caps key over a full-ink value, which is the same
+       label idiom .chapter-key and .decision-num already use — no new visual
+       pattern, just the one the page has applied to the facts.
+
+       Three columns, with TEAM spanning the second row: the team answer is a
+       clause, not a word, and squeezing it into a fourth 158px column left it
+       four lines tall beside three one-liners. It carries who was in the room;
+       the Team block after the hero shot carries what each of them did.
+
+       TIMELINE is THIS PROJECT's window (April 2026 on), not the tenure —
+       that is what a case-study header means by timeline. The tenure is a
+       separate fact and lives on index.html's Experience row as "2025 — Now".
+       The two differ on purpose; don't reconcile them.
+
+       The grid sits BELOW the hero shot (Ritika, 2026-08-22: "move the image
+       at the start and then rest follows"). Title, standfirst, then the screen
+       — the reader sees the product before being handed the credits, which is
+       the page's own context -> image -> interpretation order applied to the
+       masthead. It used to sit above the figure, which meant four lines of
+       administrative metadata stood between the standfirst and the first look
+       inside. Its top margin is 52px, not the old 34px, because the rule now
+       has a full-bleed mat above it rather than a line of text. */
+    .masthead-facts {
+      display: grid;
+      grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+      grid-template-rows: repeat(3, auto);
+      gap: 24px 36px;
+      margin-top: 52px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+    /* Role / Timeline / Platform run DOWN column one and TEAM stands beside all
+       three (Ritika, 2026-08-22: "role, timeline and platform align them
+       vertically and next to it keep teams"). They used to be three across with
+       TEAM spanning the row underneath, which read as two unlike bands: three
+       one-word facts, then a rule-width roster. Stacked, the three short facts
+       are one scannable column of keys and the roster gets a column of its own
+       — and the objection that killed a fourth column (a ~158px measure stood
+       the roster four lines tall) is gone, because the roster now has ~400px.
+       The explicit three rows are load-bearing: `grid-row: 1 / -1` resolves
+       against the explicit grid, so without them TEAM would span one row and
+       drop under Timeline. Left column is capped rather than 1fr because its
+       longest value is "Founding Product Designer" — the width it doesn't need
+       belongs to the roster. */
+    .masthead-facts .fact-team { grid-column: 2; grid-row: 1 / -1; }
+    /* TEAM is a roster, not a sentence (Ritika, 2026-08-22, from a reference she
+       pointed at): one line per person or group. The rule is ink for who,
+       --muted for their designation — the same ink-term / muted-gloss
+       relationship .chapter-key already uses (and the portfolio's Toolkit
+       .pairs before it), set on one line with a middot, so this is no new
+       visual pattern. This roster is now the page's ONLY team statement: the
+       standalone Team section that used to sit between the masthead and 01 was
+       removed on 2026-08-22 once TEAM moved beside Role/Timeline/Platform,
+       because the two said the same thing twice. The group lines carry no muted
+       half because for them the designation IS the identity; there is nothing
+       left to gloss. It used to read "Founders, engineering, two internal
+       analysts & me" — one run-on clause in which the roles could not be
+       counted. */
+    .fact-roster { list-style: none; margin: 0; padding: 0; }
+    .fact-roster li + li { margin-top: 5px; }
+    .fact-roster span { color: var(--muted); }
+    .fact-roster span::before {
+      content: "\00B7";
+      margin: 0 7px;
+      color: var(--faint);
+    }
+    .masthead-facts dt {
+      font-family: var(--mono); font-size: var(--pill);
+      line-height: 1;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 9px;
+    }
+    .masthead-facts dd {
+      font-size: var(--body2); line-height: 1.45;
+      color: var(--text);
+      margin: 0;
+    }
+    @media (max-width: 560px) {
+      /* Two columns of a phone measure wrap both of them. Resetting the row
+         template and TEAM's placement matters: `grid-column: 2` against a
+         one-column template would conjure an implicit second column. */
+      .masthead-facts { grid-template-columns: 1fr; grid-template-rows: none; gap: 18px; }
+      .masthead-facts .fact-team { grid-column: auto; grid-row: auto; }
     }
 
     /* ---------- SPOTLIGHT REVEAL ---------- */
@@ -413,34 +543,62 @@
        lens fade, and the masthead is nowhere near the chat squeeze. */
     :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .eyebrow,
     :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .standfirst,
-    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-meta {
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-facts {
       color: var(--text);
     }
     :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .eyebrow,
     :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead h1,
     :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .standfirst,
-    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-meta {
+    :root[data-theme="dark"] .masthead-band:has(.spotlight-lens.on) .masthead-facts {
       text-shadow: 0 0 4px var(--bg), 0 0 16px var(--bg), 0 0 28px var(--bg);
     }
     :root[data-theme="dark"] .eyebrow,
     :root[data-theme="dark"] .masthead h1,
     :root[data-theme="dark"] .standfirst,
-    :root[data-theme="dark"] .masthead-meta {
+    :root[data-theme="dark"] .masthead-facts {
       transition: color 0.5s cubic-bezier(0.16,1,0.3,1),
                   text-shadow 0.5s cubic-bezier(0.16,1,0.3,1);
     }
 
     /* ---------- CHAPTERS ---------- */
     /* No rules, no labels, no numbered sections — rhythm carries the reader. */
-    .chapter { padding: 76px 0 0; scroll-margin-top: 76px; }
-    .chapter:first-of-type { padding-top: 88px; }
+    /* ---- SECTION SEPARATOR ----
+       A hairline above each top-level section (Ritika, 2026-08-22: "a
+       seperator of each section"). This is the portfolio's own language —
+       index.html divides its rows with exactly this rule — so it adds no new
+       visual pattern, just applies an existing one to the case study.
+
+       Keyed on the numbered tag, NOT on `.chapter`, for two reasons: 08 is
+       `.close` rather than `.chapter` and a `.chapter` selector would miss it;
+       and the three `.decision-num` sub-sections inside 07, plus the
+       unlabelled `.evo` interstitial, are not top level — a full-width rule
+       above those would flatten them into peers of the chapters. They keep the
+       tighter gap and no rule, and that contrast is what marks the nested
+       level. So: pill = new chapter = rule.
+
+       Every chapter sits in its own `.wrap`, so chapters are NOT siblings and
+       `+` / `:first-of-type` cannot reach across them — `:has()` is doing the
+       job a sibling selector normally would. (That is also why the old
+       `.chapter:first-of-type` rule was dead: with one section per wrap it
+       matched every chapter, so its 88px was the real value everywhere and the
+       76px below it never applied. Removed, and folded into one number.)
+
+       The gap is split unevenly around the rule — less above, more below —
+       because the rule introduces the section beneath it rather than closing
+       the one above. */
+    section:has(> .chapter-head > .chapter-num) {
+      border-top: 1px solid var(--line);
+      margin-top: 40px;
+    }
+
+    .chapter { padding: 56px 0 0; scroll-margin-top: 76px; }
 
     p { margin-bottom: 22px; }
     p:last-child { margin-bottom: 0; }
     i { font-style: italic; }
 
     h2 {
-      font-size: 26px; line-height: 1.32;
+      font-size: var(--h2); line-height: var(--h2-lh);
       font-weight: 500; letter-spacing: -0.5px;
       text-wrap: balance;
       color: var(--text);
@@ -451,7 +609,7 @@
     .beat { margin-bottom: 0; }
 
     .pull {
-      font-size: clamp(24px, 5.2vw, 30px);
+      font-size: clamp(var(--h3), 5.2vw, var(--h2));
       line-height: 1.3;
       letter-spacing: -0.024em; /* em, not px — the size is fluid */
       font-weight: 500;
@@ -473,66 +631,241 @@
     /* ---------- CHAPTER HEADS ----------
        The number is the map's promise being kept. The name is compelling
        rather than procedural; the gloss says what the reader is about to
-       get, so no chapter has to be read to find out whether it matters. */
-    .chapter-head { margin-bottom: 34px; }
+       get, so no chapter has to be read to find out whether it matters.
+
+       Three levels, not four. The gloss used to be *smaller* than the body
+       copy that followed it (15px muted over 17px ink), so a line that
+       summarises the chapter read as a caption demoted beneath the thing it
+       summarises — the head stacked four type sizes in its first four lines.
+       The gloss is now a lede: body size, separated from the body by ink
+       alone. Colour is the whole hierarchy below the h2, which is the
+       monochrome way and leaves the head one clear block instead of a pile. */
+    /* ---- SECTION GRAMMAR: context -> image -> interpretation ----
+       Locked 2026-08-22. Every section runs in this order, and the order is
+       the rule, not a preference:
+
+         tag -> title -> lede        only why you are about to see this
+         [figure]                    let the reader see it
+         figcaption                  what you are looking at
+         .chapter-key                why it matters (optional)
+         body                        the deeper reasoning, only if needed
+
+       Copy that explains a figure NEVER sits above it. The failure this
+       replaces was context -> interpretation -> image -> interpretation ->
+       another interpretation, which made the page unscannable: the reader was
+       told what to think twice before being shown anything. The product
+       screenshots carry a lot of the story here, so they come early and the
+       reasoning follows them. */
+    .chapter-head { margin-bottom: 32px; }
+    /* The number is a tag, not a line of text: bounded, so label and title
+       bind into one object instead of reading as two stacked lines. Hairline
+       and monochrome — the pill is the shape, not a fill. Only top-level
+       chapters get it; .decision-num inside 07 stays a bare label, which is
+       what marks it as the nested level. */
     .chapter-num {
-      display: block;
-      font-family: var(--mono); font-size: var(--t-label);
+      display: inline-block;
+      font-family: var(--mono); font-size: var(--pill);
+      line-height: 1;
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px 5px;
+      margin-bottom: 18px;
     }
     .chapter-head h2 {
-      font-size: var(--t-header-md);
+      font-size: var(--h2);
       letter-spacing: -0.7px;
-      margin-bottom: 10px;
+      /* A lede paragraph needs more air under a 32px head than a caption did */
+      margin-bottom: 16px;
     }
+    /* ...but a head with no lede shouldn't carry the lede's air */
+    .chapter-head h2:last-child { margin-bottom: 0; }
     .chapter-gloss {
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body1); line-height: 1.75;
       color: var(--muted);
       text-wrap: pretty;
       margin-bottom: 0;
     }
-
-    /* The decisions inside chapter 07: a design problem, and the thing that
-       shipped because of it. Stated as a pair so the product name never has
-       to carry the story on its own. */
-    .decision-map { list-style: none; margin: 30px 0 0; }
-    .decision-map li { border-top: 1px solid var(--line); }
-    .decision-map li:last-child { border-bottom: 1px solid var(--line); }
-    .decision-map a {
-      display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
-      padding: 13px 0;
-      font-size: var(--t-body-md); line-height: 22px;
-      color: var(--muted);
+    /* The chapter's one point, pulled onto a rule. It sits AFTER the figure,
+       never before it — see the section grammar note above .chapter-head.
+       Lede is muted, key is ink: the two sit at the same size and the
+       hierarchy is carried by colour and the rule alone, which is how this
+       page keeps four levels without four type sizes. Every key line was
+       MOVED out of the body it used to sit in — the chapter gains nothing it
+       didn't already say. Chapters that already resolve on their own terms
+       (04's .pull, 08's .beat) don't get one. */
+    /* A soft tinted panel, not a left rule (Ritika, 2026-08-22, from a
+       reference she pointed at). The rule version was the head's one point
+       hung off a 2px hairline; as a filled block it reads as the thing the
+       chapter resolves to rather than an aside beside the prose. This is NOT a
+       new material: `.canvas` and `.term` already ground content-column
+       surfaces in --bg-raised, and 14px is the radius .card uses on the
+       portfolio, so the panel is assembled from what the page already owns.
+       Borderless on purpose — .canvas and .term both carry a hairline because
+       they hold artwork and code that need containing; this holds one line of
+       the page's own voice, and the tint alone is enough to lift it. */
+    .chapter-key {
+      margin: 30px 0;
+      padding: 22px 24px;
+      border-radius: 14px;
+      background: var(--bg-raised);
     }
-    .decision-map .problem { color: var(--text); font-weight: 500; }
-    .decision-map .to { font-family: var(--mono); font-size: 12px; color: var(--faint); }
-    .decision-map a:hover .problem { text-decoration: underline; text-underline-offset: 3px; }
+    .chapter-key .k {
+      display: block;
+      font-family: var(--mono); font-size: var(--pill);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    .chapter-key p {
+      font-size: var(--body1); line-height: 1.6;
+      font-weight: 500;
+      color: var(--text);
+      text-wrap: pretty;
+      margin-bottom: 0;
+    }
+    @media (max-width: 560px) {
+      /* 24px of padding either side is 48px off a phone measure */
+      .chapter-key { padding: 18px 18px; border-radius: 12px; }
+    }
+
+    /* The decisions inside chapter 07, as regions of the one panel they live
+       in. This replaced a flat three-row list (`.decision-map`) that named
+       each decision twice — a design problem and the thing that shipped —
+       and showed neither: the reader met "Edit Query", "Plan Mode" and
+       "Tool calls" as three words before meeting any of them as places.
+
+       Borrowed from a reference Ritika pointed at (2026-08-22): a wireframe
+       on the left, a labelled list of its parts on the right, and the two
+       cross-highlight — the active item inks its own rule and tints its
+       region of the skeleton. It cycles on its own, so the link between the
+       two panes is demonstrated rather than left for a hover to discover.
+
+       It stays inside the page's material. The card is `.canvas`'s ground and
+       hairline; the highlight is `--blue-ink`, which every drawn figure here
+       already uses for exactly this meaning (where the product hands control
+       to a person); the key is the same mono micro-caps as `.decision-num`
+       and `.chapter-key .k`; the left rule is `.chapter-key`'s rule, inked.
+       No new pattern — the ones the page has, wired together.
+
+       The skeleton is deliberately a WIREFRAME, not a screenshot: the three
+       real captures are 200-odd pixels below, one per decision, and a fourth
+       shrunk product shot would compete with them. This one only has to say
+       "three regions, one panel". */
+    /* It has an id, so it is a link target — clear the sticky header. */
+    .anatomy { margin: 34px 0 0; scroll-margin-top: 100px; }
+    .anat {
+      display: grid;
+      grid-template-columns: 224px 1fr;
+      gap: 32px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 26px;
+      background: var(--bg-raised);
+    }
+
+    .anat-screen {
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg-card);
+    }
+    .anat-head { height: 7px; width: 42%; border-radius: 3px; background: var(--anat-bar); margin: 2px 0 4px; }
+    .anat-region {
+      display: flex; flex-direction: column; gap: 7px;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.32s ease;
+    }
+    .anat-region.on { background: var(--anat-wash); }
+    /* Every mark in the skeleton is one of three things: a bar (a line of
+       content), a square (a numbered step) or a dot (a tool call). Shape is
+       what tells the three regions apart at 200px, not colour — colour is
+       spent on the highlight. */
+    .anat-region i, .anat-region s {
+      display: block; border-radius: 3px;
+      background: var(--anat-bar);
+      transition: background 0.32s ease;
+    }
+    .anat-region i { height: 7px; }
+    .anat-region s { flex: 0 0 auto; width: 7px; height: 7px; }
+    .anat-region s.dot { border-radius: 50%; }
+    .anat-region .line { display: flex; align-items: center; gap: 7px; }
+    .anat-region .line i { flex: 1 1 auto; }
+    .anat-region .chips { display: flex; gap: 5px; margin-top: 1px; }
+    .anat-region .chips i { height: 9px; border-radius: 5px; }
+    .anat-region.on i, .anat-region.on s { background: var(--anat-bar-on); }
+    /* One mark per region goes to full ink, so the highlight has a focal
+       point instead of an even wash. */
+    .anat-region.on i.key, .anat-region.on s.key { background: var(--blue-ink); }
+
+    .anat-list { list-style: none; margin: 0; display: flex; flex-direction: column; }
+    .anat-list a {
+      display: block;
+      padding: 12px 0 12px 16px;
+      border-left: 2px solid transparent;
+      transition: border-color 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .anat-list .k {
+      display: block;
+      font-family: var(--mono); font-size: var(--pill);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 8px;
+      transition: color 0.28s ease;
+    }
+    .anat-list .t {
+      display: block;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--muted);
+      transition: color 0.28s ease;
+    }
+    .anat-list li.on a { border-left-color: var(--blue-ink); }
+    .anat-list li.on .k { color: var(--blue-ink); }
+    .anat-list li.on .t, .anat-list a:hover .t { color: var(--text); }
+
+    /* Stacked, and the skeleton keeps its width rather than growing to the
+       measure — a wireframe scaled up to 660px stops reading as a small
+       screen and starts reading as a real one. */
+    @media (max-width: 720px) {
+      .anat { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
+      .anat-screen { width: 224px; margin: 0 auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .anat-region, .anat-region i, .anat-region s,
+      .anat-list a, .anat-list .k, .anat-list .t { transition: none; }
+    }
 
     .decision-head { margin-bottom: 30px; }
     .decision-num {
       display: block;
-      font-family: var(--mono); font-size: var(--t-label);
+      font-family: var(--mono); font-size: var(--pill);
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 12px;
     }
+    /* The nested level, so it is h3 — it used to be 26px, the same size as a
+       bare h2, which is what made 07's three decisions read as peers of the
+       chapters instead of children of one. */
     .decision-head h3 {
-      font-size: 26px; line-height: 1.32;
+      font-size: var(--h3); line-height: var(--h3-lh);
       font-weight: 500; letter-spacing: -0.5px;
       text-wrap: balance;
       color: var(--text);
+      /* the three decisions carry a .chapter-gloss lede too, same as a chapter */
+      margin-bottom: 16px;
     }
     @media (max-width: 560px) {
-      .decision-head h3 { font-size: 23px; }
     }
 
     /* ---------- FIGURES ---------- */
     figure { margin: 44px 0; }
     figure svg { display: block; width: 100%; height: auto; }
     figcaption {
-      font-size: var(--t-body-sm); line-height: 22px;
+      font-size: var(--body2); line-height: 22px;
       color: var(--faint);
       text-wrap: pretty;
       margin-top: 14px;
@@ -577,7 +910,7 @@
 
     .term {
       font-family: var(--mono);
-      font-size: var(--t-body-sm); line-height: 1.85;
+      font-size: var(--body2); line-height: 1.85;
       border: 1px solid var(--line);
       background: var(--bg-raised);
       padding: 18px 20px;
@@ -609,7 +942,7 @@
     .tcall-row + .tcall-row { border-top: 1px solid var(--line); }
     .tcall-key {
       font-family: var(--mono);
-      font-size: var(--t-label);
+      font-size: var(--pill);
       letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--faint);
@@ -618,7 +951,7 @@
     .tcall p { margin: 0; }
     .tcall-live, .tcall-head, .tcall-done {
       display: flex; align-items: center; gap: 12px;
-      font-size: var(--t-body-lg);
+      font-size: var(--body1);
     }
     .tcall-live { color: var(--muted); }
     .tcall-head { color: var(--muted); }
@@ -626,7 +959,7 @@
     .tcall-done { color: var(--text); font-weight: 500; }
     .tcall-steps {
       list-style: none; margin: 0; padding: 0;
-      font-size: var(--t-body-md); color: var(--text);
+      font-size: var(--body2); color: var(--text);
     }
     .tcall-steps li {
       position: relative;
@@ -814,9 +1147,9 @@
     .wf-head {
       display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px;
       margin-bottom: 12px;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
     }
-    .wf-head .n { font-family: var(--mono); font-size: var(--t-label); letter-spacing: 0.12em; color: var(--faint); }
+    .wf-head .n { font-family: var(--mono); font-size: var(--pill); letter-spacing: 0.12em; color: var(--faint); }
     .wf-head .name { font-weight: 500; color: var(--text); }
     .wf-head .desc { color: var(--muted); margin-left: auto; }
     /* Stage panel + browser window. Shared fixed image height, natural
@@ -846,7 +1179,7 @@
     .turn { border: 0; border-top: 1px solid var(--line); margin: 72px 0 0; }
     .catch {
       margin: 44px 0 0;
-      font-size: 21px; line-height: 1.5; font-weight: 500;
+      font-size: var(--h3); line-height: var(--h3-lh); font-weight: 500;
       letter-spacing: -0.3px; color: var(--text);
       text-wrap: balance;
     }
@@ -885,7 +1218,7 @@
     }
     .strip-step {
       display: block; height: 28px; margin-bottom: 9px;
-      font-family: var(--mono); font-size: var(--t-label); line-height: 14px;
+      font-family: var(--mono); font-size: var(--pill); line-height: 14px;
       letter-spacing: 0.11em; text-transform: uppercase;
       color: var(--faint);
     }
@@ -905,13 +1238,13 @@
     .strip-say p {
       margin: 0; text-align: center;
       font-family: var(--hand); font-weight: 500; /* the only Caveat face loaded */
-      font-size: 21px; line-height: 1.25;
+      font-size: var(--h3); line-height: var(--h3-lh);
       color: var(--gray-14);
     }
     .strip-pick {
       display: flex; flex-direction: column; justify-content: center; gap: 5px;
       padding: 10px 16px;
-      font-size: 12.5px; line-height: 1.4;
+      font-size: var(--pill); line-height: 1.4;
       color: var(--faint);
     }
     .strip-pick .on { color: var(--text); font-weight: 500; }
@@ -956,7 +1289,7 @@
     .evo-state { margin: 0; }
     .evo-label {
       margin: 0 0 14px;
-      font-size: var(--t-label); line-height: 1.5;
+      font-size: var(--pill); line-height: 1.5;
       letter-spacing: 0.11em;
       text-transform: uppercase;
       font-weight: 500;
@@ -984,7 +1317,7 @@
       list-style: none;
       margin: 14px 0 0;
       font-family: var(--mono);
-      font-size: var(--t-label); line-height: 1.7;
+      font-size: var(--pill); line-height: 1.7;
       color: var(--faint);
       letter-spacing: 0.01em;
     }
@@ -1004,14 +1337,14 @@
     .evo-rule { flex: 1 1 auto; width: 1px; background: var(--line); min-height: 18px; }
     .evo-hinge p {
       margin: 0;
-      font-size: 15px; line-height: 1.45;
+      font-size: var(--body2); line-height: var(--body2-lh);
       letter-spacing: -0.2px;
       color: var(--muted);
       text-wrap: balance;
     }
     .evo-close {
       margin: 40px 0 0;
-      font-size: clamp(20px, 4vw, 24px); line-height: 1.35;
+      font-size: clamp(var(--body1), 4vw, var(--h3)); line-height: var(--h3-lh);
       letter-spacing: -0.021em; /* em, not px — the size is fluid */
       font-weight: 500;
       text-wrap: balance;
@@ -1032,7 +1365,7 @@
         gap: 16px;
       }
       .evo-rule { width: auto; height: 1px; min-height: 0; flex: 1 1 auto; }
-      .evo-hinge p { flex: 0 1 auto; font-size: 14px; }
+      .evo-hinge p { flex: 0 1 auto; }
     }
 
     /* Design boundaries: a hairline list in the same family as the decision
@@ -1041,7 +1374,7 @@
     .bounds li {
       border-top: 1px solid var(--line);
       padding: 13px 0;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
       color: var(--muted);
     }
     .bounds li:last-child { border-bottom: 1px solid var(--line); }
@@ -1122,7 +1455,7 @@
     }
 
     /* ---------- CLOSE ---------- */
-    .close { padding: 88px 0 0; scroll-margin-top: 76px; }
+    .close { padding: 56px 0 0; scroll-margin-top: 76px; }
     .close p { color: var(--text); }
 
     footer {
@@ -1133,11 +1466,11 @@
     .footer-row {
       display: flex; flex-wrap: wrap; gap: 12px;
       align-items: baseline; justify-content: space-between;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
     }
     .footer-row a { color: var(--muted); transition: color 0.18s ease; }
     .footer-row a:hover { color: var(--text); }
-    .footer-copy { font-size: var(--t-body-sm); color: var(--faint); }
+    .footer-copy { font-size: var(--body2); color: var(--faint); }
 
     /* ---------- REVEAL ---------- */
     .reveal {
@@ -1157,8 +1490,8 @@
       .mat { --mat-pad: 18px; border-radius: 14px; }
       .hero-product { --mat-pad: 20px; margin-top: 40px; }
       .masthead .pull { margin-top: 44px; max-width: none; }
-      .chapter { padding-top: 60px; }
-      .standfirst { font-size: 19px; }
+      .chapter, .close { padding-top: 44px; }
+      section:has(> .chapter-head > .chapter-num) { margin-top: 28px; }
       .voice { margin-left: 0; }
       .voice p { font-size: 18px; line-height: 1.85; }
     }
@@ -1175,7 +1508,7 @@
       background: var(--ask-pill-bg);
       border: 1px solid var(--line-hover); border-radius: 999px;
       box-shadow: var(--shadow-pill);
-      font: inherit; font-size: var(--t-body-md); line-height: 22px; font-weight: 500;
+      font: inherit; font-size: var(--body2); line-height: 22px; font-weight: 500;
       color: var(--text);
       text-align: left;
       cursor: text; /* reads as an input; clicking opens the real one */
@@ -1294,7 +1627,7 @@
       display: flex; align-items: center; justify-content: center;
       border: 1px solid transparent; border-radius: 8px;
       background: transparent; color: var(--faint);
-      font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
+      font: inherit; font-size: var(--body1); line-height: 1; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
     }
     .ask-head-close:hover, .ask-head-pop:hover { color: var(--text); background: var(--bg-raised); border-color: var(--line); }
@@ -1306,7 +1639,7 @@
     .ask-note {
       padding: 10px 16px 12px;
       border-bottom: 1px solid var(--line);
-      font-size: var(--t-body-sm); line-height: 18px; color: var(--faint);
+      font-size: var(--body2); line-height: 18px; color: var(--faint);
     }
     .ask-log {
       flex: 1; overflow-y: auto; overscroll-behavior: contain;
@@ -1317,11 +1650,11 @@
       align-self: flex-end; max-width: 85%;
       background: var(--bg-raised); color: var(--text);
       padding: 8px 14px; border-radius: 16px 16px 4px 16px;
-      font-size: var(--t-body-sm); line-height: 20px;
+      font-size: var(--body2); line-height: 20px;
     }
     .ask-msg-a { display: flex; gap: 10px; }
     .ask-msg-a .ask-avatar { width: 22px; height: 22px; font-size: 10px; margin-top: 1px; }
-    .ask-msg-body { min-width: 0; font-size: var(--t-body-sm); line-height: 21px; color: var(--muted); }
+    .ask-msg-body { min-width: 0; font-size: var(--body2); line-height: 21px; color: var(--muted); }
     .ask-msg-body p + p { margin-top: 10px; }
     .ask-typing { display: flex; gap: 4px; padding: 6px 0; }
     .ask-typing span {
@@ -1343,7 +1676,7 @@
       max-width: 100%;
       background: var(--bg-float); border: 1px solid var(--line); border-radius: 999px;
       padding: 6px 14px;
-      font: inherit; font-size: var(--t-body-sm); line-height: 20px; color: var(--muted);
+      font: inherit; font-size: var(--body2); line-height: 20px; color: var(--muted);
       text-align: right; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out,
                   opacity 0.3s ease, translate 0.3s ease;
@@ -1359,14 +1692,14 @@
     .ask-input {
       flex: 1; min-width: 0;
       border: 0; background: transparent; outline: none;
-      font: inherit; font-size: var(--t-body-md); line-height: 22px; color: var(--text);
+      font: inherit; font-size: var(--body2); line-height: 22px; color: var(--text);
     }
     .ask-input::placeholder { color: var(--faint); }
     .ask-send {
       flex: none; width: 30px; height: 30px;
       border: 1px solid var(--line); border-radius: 50%;
       background: var(--bg-float); color: var(--muted);
-      font: inherit; font-size: 14px; line-height: 1; cursor: pointer;
+      font: inherit; font-size: var(--body2); line-height: 1; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out;
     }
     .ask-send:hover { color: var(--text); background: var(--bg-raised); }
@@ -1449,7 +1782,6 @@
           <a href="index.html#work" class="nav-back">&larr; Back</a>
         </div>
         <div class="nav-right">
-          <a href="case.html?c=scream" class="nav-next">Next &middot; Scream <span aria-hidden="true">&rarr;</span></a>
           <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
             <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
               <circle cx="12" cy="12" r="4.2"/>
@@ -1501,8 +1833,6 @@
             FinSynth helps public-equity analysts research companies, investigate
             financial questions, and bring the answer back into the model.
           </p>
-          <p class="masthead-meta">Founding Product Designer &middot; March 2025 &ndash; Present &middot; Web + Excel</p>
-
           <!-- The first look inside. One whole-product screen, unannotated on
                purpose &mdash; the annotated shots belong to the decision sections. -->
           <figure class="hero-product mat">
@@ -1545,6 +1875,20 @@
             </div>
           </figure>
 
+          <dl class="masthead-facts">
+            <div><dt>Role</dt><dd>Founding Product Designer</dd></div>
+            <div><dt>Timeline</dt><dd>April 2026 &ndash; Present</dd></div>
+            <div><dt>Platform</dt><dd>Web + Excel</dd></div>
+            <div class="fact-team"><dt>Team</dt><dd>
+              <ul class="fact-roster">
+                <li>Ritika Shakkerwal<span>Founding Product Designer</span></li>
+                <li>Two backend engineers</li>
+                <li>One frontend engineer</li>
+                <li>Founders</li>
+              </ul>
+            </dd></div>
+          </dl>
+
           <p class="pull">The spreadsheet isn&rsquo;t where analysts work. It&rsquo;s what they deliver.</p>
       </div>
       </div>
@@ -1558,7 +1902,6 @@
           <h2>The work this has to survive</h2>
           <p class="chapter-gloss">An analyst isn&rsquo;t buying an answer. They&rsquo;re buying an answer they can defend.</p>
         </div>
-        <p>An equity analyst&rsquo;s day is one loop, run until the coverage list is done.</p>
 
         <figure class="fig-wide">
           <div class="canvas">
@@ -1589,12 +1932,14 @@
             <text class="label" x="330" y="184" font-size="10.5" letter-spacing="1.4" text-anchor="middle">&times; A COVERAGE LIST OF 40</text>
           </svg>
           </div>
+          <figcaption>An equity analyst&rsquo;s day is one loop, repeated until the coverage list is done.</figcaption>
         </figure>
+
+        <div class="chapter-key"><span class="k">The stake</span><p>An answer you can&rsquo;t trace back isn&rsquo;t a productivity gain. In this job it&rsquo;s a liability.</p></div>
 
         <p>It&rsquo;s exactly the kind of work you&rsquo;d hand to an AI. So why don&rsquo;t analysts just use ChatGPT?</p>
         <p>They can. Some do.</p>
-        <p>But an analyst isn&rsquo;t buying an answer. They&rsquo;re buying an answer they can defend &mdash; to a portfolio manager, to an investment committee, to compliance. Copy a number out of a chat window into a model and the trail back to where it came from is gone.</p>
-        <p>In this job that isn&rsquo;t a productivity gain. It&rsquo;s a liability.</p>
+        <p>But that answer has to survive being questioned &mdash; by a portfolio manager, by an investment committee, by compliance. Copy a number out of a chat window into a model and the trail back to where it came from is gone.</p>
 
         <p>So the AI had to come to the model, not the other way around.</p>
       </section>
@@ -1612,7 +1957,7 @@
           <h2>They don&rsquo;t arrive one at a time</h2>
           <p class="chapter-gloss">Research, analysis, model upkeep, validation &mdash; and the doubt running under all of it &mdash; land together, for every name on the list.</p>
         </div>
-        <p>The loop is the tidy version. A real day doesn&rsquo;t queue its problems &mdash; they land together, and they interrupt each other.</p>
+        <p>The loop is the tidy version.</p>
 
         <figure class="fig-wide">
           <ul class="wall" aria-label="The questions on an analyst's desk on one day">
@@ -1632,6 +1977,8 @@
           <figcaption>One coverage name, one day. Multiply by forty.</figcaption>
         </figure>
 
+        <div class="chapter-key"><span class="k">The problem</span><p>A real day doesn&rsquo;t queue its problems &mdash; they land together, and they interrupt each other.</p></div>
+
         <p>Three threads run through every note on that wall. Uncertainty about what&rsquo;s actually being asked. The cost of being wrong on work that carries your name. And a live model that moves when you touch it. Keep hold of those three &mdash; the second half of this case study is what each one turned into.</p>
       </section>
     </div>
@@ -1647,6 +1994,22 @@
           <h2>FinSynth already solved parts of the analyst&rsquo;s job.</h2>
           <p class="chapter-gloss">Before the agent, analysts could use predefined workflows to find information, compare companies, and update their models.</p>
         </div>
+
+        <!-- The establishing shot, deliberately not a fourth workflow: the
+             ribbon the three below hang off. It is the only image on the page
+             of the Excel surface in the workflow era — the masthead hero is
+             the after, this is the before. Plain .mat rather than .wf-frame
+             because browser chrome around an Excel window reads wrong, and it
+             bleeds off the bottom on purpose: the ribbon is the subject, the
+             sheet tabs are not. -->
+        <figure class="fig-wide">
+          <div class="mat">
+            <img src="assets/finsynth/shipped-1-excel.png" width="1600" height="971"
+                 alt="A Crocs model open in Excel with the Finsynth ribbon selected: Prepare Model, Company Home, Cell Actions, AI Assist and Update Model each a separate button, and the Finsynth panel docked at the right showing a Summary Performance answer for Q2 2024"
+                 loading="lazy" decoding="async">
+          </div>
+          <figcaption>Every workflow was a button. You picked the one that matched what you had already decided to do.</figcaption>
+        </figure>
 
         <ul class="wf" aria-label="The three predefined workflows">
           <li>
@@ -1788,7 +2151,6 @@
           <h2>Where the workflows stopped</h2>
           <p class="chapter-gloss">Predefined workflows worked on one condition: the need already matched one.</p>
         </div>
-        <p>All three workflows ran on the same contract. You already knew what you wanted. You found the workflow that did it. You ran it. You got the output.</p>
 
         <figure class="fig-wide">
           <ol class="strip" aria-label="The old interaction model in four stages: know what you need, find the workflow, run the workflow, get the output">
@@ -1825,6 +2187,8 @@
           </ol>
           <figcaption>One interaction model behind all three workflows. The product picked up at step three &mdash; getting there was the analyst&rsquo;s job.</figcaption>
         </figure>
+
+        <p>All three workflows ran on the same contract. You already knew what you wanted. You found the workflow that did it. You ran it. You got the output.</p>
 
         <p>An analyst whose need fit that strip got a good answer. An analyst whose need didn&rsquo;t got nothing, and there was no way to say <i>here&rsquo;s what I&rsquo;m trying to do &mdash; work out how to help me.</i></p>
         <p class="pull">It couldn&rsquo;t discover a problem the user was having.</p>
@@ -1953,7 +2317,6 @@
           <h2>The routing changed hands</h2>
           <p class="chapter-gloss">From finding the right workflow to stating the goal.</p>
         </div>
-        <p>Then the product stopped waiting to be told which workflow to run. You described what you were trying to do, and it worked out the steps.</p>
 
         <figure class="fig-wide">
           <div class="canvas">
@@ -2008,6 +2371,10 @@
           </div>
           <figcaption>The same analyst, the same model. What moved is who does the routing.</figcaption>
         </figure>
+
+        <p>Then you described what you were trying to do, and it worked out the steps.</p>
+
+        <div class="chapter-key"><span class="k">What changed</span><p>The product stopped waiting to be told which workflow to run.</p></div>
       </section>
     </div>
 
@@ -2023,8 +2390,9 @@
           <p class="chapter-gloss">FIA chooses its own steps, uses tools, produces work &mdash; and what it produces can land in a live model.</p>
         </div>
         <p>FIA is FinSynth&rsquo;s research agent. It isn&rsquo;t another workflow alongside the first three &mdash; it&rsquo;s a different kind of product. Given a goal, it decides which steps to take. It calls tools and reads what comes back. It produces work &mdash; an answer, a table, a set of changes &mdash; and that work can reach a live financial model, the artifact the analyst&rsquo;s name is on.</p>
-        <p>Each of those abilities is what removes the ceiling. Each is also a new way for the product to be wrong somewhere the analyst can&rsquo;t see.</p>
-        <p class="beat">Which put the hard questions somewhere the old product never had them &mdash; before the work starts, and while it runs.</p>
+        <div class="chapter-key"><span class="k">The trade</span><p>Every ability that removes the ceiling is a new way for the product to be wrong somewhere the analyst can&rsquo;t see.</p></div>
+
+        <p class="beat">That put the hard questions somewhere the old product never had them &mdash; before the work starts, and while it runs.</p>
       </section>
     </div>
 
@@ -2040,7 +2408,6 @@
           <p class="chapter-gloss">What the system actually is, what that constrains, and the three places a person can step in.</p>
         </div>
         <p>I was designing this without a PM or a design team, directly with the founders and the engineers. Engineering made the AI reliable. My job was making the reliability usable: deciding what the agent should do, how it should show its work, and when to put a human in the loop.</p>
-        <p>With an agent, that job has a precise shape &mdash; because the system does.</p>
 
         <figure class="fig-wide">
           <div class="canvas">
@@ -2097,24 +2464,55 @@
           <li><strong>So the analyst needs places to inspect, correct, or stop the work</strong> &mdash; not one safety screen at the end, a checkpoint at every seam.</li>
         </ul>
 
+        <div class="chapter-key"><span class="k">The constraint</span><p>With an agent, the design job has a precise shape &mdash; because the system does.</p></div>
+
         <p>The three decisions that follow are those checkpoints.</p>
-        <ol class="decision-map">
-          <li><a href="#edit-query">
-            <span class="problem">Shaping the ask</span>
-            <span class="to">&rarr;</span>
-            <span>Edit Query</span>
-          </a></li>
-          <li><a href="#plan-mode">
-            <span class="problem">Planning the work</span>
-            <span class="to">&rarr;</span>
-            <span>Plan Mode</span>
-          </a></li>
-          <li><a href="#tool-calls">
-            <span class="problem">Making the agent legible</span>
-            <span class="to">&rarr;</span>
-            <span>Tool calls</span>
-          </a></li>
-        </ol>
+        <figure class="fig-wide anatomy" id="anatomy">
+          <div class="anat">
+            <!-- The skeleton is decoration for the list beside it: the list
+                 carries every word, so the wireframe is aria-hidden rather
+                 than described twice. -->
+            <div class="anat-screen" aria-hidden="true">
+              <span class="anat-head"></span>
+
+              <div class="anat-region" data-region="edit-query">
+                <i class="key" style="width: 78%"></i>
+                <i style="width: 54%"></i>
+                <span class="chips">
+                  <i style="width: 30%"></i><i style="width: 24%"></i><i style="width: 18%"></i>
+                </span>
+              </div>
+
+              <div class="anat-region" data-region="plan-mode">
+                <span class="line"><s class="key"></s><i></i></span>
+                <span class="line"><s></s><i style="max-width: 78%"></i></span>
+                <span class="line"><s></s><i style="max-width: 62%"></i></span>
+              </div>
+
+              <div class="anat-region" data-region="tool-calls">
+                <span class="line"><s class="dot key"></s><i></i></span>
+                <span class="line"><s class="dot"></s><i style="max-width: 70%"></i></span>
+                <span class="line"><s class="dot"></s><i style="max-width: 84%"></i></span>
+              </div>
+            </div>
+
+            <ol class="anat-list">
+              <li><a href="#edit-query">
+                <span class="k">07.1 &mdash; Edit Query</span>
+                <span class="t">The ask, read back as the constrained version the agent is about to act on.</span>
+              </a></li>
+              <li><a href="#plan-mode">
+                <span class="k">07.2 &mdash; Plan Mode</span>
+                <span class="t">The steps, visible and editable before the agent acts.</span>
+              </a></li>
+              <li><a href="#tool-calls">
+                <span class="k">07.3 &mdash; Tool calls</span>
+                <span class="t">The run, as a factual record of what actually happened.</span>
+              </a></li>
+            </ol>
+          </div>
+          <figcaption>Three checkpoints in one panel. Each one is a section below.</figcaption>
+        </figure>
       </section>
     </div>
 
@@ -2124,11 +2522,8 @@
         <div class="decision-head">
           <span class="decision-num">07.1 &mdash; Shaping the ask</span>
           <h3>What is the agent actually being asked to do?</h3>
+          <p class="chapter-gloss">A goal arrives the way people talk. <i>How has marketing spend trended?</i> &mdash; for which company? Over what period? Trended against what?</p>
         </div>
-        <p>A goal arrives the way people talk. <i>How has marketing spend trended?</i> &mdash; for which company? Over what period? Trended against what?</p>
-        <p>The old workflows never had this problem, because a form can&rsquo;t be ambiguous. Free text can, and with an agent an ambiguous ask doesn&rsquo;t fail &mdash; it runs, and comes back with confident work about the wrong thing.</p>
-        <p>Edit Query is the seam between the analyst&rsquo;s words and the agent&rsquo;s instruction. FIA reads the request back as the constrained version it is about to act on &mdash; company resolved, period pinned, scope explicit &mdash; and every part of it can be corrected before a plan is drawn or a tool runs.</p>
-        <p>It&rsquo;s the cheapest checkpoint in the system: the wrong question, caught before any work exists to be undone.</p>
 
         <figure class="product-frame">
           <!-- Reserved for the real product capture: the restated query with
@@ -2169,7 +2564,11 @@
             <div class="asset-stage" data-asset-slot="edit-query-restated-state"></div>
             </div>
           </div>
+          <figcaption>FIA reads the request back as the constrained version it is about to act on &mdash; company resolved, period pinned, scope explicit &mdash; and every part of it can be corrected before a plan is drawn or a tool runs.</figcaption>
         </figure>
+
+        <p>The old workflows never had this problem, because a form can&rsquo;t be ambiguous. Free text can, and with an agent an ambiguous ask doesn&rsquo;t fail &mdash; it runs, and comes back with confident work about the wrong thing.</p>
+        <p>Edit Query is the seam between the analyst&rsquo;s words and the agent&rsquo;s instruction. It&rsquo;s the cheapest checkpoint in the system: the wrong question, caught before any work exists to be undone.</p>
       </section>
     </div>
 
@@ -2179,7 +2578,50 @@
         <div class="decision-head">
           <span class="decision-num">07.2 &mdash; Planning the work</span>
           <h3>How do you turn a raw capability into something a person can rely on?</h3>
+          <p class="chapter-gloss">An agent may know the steps. The analyst still needs to see and shape them.</p>
         </div>
+
+        <figure class="product-frame">
+          <!-- Reserved for the real product capture: the plan exists, is
+               editable, and has not generated the spreadsheet yet. Kept as an
+               empty stage for now — drop the image in here when it exists. -->
+          <div class="fiag-window">
+            <div class="fiag-chrome" aria-hidden="true">
+              <span class="fiag-lights"><i></i><i></i><i></i></span>
+              <span class="fiag-pins">
+                Work
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
+              </span>
+              <span class="fiag-tab fiag-tab--rest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
+                Docs
+              </span>
+              <span class="fiag-tab">
+                <span class="fiag-favicon"></span>
+                FinSynth
+              </span>
+              <span class="fiag-tab-add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </span>
+              <span class="fiag-chrome-right">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </span>
+            </div>
+            <div class="fiag-page">
+              <div class="fiag-toolbar" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                <span class="fiag-crumb"><strong>FinSynth</strong></span>
+              </div>
+            <div class="asset-stage" data-asset-slot="plan-mode-editable-state"></div>
+            </div>
+          </div>
+          <figcaption>The plan is visible before execution, and each step can be edited before the agent acts.</figcaption>
+        </figure>
 
         <div class="voice">
           <p>I&rsquo;d been watching how Claude handled the same shape of problem.</p>
@@ -2246,47 +2688,6 @@
         <p>A revise flow keeps you asking. An editable plan lets you correct.</p>
         <p>I decided it had to be built that way &mdash; regeneration would have destroyed the cheapness the planning step existed to create.</p>
         <p>The product still has no revise concept anywhere in it. A plan can be edited, executed, or discarded.</p>
-
-        <figure class="product-frame">
-          <!-- Reserved for the real product capture: the plan exists, is
-               editable, and has not generated the spreadsheet yet. Kept as an
-               empty stage for now — drop the image in here when it exists. -->
-          <div class="fiag-window">
-            <div class="fiag-chrome" aria-hidden="true">
-              <span class="fiag-lights"><i></i><i></i><i></i></span>
-              <span class="fiag-pins">
-                Work
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 8 9 6 9-6"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 20v-8"/><path d="M12 20V5"/><path d="M19 20v-5"/></svg>
-              </span>
-              <span class="fiag-tab fiag-tab--rest">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg>
-                Docs
-              </span>
-              <span class="fiag-tab">
-                <span class="fiag-favicon"></span>
-                FinSynth
-              </span>
-              <span class="fiag-tab-add">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </span>
-              <span class="fiag-chrome-right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </span>
-            </div>
-            <div class="fiag-page">
-              <div class="fiag-toolbar" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
-                <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
-                <span class="fiag-crumb"><strong>FinSynth</strong></span>
-              </div>
-            <div class="asset-stage" data-asset-slot="plan-mode-editable-state"></div>
-            </div>
-          </div>
-        </figure>
       </section>
     </div>
 
@@ -2296,8 +2697,9 @@
         <div class="decision-head">
           <span class="decision-num">07.3 &mdash; Making the agent legible</span>
           <h3>Where does trust live &mdash; in the answer, or in the product?</h3>
+          <p class="chapter-gloss">Edit Query fixed the ask. The plan fixed the moment before the work. Then the work ran.</p>
         </div>
-        <p>Edit Query fixed the ask. The plan fixed the moment before the work. Then the work ran &mdash; and the analyst was now watching a system make a sequence of choices they hadn&rsquo;t chosen.</p>
+        <p>And the analyst was now watching a system make a sequence of choices they hadn&rsquo;t chosen.</p>
         <p>The easy version of AI trust is conversational. The model tells you how confident it is, apologises when it&rsquo;s wrong, explains itself in a paragraph. None of that survives contact with someone who has to defend the number.</p>
         <p>The agent was doing everything right. Nobody could tell.</p>
 
@@ -2548,6 +2950,60 @@
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
     items.forEach(function(el) { io.observe(el); });
+  })();
+
+  // ——— Anatomy figure (07) ———
+  // Cross-highlights the list and the wireframe beside it. It cycles on its
+  // own because the link between the two panes is the whole point and a
+  // hover-only version leaves it undiscovered — but the cycle is an
+  // explainer, not an attention grab: it only runs while the figure is
+  // actually on screen, and any hover or focus takes it over and keeps it.
+  (function() {
+    var anat = document.querySelector('.anat');
+    if (!anat) return;
+    var regions = anat.querySelectorAll('.anat-region');
+    var items = anat.querySelectorAll('.anat-list li');
+    if (!regions.length || regions.length !== items.length) return;
+
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var i = 0, timer = null, held = false;
+
+    function show(n) {
+      i = n;
+      for (var k = 0; k < regions.length; k++) {
+        regions[k].classList.toggle('on', k === n);
+        items[k].classList.toggle('on', k === n);
+      }
+    }
+    function pause() { clearInterval(timer); timer = null; }
+    function play() {
+      if (reduce || held || timer) return;
+      timer = setInterval(function() { show((i + 1) % regions.length); }, 2800);
+    }
+    function take(n) { held = true; pause(); show(n); }
+
+    for (var n = 0; n < items.length; n++) {
+      (function(idx) {
+        var a = items[idx].querySelector('a');
+        a.addEventListener('mouseenter', function() { take(idx); });
+        a.addEventListener('focus', function() { take(idx); });
+      })(n);
+    }
+    // Released only on leaving the whole card — moving between the two panes
+    // shouldn't restart the cycle under the reader's cursor.
+    anat.addEventListener('mouseleave', function() { held = false; play(); });
+    anat.addEventListener('focusout', function(e) {
+      if (!anat.contains(e.relatedTarget)) { held = false; play(); }
+    });
+
+    show(0);
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function(entries) {
+        entries[0].isIntersecting ? play() : pause();
+      }, { threshold: 0.35 }).observe(anat);
+    } else {
+      play();
+    }
   })();
 
   // ——— Spotlight reveal ———

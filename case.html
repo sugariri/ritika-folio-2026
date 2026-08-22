@@ -95,12 +95,37 @@
       --dia-ink: rgba(0, 0, 0, 0.66);
       --dia-dot: rgba(0, 0, 0, 0.13);
 
-      --t-header-lg: 44px;
-      --t-header-md: 32px;
-      --t-body-lg: 17px;
-      --t-body-md: 15px;
-      --t-body-sm: 13px;
-      --t-label: 11px;   /* the mono micro-labels: chapter numbers, strip steps */
+      /* ---------- TYPE SCALE ---------- */
+      /* Six roles, and six is the whole point. Across the three pages there
+         were seventeen distinct font-sizes in play — 10, 12, 12.5, 13, 14, 15,
+         16, 17, 18, 19, 20, 21, 23, 24, 26, 30, 32 — which is not a scale, it
+         is a pile, and it is why the type read as broken (Ritika, 2026-08-22:
+         "the text type the page still feels broken"). Two of those were
+         structural, not just noise: h2 was declared at both 26px (bare) and
+         32px (.chapter-head), and h3 at 26px — the same size as the smaller h2
+         — so the heading hierarchy was inverted wherever the two met.
+
+         The ladder is a major third off a 17px reading size. Anything needing
+         a distinction the six can't make reaches for INK or WEIGHT, never a
+         seventh size. That rule was already written for the chapter heads
+         ("four levels on two type sizes, because colour and the rule do the
+         rest") — this only generalises it to the whole site.
+
+         Each role ships its line-height alongside, because a size without its
+         leading is half a decision, and that is how one 22px leading ended up
+         on 13px, 15px and 17px text alike.
+
+         What is deliberately NOT on the scale: artwork. The pixel cat, the
+         Caveat handwriting on the problem wall and the voice notes, the fake
+         browser chrome in .fiag-*, the avatar monograms, the mono labels
+         inside a .product-frame stage. Those are sized to their own box the
+         way the cat is, and a page-scale bump must not resize a mock's UI. */
+      --h1: clamp(32px, 7vw, 44px);   --h1-lh: 1.16;    /* page title */
+      --h2: 30px;                     --h2-lh: 1.28;    /* section / chapter title */
+      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, standfirst, pull */
+      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose */
+      --body2: 15px;                  --body2-lh: 1.55; /* UI, meta, captions */
+      --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
 
       --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -114,6 +139,14 @@
       --measure: 760px;   /* figures break out to here */
       --gutter: 24px;
 
+    }
+
+    /* The scale steps down as one thing, not rule by rule. Before this, three
+       separate rules carried their own phone size (.standfirst 19, .decision
+       h3 23, .evo-hinge 14) and drifted apart from each other; h1 already
+       stepped via its own clamp, and body1/body2 hold at any measure. */
+    @media (max-width: 720px) {
+      :root { --h2: 26px; --h3: 20px; }
     }
 
     /* ---------- DARK ----------
@@ -175,7 +208,7 @@
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      font-size: var(--t-body-lg);
+      font-size: var(--body1);
       line-height: 1.75;
       letter-spacing: 0;
     }
@@ -205,7 +238,7 @@
       display: flex; align-items: baseline; justify-content: space-between;
       padding: 22px 0;
       gap: 24px;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
     }
     .nav-name { font-weight: 500; color: var(--text); }
     /* "riri" wordmark — hand-drawn monoline SVG, colored via currentColor */
@@ -237,12 +270,12 @@
       }
     }
     .nav-left { display: flex; align-items: center; gap: 20px; }
-    .nav-back, .nav-next {
+    .nav-back {
       color: var(--muted);
       transition: color 0.18s ease;
     }
-    .nav-back:hover, .nav-next:hover { color: var(--text); }
-    .nav-back, .nav-next { white-space: nowrap; }
+    .nav-back:hover { color: var(--text); }
+    .nav-back { white-space: nowrap; }
     .nav-right { display: flex; align-items: center; gap: 14px; }
 
     /* Light / dark switch — same icon-button family as the chat's controls.
@@ -271,6 +304,69 @@
       .nav-name { display: none; }
     }
 
+    /* ---------- CHAPTER RAIL ----------
+       finsynth.html indexes its chapters with a labelled rail in the left
+       margin; this page gets ticks instead (Ritika, 2026-08-22, from a
+       reference she pointed at): one hairline dash per chapter down the right,
+       the current one inked and at full length. Ticks and not labels because a
+       short case study's chapter names are two words each — a 168px labelled
+       list beside a 660px column would out-weigh the thing it indexes, and all
+       this rail has to say is how far along you are. Note it is NOT the
+       per-chapter tick that finsynth tried and reverted: there the ticks
+       replaced a labelled rail that was working, here they are the only rail
+       the page has ever had.
+
+       Parked at a fixed inset from the window edge like .index, not tracked off
+       the content column, so it stays put while the column recentres. Vertically
+       centred rather than pinned under the header: with no labels there is no
+       reading order to line up with the masthead, and centred it reads as a
+       position gauge. Hidden below 1024px — a lower bar than finsynth's 1120px
+       because 34px of tick needs far less margin than 168px of label. */
+    .case-rail {
+      position: fixed;
+      top: 50%;
+      right: 32px;
+      transform: translateY(-50%);
+      z-index: 50;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.2s;
+    }
+    .case-rail.ready { opacity: 1; }
+    .case-rail ol { list-style: none; }
+    .case-rail a { display: block; padding: 7px 0; }
+    .case-rail a:focus-visible { outline: none; }
+    /* The bar keeps one box in every state and only ever scales, so a chapter
+       change stays on the compositor and can never reflow the rail. scaleY(.5)
+       on a 2px bar lands on a crisp 1px, and the right-hand origin makes the
+       active tick grow leftward, away from the page edge — the same direction
+       the reference grows in. */
+    .case-rail i {
+      display: block;
+      width: 34px; height: 2px;
+      border-radius: 1px;
+      background: var(--line-hover);
+      transform: scaleX(0.6) scaleY(0.5);
+      transform-origin: 100% 50%;
+      transition: transform 0.28s cubic-bezier(0.22,0.61,0.36,1), background 0.22s ease;
+    }
+    .case-rail a:hover i { background: var(--faint); transform: scaleX(0.8) scaleY(0.5); }
+    .case-rail a:focus-visible i { background: var(--text); transform: scaleX(0.8) scaleY(1); }
+    .case-rail a[aria-current='true'] i { background: var(--text); transform: none; }
+    /* The drawer owns the right edge in pane mode, and below 1100px it owns it
+       at any width, so the rail steps aside whenever the chat is docked. A
+       popped-out window floats anywhere, so it leaves the rail alone. */
+    body.chat-open:not(.chat-popped) .case-rail {
+      opacity: 0; pointer-events: none; transition-delay: 0s;
+    }
+    /* Same as finsynth's rail: the state change is the information, the
+       easing is decoration, so reduced motion keeps the ticks and drops
+       the movement (and the fade-in, which would otherwise be the one
+       animated thing left on the page). */
+    @media (prefers-reduced-motion: reduce) {
+      .case-rail, .case-rail i { transition: none; }
+    }
+    @media (max-width: 1023px) { .case-rail { display: none; } }
+
     /* ---------- MASTHEAD ---------- */
     /* Section 01 is the orientation beat and reads in one rhythm:
        what is it -> see it -> why it matters. The product screen is the
@@ -278,12 +374,12 @@
        gets more expressive from Section 02 on. */
     .masthead { padding: 80px 0 92px; }
     .eyebrow {
-      font-size: var(--t-body-sm); line-height: 22px;
+      font-size: var(--body2); line-height: 22px;
       color: var(--faint); font-weight: 500;
       margin-bottom: 18px;
     }
     .masthead h1 {
-      font-size: clamp(32px, 7vw, var(--t-header-lg));
+      font-size: var(--h1);
       font-weight: 500;
       line-height: 1.2;
       letter-spacing: -0.022em; /* em, not px — the size is fluid */
@@ -292,13 +388,13 @@
       margin-bottom: 20px;
     }
     .standfirst {
-      font-size: 21px; line-height: 1.55;
+      font-size: var(--h3); line-height: var(--h3-lh);
       color: var(--muted);
       letter-spacing: -0.2px;
       text-wrap: pretty;
     }
     .masthead-meta {
-      font-size: var(--t-body-sm); line-height: 22px;
+      font-size: var(--body2); line-height: 22px;
       color: var(--faint); font-weight: 500;
       margin-top: 26px;
     }
@@ -306,15 +402,35 @@
 
     /* ---------- CHAPTERS ---------- */
     /* No rules, no labels, no numbered sections — rhythm carries the reader. */
-    .chapter { padding: 76px 0 0; scroll-margin-top: 76px; }
-    .chapter:first-of-type { padding-top: 88px; }
+    /* ---- SECTION SEPARATOR ----
+       Kept identical to finsynth.html — see the long note there for why it is
+       keyed on the numbered tag rather than on `.chapter`. Here every chapter
+       is top level and every one gets a pill, so the selector simply matches
+       them all; `.credits` is carried for shell parity and matches nothing,
+       this page having no Team block.
+
+       The renderer emits `<div class="wrap"><section class="chapter">` — wrap
+       OUTSIDE section, matching finsynth. It used to be the other way round,
+       and it was flipped for this rule: with the wrap inside, the border drew
+       on the section and spanned the full page width instead of the 660px
+       column, landing 24px past the text on each side. Flipping it also makes
+       the two shells structurally the same, which is the standing rule for
+       anything in here. Nothing else in this file couples `.chapter` to
+       `.wrap`, so the flip was isolated. */
+    .credits,
+    section:has(> .chapter-head > .chapter-num) {
+      border-top: 1px solid var(--line);
+      margin-top: 40px;
+    }
+
+    .chapter { padding: 56px 0 0; scroll-margin-top: 76px; }
 
     p { margin-bottom: 22px; }
     p:last-child { margin-bottom: 0; }
     i { font-style: italic; }
 
     h2 {
-      font-size: 26px; line-height: 1.32;
+      font-size: var(--h2); line-height: var(--h2-lh);
       font-weight: 500; letter-spacing: -0.5px;
       text-wrap: balance;
       color: var(--text);
@@ -325,7 +441,7 @@
     .beat { margin-bottom: 0; }
 
     .pull {
-      font-size: clamp(24px, 5.2vw, 30px);
+      font-size: clamp(var(--h3), 5.2vw, var(--h2));
       line-height: 1.3;
       letter-spacing: -0.024em; /* em, not px — the size is fluid */
       font-weight: 500;
@@ -347,25 +463,108 @@
     /* ---------- CHAPTER HEADS ----------
        The number is the map's promise being kept. The name is compelling
        rather than procedural; the gloss says what the reader is about to
-       get, so no chapter has to be read to find out whether it matters. */
-    .chapter-head { margin-bottom: 34px; }
+       get, so no chapter has to be read to find out whether it matters.
+
+       Three levels, not four. The gloss used to be *smaller* than the body
+       copy that followed it (15px muted over 17px ink), so a line that
+       summarises the chapter read as a caption demoted beneath the thing it
+       summarises — the head stacked four type sizes in its first four lines.
+       The gloss is now a lede: body size, separated from the body by ink
+       alone. Colour is the whole hierarchy below the h2, which is the
+       monochrome way and leaves the head one clear block instead of a pile. */
+    /* ---- SECTION GRAMMAR: context -> image -> interpretation ----
+       Locked 2026-08-22. Every section runs in this order, and the order is
+       the rule, not a preference:
+
+         tag -> title -> lede        only why you are about to see this
+         [figure]                    let the reader see it
+         figcaption                  what you are looking at
+         .chapter-key                why it matters (optional)
+         body                        the deeper reasoning, only if needed
+
+       Copy that explains a figure NEVER sits above it. The failure this
+       replaces was context -> interpretation -> image -> interpretation ->
+       another interpretation, which made the page unscannable: the reader was
+       told what to think twice before being shown anything. The product
+       screenshots carry a lot of the story here, so they come early and the
+       reasoning follows them.
+
+       This file's renderer emits only the tag and the title today — no CASES
+       entry carries a lede or a key yet. The rest is here so the two copies of
+       the shell stay identical, and so the grammar is already in place the day
+       a short case study grows a figure. */
+    .chapter-head { margin-bottom: 32px; }
+    /* The number is a tag, not a line of text: bounded, so label and title
+       bind into one object instead of reading as two stacked lines. Hairline
+       and monochrome — the pill is the shape, not a fill. Only top-level
+       chapters get it; .decision-num inside 07 stays a bare label, which is
+       what marks it as the nested level. */
     .chapter-num {
-      display: block;
-      font-family: var(--mono); font-size: var(--t-label);
+      display: inline-block;
+      font-family: var(--mono); font-size: var(--pill);
+      line-height: 1;
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px 5px;
+      margin-bottom: 18px;
     }
     .chapter-head h2 {
-      font-size: var(--t-header-md);
+      font-size: var(--h2);
       letter-spacing: -0.7px;
-      margin-bottom: 10px;
+      /* A lede paragraph needs more air under a 32px head than a caption did */
+      margin-bottom: 16px;
     }
+    /* ...but a head with no lede shouldn't carry the lede's air */
+    .chapter-head h2:last-child { margin-bottom: 0; }
     .chapter-gloss {
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body1); line-height: 1.75;
       color: var(--muted);
       text-wrap: pretty;
       margin-bottom: 0;
+    }
+    /* The chapter's one point, pulled onto a rule. It sits AFTER the figure,
+       never before it — see the section grammar note above .chapter-head.
+       Lede is muted, key is ink: the two sit at the same size and the
+       hierarchy is carried by colour and the rule alone, which is how this
+       page keeps four levels without four type sizes. Every key line was
+       MOVED out of the body it used to sit in — the chapter gains nothing it
+       didn't already say. Chapters that already resolve on their own terms
+       (04's .pull, 08's .beat) don't get one. */
+    /* A soft tinted panel, not a left rule (Ritika, 2026-08-22, from a
+       reference she pointed at). The rule version was the head's one point
+       hung off a 2px hairline; as a filled block it reads as the thing the
+       chapter resolves to rather than an aside beside the prose. This is NOT a
+       new material: `.canvas` and `.term` already ground content-column
+       surfaces in --bg-raised, and 14px is the radius .card uses on the
+       portfolio, so the panel is assembled from what the page already owns.
+       Borderless on purpose — .canvas and .term both carry a hairline because
+       they hold artwork and code that need containing; this holds one line of
+       the page's own voice, and the tint alone is enough to lift it. */
+    .chapter-key {
+      margin: 30px 0;
+      padding: 22px 24px;
+      border-radius: 14px;
+      background: var(--bg-raised);
+    }
+    .chapter-key .k {
+      display: block;
+      font-family: var(--mono); font-size: var(--pill);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+    .chapter-key p {
+      font-size: var(--body1); line-height: 1.6;
+      font-weight: 500;
+      color: var(--text);
+      text-wrap: pretty;
+      margin-bottom: 0;
+    }
+    @media (max-width: 560px) {
+      /* 24px of padding either side is 48px off a phone measure */
+      .chapter-key { padding: 18px 18px; border-radius: 12px; }
     }
 
 
@@ -394,7 +593,7 @@
     .case-cta { padding: 40px 0 0; }
     .case-cta a {
       display: inline-block;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
       color: var(--text);
       border-bottom: 1px solid var(--line);
       padding-bottom: 3px;
@@ -407,7 +606,7 @@
     .case-miss a { border-bottom: 1px solid var(--line); }
 
     /* ---------- CLOSE ---------- */
-    .close { padding: 88px 0 0; scroll-margin-top: 76px; }
+    .close { padding: 56px 0 0; scroll-margin-top: 76px; }
     .close p { color: var(--text); }
 
     footer {
@@ -418,11 +617,11 @@
     .footer-row {
       display: flex; flex-wrap: wrap; gap: 12px;
       align-items: baseline; justify-content: space-between;
-      font-size: var(--t-body-md); line-height: 24px;
+      font-size: var(--body2); line-height: 24px;
     }
     .footer-row a { color: var(--muted); transition: color 0.18s ease; }
     .footer-row a:hover { color: var(--text); }
-    .footer-copy { font-size: var(--t-body-sm); color: var(--faint); }
+    .footer-copy { font-size: var(--body2); color: var(--faint); }
 
     /* ---------- REVEAL ---------- */
     .reveal {
@@ -442,8 +641,9 @@
       .mat { --mat-pad: 18px; border-radius: 14px; }
       .hero-product { --mat-pad: 20px; margin-top: 40px; }
       .masthead .pull { margin-top: 44px; max-width: none; }
-      .chapter { padding-top: 60px; }
-      .standfirst { font-size: 19px; }
+      .chapter, .close { padding-top: 44px; }
+      .credits,
+      section:has(> .chapter-head > .chapter-num) { margin-top: 28px; }
       .voice { margin-left: 0; }
       .voice p { font-size: 18px; line-height: 1.85; }
     }
@@ -460,7 +660,7 @@
       background: var(--ask-pill-bg);
       border: 1px solid var(--line-hover); border-radius: 999px;
       box-shadow: var(--shadow-pill);
-      font: inherit; font-size: var(--t-body-md); line-height: 22px; font-weight: 500;
+      font: inherit; font-size: var(--body2); line-height: 22px; font-weight: 500;
       color: var(--text);
       text-align: left;
       cursor: text; /* reads as an input; clicking opens the real one */
@@ -579,7 +779,7 @@
       display: flex; align-items: center; justify-content: center;
       border: 1px solid transparent; border-radius: 8px;
       background: transparent; color: var(--faint);
-      font: inherit; font-size: 16px; line-height: 1; cursor: pointer;
+      font: inherit; font-size: var(--body1); line-height: 1; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
     }
     .ask-head-close:hover, .ask-head-pop:hover { color: var(--text); background: var(--bg-raised); border-color: var(--line); }
@@ -591,7 +791,7 @@
     .ask-note {
       padding: 10px 16px 12px;
       border-bottom: 1px solid var(--line);
-      font-size: var(--t-body-sm); line-height: 18px; color: var(--faint);
+      font-size: var(--body2); line-height: 18px; color: var(--faint);
     }
     .ask-log {
       flex: 1; overflow-y: auto; overscroll-behavior: contain;
@@ -602,11 +802,11 @@
       align-self: flex-end; max-width: 85%;
       background: var(--bg-raised); color: var(--text);
       padding: 8px 14px; border-radius: 16px 16px 4px 16px;
-      font-size: var(--t-body-sm); line-height: 20px;
+      font-size: var(--body2); line-height: 20px;
     }
     .ask-msg-a { display: flex; gap: 10px; }
     .ask-msg-a .ask-avatar { width: 22px; height: 22px; font-size: 10px; margin-top: 1px; }
-    .ask-msg-body { min-width: 0; font-size: var(--t-body-sm); line-height: 21px; color: var(--muted); }
+    .ask-msg-body { min-width: 0; font-size: var(--body2); line-height: 21px; color: var(--muted); }
     .ask-msg-body p + p { margin-top: 10px; }
     .ask-typing { display: flex; gap: 4px; padding: 6px 0; }
     .ask-typing span {
@@ -628,7 +828,7 @@
       max-width: 100%;
       background: var(--bg-float); border: 1px solid var(--line); border-radius: 999px;
       padding: 6px 14px;
-      font: inherit; font-size: var(--t-body-sm); line-height: 20px; color: var(--muted);
+      font: inherit; font-size: var(--body2); line-height: 20px; color: var(--muted);
       text-align: right; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out,
                   opacity 0.3s ease, translate 0.3s ease;
@@ -644,14 +844,14 @@
     .ask-input {
       flex: 1; min-width: 0;
       border: 0; background: transparent; outline: none;
-      font: inherit; font-size: var(--t-body-md); line-height: 22px; color: var(--text);
+      font: inherit; font-size: var(--body2); line-height: 22px; color: var(--text);
     }
     .ask-input::placeholder { color: var(--faint); }
     .ask-send {
       flex: none; width: 30px; height: 30px;
       border: 1px solid var(--line); border-radius: 50%;
       background: var(--bg-float); color: var(--muted);
-      font: inherit; font-size: 14px; line-height: 1; cursor: pointer;
+      font: inherit; font-size: var(--body2); line-height: 1; cursor: pointer;
       transition: color 0.18s ease, background 0.18s ease, scale 0.15s ease-out;
     }
     .ask-send:hover { color: var(--text); background: var(--bg-raised); }
@@ -734,7 +934,6 @@
           <a href="index.html#work" class="nav-back">&larr; Back</a>
         </div>
         <div class="nav-right">
-          <a href="index.html#work" class="nav-next" id="caseNext" hidden></a>
           <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
             <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
               <circle cx="12" cy="12" r="4.2"/>
@@ -750,6 +949,9 @@
   </header>
 
   <!-- Rendered from the CASES data below, keyed by ?c= in the URL -->
+  <!-- Filled by the renderer below, once the chapters it indexes exist. -->
+  <nav class="case-rail" id="caseRail" aria-label="Chapters" hidden></nav>
+
   <main id="caseMain"></main>
   <noscript>
     <div class="wrap" style="padding:96px 0">
@@ -844,149 +1046,21 @@
   })();
 
   // ——— Case studies ———
-  // One page, five cases. The key comes from ?c= (or #key), the content from
-  // the CASES object below — the same data that used to feed index.html's
-  // modal overlay, now rendered as a real page in finsynth.html's format.
+  // One page, one case. The key comes from ?c= (or #key), the content from the
+  // CASES object below, rendered in finsynth.html's format.
+  //
+  // It used to hold five, chained together by a Next link in the header, and
+  // that whole apparatus was removed on purpose (Ritika, 2026-08-22): Next was
+  // the only route into scream / yomo / slyce, so the chain existed to surface
+  // three thin pages nothing else pointed at, and clicking Next off the
+  // FinSynth study dropped the reader into one of them. Mazic went with them —
+  // its card and its Experience row link straight out to the Framer case study,
+  // which is the canonical one. Event Beep is the only case with a card behind
+  // it, so it is the only case left. Adding a second means adding its CASES
+  // entry and a card that promises it — not a chain through the header.
   (function() {
     var CASES = {
       // FinSynth has no entry here — its row links straight to finsynth.html.
-      scream: {
-        eyebrow: 'Product Design Intern · 2024 — 2025',
-        title: 'Scream',
-        lead: 'Sole designer across three products in a year — an AI video tool, a user-insights platform, and a bug reporting tool for QA and design.',
-        meta: ['0→1', 'Sole designer', 'Design systems'],
-        sections: [
-          { h: 'Context', p: ['A small studio shipping several bets at once. There was no design team, no system, and no shared language between the three products — just three codebases moving fast in different directions.'] },
-          { h: 'My role', p: ['Every design decision across all three: research, wireframes, UI, prototypes, handoff, and QA. I also built the shared foundation the products now sit on.'] },
-          { h: 'What I worked on', list: [
-            'Mazic — AI-powered demo videos. Pivoted off an interactive-demo tool, shipped in two months, past 200 users.',
-            'Yomo — a redesign of the user-insights platform around how teams actually read feedback.',
-            'Slyce — bug reporting built for the handoff between QA, design, and engineering.',
-            'One set of tokens and components reused across all three, so a fix in one landed everywhere.'
-          ] },
-          { h: 'Outcome', p: ['Three MVPs shipped, a design system that outlived my internship, and a much shorter distance between "we should try this" and something in front of users.'] }
-        ],
-        link: { href: 'https://ritikamazicv1.framer.website/', label: 'See the Mazic case study →' },
-        qa: [
-          { q: 'What did "sole designer" actually involve?',
-            k: ['alone', 'solo', 'team'],
-            a: ['Everything with a surface: research, wireframes, UI, prototypes, handoff, and the QA pass after engineering built it — across three products that shared nothing when I arrived.',
-                'The real job was deciding what not to design. With three codebases moving fast, anything that could not be reused was a luxury.'] },
-          { q: 'How did one design system serve three products?',
-            k: ['tokens', 'components', 'shared', 'system'],
-            a: ['I built the foundation once — tokens for type, color, and spacing, plus the components all three products kept reaching for. A fix in one place landed everywhere.',
-                'It outlived my internship, which is the only real test of a system.'] },
-          { q: 'Which of the three was hardest?',
-            k: ['hardest', 'difficult', 'challenge'],
-            a: ['Yomo, comfortably. Mazic and Slyce were 0→1 — a blank file does what you tell it. Yomo was a redesign of something people already used, so every improvement had to earn its place against a habit.'] }
-        ]
-      },
-      mazic: {
-        eyebrow: 'Scream \u00b7 2024 \u00b7 2 months',
-        title: 'Mazic',
-        lead: 'A screen recorder that edits itself \u2014 record once, and the zooms, cursor work and cuts are already applied by the time you open the studio.',
-        meta: ['0\u21921', '2 months', '200+ users'],
-        sections: [
-          { h: 'Context', p: [
-            'By 2024 a product video had stopped being a nice-to-have for B2B SaaS \u2014 it is what carries a launch, a demo, a support article. Getting one made well cost around $3,000 outsourced. Making it in-house cost hours: scripting, recording, then the edit.',
-            'Mazic did not start here. It started as an interactive demo tool, and the demand we kept running into was for demo videos. The product pivoted; this case study is what came after that.'
-          ] },
-          { h: 'My role', p: [
-            'Led product thinking and design, end to end \u2014 the only designer in a team of five: two founders, two engineers, me. Two months from research to a shipped MVP.'
-          ] },
-          { h: 'Research', p: [
-            'Two questions ran the whole thing: who actually needs a tool like this, and what do they want it to do? We answered them with user interviews and by pulling apart the products people were already using.'
-          ], list: [
-            'The people making these videos are not editors and have no interest in becoming editors.',
-            'No tool on the market offered a simple experience for someone with limited editing experience \u2014 that gap was the opening.'
-          ] },
-          { h: 'What we shipped', p: [
-            'Three steps, and nothing in between them.'
-          ], list: [
-            'Record & capture \u2014 screen, camera, or both, with automatic editing, pan-and-zoom, and cursor shapes applied as you record.',
-            'Edit in studio \u2014 trim, zoom effects, themes and templates for the common case; voiceover, syncing and custom elements when someone needs to go further.',
-            'Share & export \u2014 4K out, ready for a site, a knowledge base, YouTube, LinkedIn or X.'
-          ] },
-          { h: 'Outcome', p: [
-            '100 beta users on day one of the September launch, and 200+ active users within two months of going public. $1,009 gross revenue in December 2024, and Mazic was named the most impactful and loved startup at the Magic Balls AI event.'
-          ] },
-          { h: 'What I would do differently', p: [
-            'Our first direction was off, and we found that out from users rather than before them. We went back to the drawing board and revamped the product \u2014 which worked, but it was a slower and more expensive way to learn something foundational research would have told us earlier. That is the habit I took into the next product.'
-          ] }
-        ],
-        link: { href: 'https://ritikamazicv1.framer.website/', label: 'View the full case study \u2192' },
-        qa: [
-          { q: 'What was the pivot?',
-            k: ['pivot', 'change', 'direction', 'interactive', 'demo'],
-            a: ['Mazic began as an interactive demo tool. What people kept asking for was product demo videos \u2014 so we went back to the drawing board and rebuilt around recording and editing video.',
-                'The honest version: our initial approach was off-track, and we learned it from users rather than ahead of them.'] },
-          { q: 'How did it get to 200+ users?',
-            k: ['users', 'growth', 'adoption', 'revenue', 'traction'],
-            a: ['100 beta users signed up on day one of the September launch, and it passed 200 active users within two months of the public launch. December 2024 brought $1,009 in gross revenue.',
-                'It was also named the most impactful and loved startup at the Magic Balls AI event.'] },
-          { q: 'What did you actually own?',
-            k: ['role', 'own', 'team', 'responsibilities', 'designer'],
-            a: ['Product thinking and design, end to end. The team was five people \u2014 two founders, two engineers and me as the only designer \u2014 and the whole thing took two months.',
-                'That meant research and the product calls as much as the screens: what the three steps were, what stayed out of the studio, and what the tool decided on the user\u2019s behalf.'] }
-        ]
-      },
-      yomo: {
-        eyebrow: 'Scream · 2024 — 2025',
-        title: 'Yomo',
-        lead: 'A redesign of a user-insights platform around a simple question: what do you do the morning after the feedback arrives?',
-        meta: ['Redesign', 'Research', 'Data-dense UI'],
-        sections: [
-          { h: 'Problem', p: ['The product collected feedback well and surfaced it badly. Teams exported everything into spreadsheets to make sense of it, which meant the platform lost the room the moment the data was in.'] },
-          { h: 'Approach', list: [
-            'Reframed the core object from "a response" to "a theme" — grouping first, reading second.',
-            'Rebuilt the list and detail views for scanning volume, not admiring individual entries.',
-            'Made every insight exportable into the artefacts teams actually present in.'
-          ] },
-          { h: 'Outcome', p: ['Fewer trips out to spreadsheets, and a structure the team could keep building features onto instead of bolting views on top of.'] }
-        ],
-        qa: [
-          { q: 'Why themes instead of individual responses?',
-            k: ['themes', 'grouping', 'responses'],
-            a: ['Because nobody\'s morning starts with response #4,812. Teams read feedback to decide what to do next, and decisions happen at the level of patterns, not entries.',
-                'The spreadsheet exports were the tell. When users rebuild your product in Excel, they are showing you the design.'] },
-          { q: 'What does "the platform lost the room" mean?',
-            k: ['spreadsheets', 'export', 'room'],
-            a: ['The product collected feedback well and surfaced it badly, so the moment data arrived, teams exported everything — and every conversation after that happened outside the product.',
-                'The redesign was about earning that moment back: views built for scanning volume, and exports into the artefacts teams actually present in.'] },
-          { q: 'How did you know it worked?',
-            k: ['worked', 'success', 'metric', 'outcome'],
-            a: ['Fewer trips out to spreadsheets — that was the metric that mattered, because it meant the reading was happening inside the product.',
-                'The other signal was structural: the team could keep building features onto the new shape instead of bolting views on top.'] }
-        ]
-      },
-      slyce: {
-        eyebrow: 'Scream · 2024 — 2025',
-        title: 'Slyce',
-        lead: 'Bug reporting designed for the handoff between QA, design, and engineering — where most bug reports quietly die.',
-        meta: ['Internal tools', 'Workflow design', '0→1'],
-        sections: [
-          { h: 'Problem', p: ['A bug report is written by one person and read by three. Most tools optimise for the writing. The reading — reproducing it, assigning it, closing it — is where the time actually goes.'] },
-          { h: 'Approach', list: [
-            'Capture that collects context automatically, so the reporter writes one sentence instead of ten fields.',
-            'A triage view built for the person deciding, not the person reporting.',
-            'Visual diffing so a design bug can be shown rather than described.'
-          ] },
-          { h: 'Outcome', p: ['Reports arrived with enough context to be actioned without a follow-up thread — which was the whole point.'] }
-        ],
-        qa: [
-          { q: 'Why optimise for reading reports, not writing them?',
-            k: ['reading', 'writing', 'triage'],
-            a: ['A bug report is written once and read three times — by whoever reproduces it, whoever assigns it, and whoever closes it. Most tools polish the writing and abandon the readers.',
-                'The reading is where reports quietly die, so that is where the design effort went.'] },
-          { q: 'What does automatic context capture look like?',
-            k: ['capture', 'context', 'automatic'],
-            a: ['The reporter writes one sentence; the capture collects the rest — environment, steps, state. The ten fields nobody fills in honestly anyway.',
-                'For design bugs, visual diffing let people show the problem instead of describing it, which killed the longest follow-up threads.'] },
-          { q: 'Did it actually change anything?',
-            k: ['outcome', 'result', 'change'],
-            a: ['Reports started arriving with enough context to be actioned without a follow-up thread. That was the whole point — the thread was the tax.'] }
-        ]
-      },
       eventbeep: {
         eyebrow: 'UI Design Intern · 2023',
         title: 'Event Beep',
@@ -1049,7 +1123,6 @@
     // Mirrors the row order in index.html's #panel-work, which is what drives
     // the Next chain (finsynth → scream → mazic → yomo → slyce → eventbeep).
     // Reorder the rows there and this list has to follow.
-    var CASE_ORDER = ['scream', 'yomo', 'slyce', 'eventbeep'];  // mazic lives on its own
                                                             // Framer site, so it is not
                                                             // a stop on the Next chain
 
@@ -1080,7 +1153,7 @@
       html += '</div></div>';
 
       (c.sections || []).forEach(function(s, i) {
-        html += '<section class="chapter reveal"><div class="wrap">'
+        html += '<div class="wrap"><section class="chapter reveal" id="ch-' + (i + 1) + '">'
           + '<div class="chapter-head"><span class="chapter-num">' + chapterNum(i) + '</span>'
           + '<h2>' + esc(s.h) + '</h2></div>';
         (s.p || []).forEach(function(p) { html += '<p>' + esc(p) + '</p>'; });
@@ -1089,7 +1162,7 @@
             return '<li>' + esc(li) + '</li>';
           }).join('') + '</ul>';
         }
-        html += '</div></section>';
+        html += '</section></div>';
       });
 
       if (c.link) {
@@ -1100,14 +1173,6 @@
 
       main.innerHTML = html;
       document.title = c.title + ' — Ritika Shakkerwal';
-
-      var next = CASE_ORDER[CASE_ORDER.indexOf(key) + 1];
-      var nextEl = document.getElementById('caseNext');
-      if (next && CASES[next]) {
-        nextEl.href = 'case.html?c=' + next;
-        nextEl.innerHTML = 'Next &middot; ' + esc(CASES[next].title) + ' <span aria-hidden="true">&rarr;</span>';
-        nextEl.hidden = false;
-      }
     })();
 
     // ——— Reveal on scroll ———
@@ -1133,6 +1198,60 @@
         if (r.top < window.innerHeight - 40 && r.bottom > 0) { el.classList.add('in'); return; }
         io.observe(el);
       });
+    })();
+
+    // ——— Chapter rail: build the ticks, then mark the one you are in ———
+    // Runs after the render, since the chapters it indexes only exist by then.
+    // The active test is the same one finsynth.html's labelled rail uses — the
+    // last chapter whose top has crossed 42% of the viewport — so the two
+    // shells agree on what "current chapter" means. A case with fewer than two
+    // chapters gets no rail: one tick is not a position gauge, it's a dot.
+    (function() {
+      var rail = document.getElementById('caseRail');
+      if (!rail) return;
+      var targets = Array.prototype.slice.call(document.querySelectorAll('main .chapter[id]'));
+      if (targets.length < 2) return;
+
+      rail.innerHTML = '<ol>' + targets.map(function(sec) {
+        var h = sec.querySelector('h2');
+        var label = h ? h.textContent : sec.id;
+        // Icon-only link, so the accessible name has to be supplied: aria-label
+        // for assistive tech, title so hovering a tick says which chapter it is.
+        return '<li><a href="#' + sec.id + '" title="' + esc(label) + '" aria-label="' + esc(label) + '"><i></i></a></li>';
+      }).join('') + '</ol>';
+      rail.hidden = false;
+
+      var links = Array.prototype.slice.call(rail.querySelectorAll('a'));
+      var current = -1;
+      var ticking = false;
+
+      function update() {
+        ticking = false;
+        var line = window.innerHeight * 0.42;
+        var next = 0;
+        for (var i = 0; i < targets.length; i++) {
+          if (targets[i].getBoundingClientRect().top <= line) next = i;
+        }
+        // Bottom of the page: the last chapter is short, so pin it there.
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 4) {
+          next = targets.length - 1;
+        }
+        if (next === current) return;
+        if (current > -1) links[current].removeAttribute('aria-current');
+        links[next].setAttribute('aria-current', 'true');
+        current = next;
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      update();
+      window.requestAnimationFrame(function() { rail.classList.add('ready'); });
     })();
 
     // ——— Ask-me chat (floating pill + drawer) ———
