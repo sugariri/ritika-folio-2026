@@ -116,6 +116,10 @@
       --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
 
       --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      /* Same stack finsynth.html carries. It arrived with #community's
+         .give-tag, which is .chapter-num's mono micro-caps tag borrowed
+         from that page rather than a new one invented here. */
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
       /* Layout */
       --content: 572px;
@@ -667,7 +671,9 @@
       -ms-overflow-style: none;
     }
     .shelf-rail::-webkit-scrollbar { width: 0; height: 0; }
-    .shelf-rail > .card {
+    /* Every direct child, not only .card: #life puts .polaroid figures on the
+       same rail and they page, snap and bleed identically. */
+    .shelf-rail > * {
       flex: 0 0 var(--shelf-card);
       scroll-snap-align: start;
     }
@@ -679,7 +685,9 @@
        low) and overlap the cut card, the same way the cut says "more". */
     .shelf-nav {
       position: absolute;
-      top: calc(var(--shelf-card) * 9 / 16 / 2);
+      /* The plate's centre by default. A shelf whose items are not 16/9 plates
+         (#life's polaroids) hands in its own --shelf-nav-top instead. */
+      top: var(--shelf-nav-top, calc(var(--shelf-card) * 9 / 16 / 2));
       transform: translateY(-50%);
       display: flex; align-items: center; justify-content: center;
       width: 36px; height: 36px;
@@ -832,6 +840,172 @@
     @media (prefers-reduced-motion: reduce) {
       .card, .card-mark, .card-arrow, .card-shot, .shelf-nav { transition: none; }
       .card:hover .card-shot, .card:focus-visible .card-shot { transform: none; }
+    }
+
+    /* ---------- COMMUNITY ---------- */
+    /* Adapted from a reference Ritika sent (2026-08-22): an eyebrow, a serif
+       display heading, and a wide white panel holding a tinted chip, a title, a
+       paragraph and a 2x2 photo grid. Translated into this page's material
+       rather than copied, and every substitution is a rule the site already
+       owns.
+       The display heading is gone: index.html titles a section with its
+       .sec-label folder and nothing else, so "Giving back to the community"
+       became one more folder on the same shelf rather than the page's only
+       serif headline. The orange chip became a hairline outline tag — exactly
+       the swap finsynth.html already made when it turned the same reference
+       idiom into .chapter-num ("stays a hairline outline rather than the
+       reference's tinted chip"). And the panel is .card's material — hairline
+       --line, 14px radius, no shadow — not a new white surface.
+       The photos are NOT a third exception to the no-decorative-graphics rule.
+       This section is about the mentoring and the sessions are the only thing
+       it has to show: the same argument that earned .card-art.shot its
+       screenshots, which is that the picture IS the work. */
+    .give {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 28px;
+    }
+    /* .chapter-num, borrowed whole. A bounded tag binds the label to the title
+       below it instead of leaving two stacked lines. */
+    .give-tag {
+      display: inline-block;
+      font-family: var(--mono); font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px 5px;
+      margin-bottom: 18px;
+    }
+    /* --h3, not --h2: this is an entry inside a section, not the section. Ink
+       and the tag carry the rest — no seventh size. */
+    .give-title {
+      font-size: var(--h3); line-height: var(--h3-lh);
+      font-weight: 500; letter-spacing: -0.4px;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .give-body {
+      font-size: var(--body1); line-height: var(--body1-lh);
+      color: var(--muted);
+      max-width: 46ch;
+    }
+    /* The reference sets copy and grid side by side across a full-bleed panel.
+       At 572px a 50/50 split leaves ~120px tiles, which is a contact sheet, not
+       a photograph — so the two stack and the grid keeps the reference's 2x2 at
+       a size worth looking at. */
+    .give-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 26px;
+      list-style: none;
+    }
+    /* grid + min-height: 0 for the same reason .card-art.shot needs it — a box
+       with aspect-ratio still takes a content-based automatic minimum, so the
+       photo's own ratio would otherwise override 4/3 and leave the four tiles
+       at four different heights. */
+    .give-shot {
+      position: relative;
+      display: grid; min-height: 0;
+      aspect-ratio: 4 / 3;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--bg-secondary);
+    }
+
+    /* The placeholder under every optional photo. The <img> sits on top of it
+       and is removed if the file is not there (see "Optional photos" in the
+       script), so dropping a jpg into assets/ is the whole edit — and until
+       then the plate reads as a labelled slot rather than a broken icon. */
+    .shot-empty {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--faint);
+    }
+    .give-shot img, .polaroid-shot img {
+      position: relative; z-index: 1;
+      grid-area: 1 / 1;
+      width: 100%; height: 100%; min-height: 0;
+      object-fit: cover; object-position: center;
+      display: block;
+    }
+
+    @media (max-width: 560px) {
+      .give { padding: 18px; }
+      .give-grid { gap: 8px; margin-top: 20px; }
+    }
+
+    /* ---------- BEYOND WORK (polaroid fan) ---------- */
+    /* The second reference (2026-08-22): six overlapping polaroid prints, each
+       captioned, fanned across the full page width. Six prints do not fan
+       across a 572px column, so the fan became a rail — the same .shelf the
+       Work and Side project cards ride, bleeding to the dashed guides, snapping
+       and paging by the same measured step, swipe on touch. The overlap is the
+       reference's, and it doubles as the shelf's own affordance: a print half
+       behind the next one says there is more, exactly the way a cut card does.
+       The frame flips with the theme and the photo inside it does not — a print
+       is page furniture, the picture is artwork, and that is the split the
+       token block already draws. A rack of white rectangles on near-black would
+       be the brightest thing on the page. */
+    .life-shelf { --shelf-card: 208px; --shelf-nav-top: 44%; }
+    .life-shelf .shelf-rail {
+      gap: 0;                 /* the prints overlap; margin does the spacing */
+      align-items: flex-start;
+      /* Room for the tilt and the hover lift to live inside the scroller.
+         overflow-x: auto forces overflow-y to compute to auto, so nothing may
+         actually exceed the box or a phantom vertical scroll appears. */
+      padding-block: 22px 26px;
+    }
+    .polaroid {
+      position: relative;
+      display: flex; flex-direction: column;
+      padding: 10px 10px 0;
+      background: var(--bg-hover);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      box-shadow: var(--shadow-row);
+      transition: transform var(--dur-row) var(--ease-row),
+                  box-shadow var(--dur-fill) var(--ease-row);
+    }
+    .polaroid + .polaroid { margin-left: -26px; }
+    /* Two alternating tilts rather than a random one per print: a fan, not a
+       spill. Later siblings paint over earlier ones, which is what gives the
+       stack its left-to-right lean with no z-index bookkeeping. */
+    .polaroid:nth-child(odd)  { transform: rotate(-2.4deg); }
+    .polaroid:nth-child(even) { transform: rotate(1.8deg) translateY(12px); }
+    .polaroid:hover, .polaroid:focus-within {
+      transform: rotate(0deg) translateY(-6px);
+      box-shadow: var(--shadow-pill);
+      z-index: 3;
+    }
+    .polaroid-shot {
+      position: relative;
+      display: grid; min-height: 0;
+      width: 100%;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      background: var(--bg-secondary);
+    }
+    /* Same relationship as .card-mark: muted at rest, ink under the cursor. */
+    .polaroid figcaption {
+      padding: 13px 4px 15px;
+      text-align: center;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--muted);
+      transition: color var(--dur-fill) var(--ease-row);
+    }
+    .polaroid:hover figcaption { color: var(--text); }
+
+    @media (max-width: 640px) {
+      .life-shelf { --shelf-card: min(208px, 62vw); }
+      .life-shelf .shelf-rail { padding-block: 18px 22px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      /* The tilt is a layout, not motion, so it stays; only the travel goes. */
+      .polaroid, .polaroid figcaption { transition: none; }
     }
 
     /* ---------- LABELLED PAIRS ---------- */
@@ -1616,6 +1790,42 @@
       </div>
     </section>
 
+
+    <!-- ===== COMMUNITY ===== -->
+    <!-- Note the deliberate overlap with #education's 10k Designers row and the
+         hero's mentoring line: the row is the record (a course, then a title),
+         the hero is the claim, and this is the only place that says what the
+         mentoring actually was. If it ever starts restating rather than
+         evidencing them, this is the block that goes. -->
+    <section id="community">
+      <div class="wrap reveal">
+        <p class="sec-label"><svg class="sec-icon" aria-hidden="true" focusable="false"><use href="#ico-folder"/></svg>Community</p>
+        <article class="give">
+          <p class="give-tag">Mentorship</p>
+          <h2 class="give-title">Alumni Mentor at 10k Designers</h2>
+          <p class="give-body">Mentoring aspiring product designers as an alumni mentor at 10k Designers &mdash; portfolio reviews, design critiques, and career guidance sessions for the next generation of designers.</p>
+          <ul class="give-grid">
+          <li class="give-shot">
+            <span class="shot-empty" aria-hidden="true">Photo</span>
+            <img data-optional src="assets/community/mentoring-1.jpg" alt="A portfolio review session with 10k Designers mentees" loading="lazy" decoding="async">
+          </li>
+          <li class="give-shot">
+            <span class="shot-empty" aria-hidden="true">Photo</span>
+            <img data-optional src="assets/community/mentoring-2.jpg" alt="A design critique session with 10k Designers mentees" loading="lazy" decoding="async">
+          </li>
+          <li class="give-shot">
+            <span class="shot-empty" aria-hidden="true">Photo</span>
+            <img data-optional src="assets/community/mentoring-3.jpg" alt="A career guidance session with 10k Designers mentees" loading="lazy" decoding="async">
+          </li>
+          <li class="give-shot">
+            <span class="shot-empty" aria-hidden="true">Photo</span>
+            <img data-optional src="assets/community/mentoring-4.jpg" alt="A 10k Designers community meet-up" loading="lazy" decoding="async">
+          </li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
     <!-- ===== TOOLKIT ===== -->
     <section>
       <div class="wrap reveal">
@@ -1646,6 +1856,69 @@
             <dd>Figma, Figma Make, Claude, Magic Patterns, Premiere Pro, After Effects, Vercel, Supabase, Linear, Notion</dd>
           </div>
         </dl>
+      </div>
+    </section>
+
+
+    <!-- ===== BEYOND WORK ===== -->
+    <!-- The six captions are the reference's own placeholders except "Cats",
+         which is the one this site had already earned. Swap them for whatever
+         is true; the fan holds any count. -->
+    <section id="life">
+      <div class="wrap reveal">
+        <p class="sec-label"><svg class="sec-icon" aria-hidden="true" focusable="false"><use href="#ico-folder"/></svg>Beyond work</p>
+        <div class="shelf life-shelf">
+          <div class="shelf-rail" role="group" aria-label="Beyond work">
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/travel.jpg" alt="Travel" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Travel</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/reading.jpg" alt="Reading" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Reading</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/cats.jpg" alt="Cats" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Cats</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/music.jpg" alt="Music" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Music</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/food.jpg" alt="Food" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Food</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="polaroid-shot">
+              <span class="shot-empty" aria-hidden="true">Photo</span>
+              <img data-optional src="assets/life/fitness.jpg" alt="Fitness" loading="lazy" decoding="async">
+            </div>
+            <figcaption>Fitness</figcaption>
+          </figure>
+          </div>
+          <button type="button" class="shelf-nav shelf-prev" data-dir="-1" aria-label="Previous photos from beyond work" hidden>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>
+          </button>
+          <button type="button" class="shelf-nav shelf-next" data-dir="1" aria-label="More photos from beyond work" hidden>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -2257,6 +2530,23 @@
     if (/^[a-z0-9-]+$/.test(key)) location.replace('case.html?c=' + key);
   })();
 
+  // ——— Optional photos ———
+  // #community's grid and #life's polaroids ship with their <img> slots already
+  // pointed at assets/community/ and assets/life/. Drop a jpg at the path and
+  // it appears; leave it out and the image removes itself, so the plate keeps
+  // the labelled ground underneath it instead of showing a broken-image icon.
+  // Either way the HTML is the same, which is the point — adding a photo is a
+  // file copy, not an edit. Runs before the shelf driver so a rail measures
+  // itself after any missing print has already gone.
+  (function() {
+    document.querySelectorAll('img[data-optional]').forEach(function(img) {
+      function drop() { if (img.parentNode) img.parentNode.removeChild(img); }
+      img.addEventListener('error', drop);
+      // Cached failures can land before this runs and fire no event.
+      if (img.complete && img.naturalWidth === 0) drop();
+    });
+  })();
+
   // ——— Card shelves (Work, Side projects) ———
   // The rails scroll natively; this only drives the paging buttons. They ship
   // hidden in the markup and are only ever shown by measurement, so a shelf
@@ -2274,7 +2564,7 @@
       // One card plus the gap. Measured off two real cards rather than read
       // from a token, so retuning --shelf-card or the gap needs no JS change.
       function step() {
-        var cards = rail.querySelectorAll('.card');
+        var cards = rail.children;
         if (cards.length > 1) return cards[1].offsetLeft - cards[0].offsetLeft;
         if (cards.length === 1) return cards[0].offsetWidth;
         return Math.round(rail.clientWidth * 0.8);
@@ -2432,7 +2722,7 @@
     var lastHover = 0;
     document.addEventListener('mouseover', function(e) {
       if (isScrolling) return;
-      var t = e.target.closest('a, button, .row, .pair, .nav-name');
+      var t = e.target.closest('a, button, .row, .pair, .nav-name, .polaroid');
       if (!t) return;
       var now = Date.now();
       if (now - lastHover < window.__tune.paws.hoverThrottle) return;
