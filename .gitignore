@@ -11,3 +11,6 @@ case-study-inputs/
 
 # Browser-automation scratch output, not source
 .playwright-cli/
+
+# Dev-only dialkit panel bundle — build output, rebuild with `npm run dial`
+assets/dial/
