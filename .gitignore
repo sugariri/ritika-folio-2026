@@ -12,5 +12,6 @@ case-study-inputs/
 # Browser-automation scratch output, not source
 .playwright-cli/
 
-# Dev-only dialkit panel bundle — build output, rebuild with `npm run dial`
+# Dev-only React island bundles — build output, rebuild with `npm run islands`
 assets/dial/
+assets/agentation/

@@ -3,8 +3,11 @@
   "private": true,
   "scripts": {
     "dev": "python3 -m http.server 8766",
-    "dial": "vite build",
-    "dial:watch": "vite build --watch"
+    "dial": "ISLAND=dial vite build",
+    "dial:watch": "ISLAND=dial vite build --watch",
+    "agentation": "ISLAND=agentation vite build",
+    "agentation:watch": "ISLAND=agentation vite build --watch",
+    "islands": "npm run dial && npm run agentation"
   },
   "dependencies": {
     "agentation": "^3.0.2",

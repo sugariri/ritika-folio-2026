@@ -1570,6 +1570,26 @@
       else applyPane();
     }, { passive: true });
   })();
+
+  // ——— Agentation annotation toolbar (dev only) ———
+  // Point at an element, say what is wrong with it, and the note reaches the
+  // coding agent already knowing which element you meant. Gated exactly like the
+  // dialkit panel on index.html — the bundle is fetched only on localhost or with
+  // ?agent in the URL, so a real visitor's page load is untouched and the module
+  // isn't even requested. This gate is in all three pages; the dial's is not.
+  // Notes live in localStorage regardless, and sync to the agent when
+  // `npx agentation-mcp server` is up on 4747 (see .mcp.json).
+  //   npm run agentation         build it once
+  //   npm run agentation:watch   rebuild on save
+  (function() {
+    var host = location.hostname;
+    var on = host === 'localhost' || host === '127.0.0.1' || host === '[::1]'
+          || /[?&]agent(&|=|$)/.test(location.search);
+    if (!on) return;
+    import('./assets/agentation/agentation.js').catch(function(err) {
+      console.warn('[agentation] toolbar bundle missing — run `npm run agentation`', err);
+    });
+  })();
   </script>
 </body>
 </html>

@@ -12,7 +12,14 @@ python3 -m http.server 8766
 
 Then open `http://localhost:8766/`.
 
-There is **one** build in the repo and it does not touch the site: `npm run dial` compiles the dev-only tuning panel to `assets/dial/dial.js`, which `index.html` loads only on localhost or with `?dial` (see **Tuning panel** at the end of this file). The three pages stay hand-written, and a real visitor still downloads no framework, bundler, or runtime.
+The only builds in the repo are the **two dev-only React islands**, and neither touches the site — `npm run islands` builds both, or one at a time:
+
+```bash
+npm run dial        # tuning panel      → assets/dial/dial.js              (index.html only)
+npm run agentation  # annotation toolbar → assets/agentation/agentation.js  (all three pages)
+```
+
+Each is a self-contained ES module that its pages fetch **only** on localhost or behind a query flag (`?dial`, `?agent`) — see **Tuning panel** and **Annotation toolbar** at the end of this file. The three pages stay hand-written, and a real visitor still downloads no framework, bundler, or runtime: measured from a non-localhost host with no flag: zero island bytes on all three pages.
 
 ## Architecture
 
@@ -238,7 +245,7 @@ Below 560px the row stacks (`column`, `align-items: flex-start`) — a phone mea
 
 The alternative was never necessary because the design system was **already** the right shape for a dial — every colour is a `var()` (see **CSS custom properties**) and every animation number is a named JS constant. The island only had to reach them.
 
-**Files.** `src/dial.tsx` is the whole island (four panels), `src/env.d.ts` declares the `?inline` CSS import and the two `window` additions, `vite.config.ts` builds it. Output is `assets/dial/dial.js` — **gitignored build output, never hand-edited**, rebuilt with `npm run dial` (or `npm run dial:watch`). One file, one request: dialkit's stylesheet comes in with `?inline` and is injected from JS. Two things in that config are load-bearing and both were bugs first: `fileName: () => 'dial.js'` because the page hardcodes the import path and a content hash would break it every rebuild, and `define: { 'process.env.NODE_ENV': '"production"' }` because **Vite's lib mode does not substitute it** the way an app build does — React's dev guards survived into the bundle and threw `process is not defined` in the browser (19 live references), and fixing it also dropped the React dev build (1,264 kB → 615 kB, 151 kB gzip). That define turns dialkit's own dev check false, which is why `dial.tsx` passes `productionEnabled`; the URL gate below is the real guard, not `NODE_ENV`.
+**Files.** `src/dial.tsx` is the whole island (four panels), `src/env.d.ts` declares the `?inline` CSS import and the two `window` additions, `vite.config.ts` builds it — **one island per build**, picked by the `ISLAND` env var now that there are two (see **Annotation toolbar** below). Output is `assets/dial/dial.js` — **gitignored build output, never hand-edited**, rebuilt with `npm run dial` (or `npm run dial:watch`). One file, one request: dialkit's stylesheet comes in with `?inline` and is injected from JS. Two things in that config are load-bearing and both were bugs first: `fileName: () => 'dial.js'` because the page hardcodes the import path and a content hash would break it every rebuild, and `define: { 'process.env.NODE_ENV': '"production"' }` because **Vite's lib mode does not substitute it** the way an app build does — React's dev guards survived into the bundle and threw `process is not defined` in the browser (19 live references), and fixing it also dropped the React dev build (1,264 kB → 615 kB, 151 kB gzip). That define turns dialkit's own dev check false, which is why `dial.tsx` passes `productionEnabled`; the URL gate below is the real guard, not `NODE_ENV`.
 
 **The gate.** The last IIFE in `index.html`'s script arms the panel on `localhost` / `127.0.0.1` / `[::1]`, or on any host with `?dial` in the query — otherwise it returns before doing anything. Loading is a dynamic `import()`, which works inside a classic `<script>` and resolves against the document base URL, so a real visitor makes **zero** extra requests (verified: 10 requests un-gated, 12 with `?dial`) and a missing bundle is a one-line `console.warn`, not a broken page. `index.html` only — `finsynth.html` and `case.html` have no panel and no gate.
 
@@ -255,3 +262,25 @@ The loader is the exception to "live", because it runs once at load and removes 
 **Four panels**, each with a stable `id` and `persist: true` (so values survive a reload): **Tokens** (brand, ink, ground, lines, ok, plus Clear overrides), **Layout** (`--content`, `--gutter`, `--shelf-card`, lens size, `--dur-row`, `--dur-fill`), **Animation** (the eight loader constants + Replay, spotlight lerp, paw throttle) and **Cat** (flee, chase, caught, edge padding).
 
 **Rules.** Don't convert page markup to JSX — the island exists so that never has to happen. Don't ungate the panel or import it from the other two pages. And when a dialed value is the one you want, write it into the source line and reset the dial; don't leave the number living in `localStorage`.
+
+## Annotation toolbar (dev only)
+
+The second React island, and the only one on all three pages. [Agentation](https://www.npmjs.com/package/agentation) is a visual feedback toolbar: click an element, say what is wrong with it, and the note reaches the coding agent already carrying which element you meant — its path, its classes, the text near it. That is what earns it a dependency here; the alternative is describing "the third card's subtitle, the one under the plate" in prose every time. Ritika had it on the FinSynth landing page before this site (there it mounts plainly as `{import.meta.env.DEV && <Agentation />}` in `src/main.jsx`, clipboard mode, no endpoint).
+
+It obeys the same rule as the dial: **React never owns page markup.** `src/agentation.tsx` appends one `<div id="agentation-root">` to `<body>` and renders `<Agentation endpoint="http://localhost:4747" />` into it — the component then portals its UI out to `<body>` and reads the DOM the three pages already rendered, so the host div stays empty and no hero, row or card became JSX. Its CSS is compiled into the bundle (its dist ships no `.css`), so like the dial it is exactly one file and one request.
+
+**Why its own bundle rather than a fifth dial panel:** `dial.js` is `index.html`-only by design and the rule above it says don't import it from the other two pages — and the copy most worth annotating is on the two case studies. So `vite.config.ts` grew an `ISLANDS` map keyed by the `ISLAND` env var instead of a second Rollup entry (two entries in one pass make Rollup hoist the shared React into a third chunk, and each page hardcodes exactly one import path) and instead of `--mode` (a non-standard mode stops Vite resolving the build as production). That refactor is proven inert for the dial: `assets/dial/dial.js` comes out byte-identical, same SHA-256, 615.63 kB.
+
+```bash
+npm run agentation         # build it once
+npm run agentation:watch   # rebuild on save
+npm run islands            # both islands
+```
+
+**The gate** is the same shape as the dial's and lives at the end of each page's main script: `localhost` / `127.0.0.1` / `[::1]`, or any host with `?agent` in the query. The three copies are identical — **keep them that way.** Verified from a non-localhost hostname: 20 / 8 / 3 requests on index / finsynth / case with the toolbar absent, and exactly **three** more with `?agent` (the bundle plus the two calls to 4747). Index's 20 reconciles with the **10** the dial section measures — the other ten are `assets/life/*.jpg` and `assets/community/mentoring-*.jpg`, which `0743439` (*Add the Community and Beyond work sections*) references but never added, so they 404. **Ten missing photos, not an island problem** — drop the files in and the count returns to 10.
+
+**The server is optional and that is the point.** `.mcp.json` registers `npx agentation-mcp server` at project scope, which runs an HTTP server on **port 4747** alongside MCP over stdio, so annotations arrive in Claude Code as they are sent (`agentation_get_all_pending`, `agentation_watch_annotations`, `agentation_resolve`, …; `agentation-mcp doctor` checks the setup). With it down the toolbar logs a refused connection to `/health` and `/sessions`, keeps every annotation in `localStorage`, and falls back to copying markdown to the clipboard — a forgotten server costs a paste, not the notes. Claude Code has to be restarted for `.mcp.json` to load.
+
+**One known rough edge, on `index.html` only.** Agentation's `blockInteractions` covers `button, a, input, select, textarea, [role='button'], [onclick]` — which is every real control, but not this page's two document-level whimsies: clicking to place an annotation still spawns **paw prints**, and the **cat** keeps tracking the cursor while you aim. Nothing breaks and no annotation is lost; it is only noisy. Left alone deliberately rather than coupling the page's own JS to a dev tool — the fix, if it ever annoys, is to have the paw and cat handlers bail while `document.documentElement` carries Agentation's `data-drawing-hover`, which is the one root-level signal it exposes. `finsynth.html` and `case.html` have neither the cat nor the paws, so neither has the problem.
+
+**Rules.** Same as the dial's: don't convert page markup to JSX, and don't ungate it. `assets/agentation/agentation.js` is **gitignored build output, never hand-edited**. The `agentation` setup skill (installed by `npx skills add benjitaylor/agentation` into both `.claude/skills/` and `.agents/skills/`, alongside `agentation-self-driving`) is Next.js-only (it edits `app/layout.tsx` / `pages/_app.tsx`) and does not describe this site — the island above is the install here, so don't let that skill re-do it.
