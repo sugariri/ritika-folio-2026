@@ -24,10 +24,11 @@
  *   what "Clear overrides" is for. Pinning every token at mount would have
  *   silently broken the theme flip.
  *
- * • The dial names are the token names. `--brand` is called brand, ASSEMBLE_MS
- *   is called ASSEMBLE_MS. The panel's Copy button emits JSON, and the point of
- *   matching the names is that the JSON tells you exactly which line of
- *   index.html to edit to make a tuned value permanent.
+ * • The dial names are the token names. `--brand` is called brand, `--shelf-card`
+ *   shelfCard, ASSEMBLE_MS assembleMs — camelCase throughout, because dialkit's
+ *   label formatter splits runs of capitals. The panel's Copy button emits JSON,
+ *   and the point of matching the names is that the JSON tells you exactly which
+ *   line of index.html to edit to make a tuned value permanent.
  *
  * Loaded only behind the gate in index.html (localhost, or ?dial) — a real
  * visitor never downloads it.
@@ -168,15 +169,19 @@ function Dials() {
   const a = useDialKit(
     'Animation',
     {
+      // camelCase, not the SCREAMING_SNAKE of the constants themselves:
+      // dialkit's label formatter splits runs of capitals, so TILE rendered as
+      // "T I L E" and ASSEMBLE_MS as "A S S E M B L E_ M S". The mapping back to
+      // window.__tune.loader is spelled out in the effect below.
       loader: {
-        TILE: [8, 2, 40, 1] as [number, number, number, number],
-        START_MS: [40, 0, 600, 10] as [number, number, number, number],
-        ASSEMBLE_MS: [780, 120, 4000, 10] as [number, number, number, number],
-        HOLD_MS: [130, 0, 1200, 10] as [number, number, number, number],
-        REVEAL_WINDOW: [0.22, 0.02, 0.9, 0.01] as [number, number, number, number],
-        WAIT_CAP_MS: [900, 0, 4000, 50] as [number, number, number, number],
-        JITTER: [9, 0, 60, 1] as [number, number, number, number],
-        MIN_BAND: [72, 0, 400, 4] as [number, number, number, number],
+        tile: [8, 2, 40, 1] as [number, number, number, number],
+        startMs: [40, 0, 600, 10] as [number, number, number, number],
+        assembleMs: [780, 120, 4000, 10] as [number, number, number, number],
+        holdMs: [130, 0, 1200, 10] as [number, number, number, number],
+        revealWindow: [0.22, 0.02, 0.9, 0.01] as [number, number, number, number],
+        waitCapMs: [900, 0, 4000, 50] as [number, number, number, number],
+        jitter: [9, 0, 60, 1] as [number, number, number, number],
+        minBand: [72, 0, 400, 4] as [number, number, number, number],
         replay: { type: 'action' as const, label: 'Replay loader' },
       },
       spotlightLerp: [0.09, 0.01, 0.6, 0.01] as [number, number, number, number],
@@ -195,14 +200,14 @@ function Dials() {
     const T = window.__tune;
     if (!T) return;
     Object.assign(T.loader, {
-      TILE: a.loader.TILE,
-      START_MS: a.loader.START_MS,
-      ASSEMBLE_MS: a.loader.ASSEMBLE_MS,
-      HOLD_MS: a.loader.HOLD_MS,
-      REVEAL_WINDOW: a.loader.REVEAL_WINDOW,
-      WAIT_CAP_MS: a.loader.WAIT_CAP_MS,
-      JITTER: a.loader.JITTER,
-      MIN_BAND: a.loader.MIN_BAND,
+      TILE: a.loader.tile,
+      START_MS: a.loader.startMs,
+      ASSEMBLE_MS: a.loader.assembleMs,
+      HOLD_MS: a.loader.holdMs,
+      REVEAL_WINDOW: a.loader.revealWindow,
+      WAIT_CAP_MS: a.loader.waitCapMs,
+      JITTER: a.loader.jitter,
+      MIN_BAND: a.loader.minBand,
     });
     T.spot.lerp = a.spotlightLerp;
     T.paws.hoverThrottle = a.pawThrottleMs;
