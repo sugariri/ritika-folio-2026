@@ -61,6 +61,11 @@
       --bg-secondary: #ececee;
       --bg-secondary-hover: #e2e2e5;
       --bg-hover: #fff;                    /* the pill a row fills into */
+      /* The window inside a #life polaroid frame. It needs its own value
+         rather than --bg-secondary because the only thing it has to be is
+         DARKER than the frame around it — and in dark theme --bg-secondary
+         is lighter than --bg-hover, which turned the print inside out. */
+      --print-well: #ececee;
       --bg-float: var(--bg);               /* sheets and the chat, lifted in dark */
       --text: var(--gray-14);
       --muted: var(--gray-10);
@@ -221,6 +226,7 @@
       --bg-secondary: #26262e;
       --bg-secondary-hover: #32323c;
       --bg-hover: #1b1b22;
+      --print-well: #141419;               /* below the #1b1b22 frame, above the #101013 page */
       /* the case sheet and the chat lift off the page instead of relying on a
          shadow, which does almost nothing against near-black */
       --bg-float: #1a1a20;
@@ -700,6 +706,9 @@
       -webkit-appearance: none; appearance: none;
       transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
     }
+    /* Above a lifted #life print, which raises itself to 3 on hover; the card
+       shelves have nothing competing, so this changes only that one case. */
+    .shelf-nav { z-index: 4; }
     .shelf-nav[hidden] { display: none; }
     .shelf-nav:hover, .shelf-nav:focus-visible {
       color: var(--text);
@@ -888,7 +897,6 @@
     .give-body {
       font-size: var(--body1); line-height: var(--body1-lh);
       color: var(--muted);
-      max-width: 46ch;
     }
     /* The reference sets copy and grid side by side across a full-bleed panel.
        At 572px a 50/50 split leaves ~120px tiles, which is a contact sheet, not
@@ -987,7 +995,7 @@
       width: 100%;
       aspect-ratio: 4 / 5;
       overflow: hidden;
-      background: var(--bg-secondary);
+      background: var(--print-well);
     }
     /* Same relationship as .card-mark: muted at rest, ink under the cursor. */
     .polaroid figcaption {
@@ -1000,8 +1008,11 @@
     .polaroid:hover figcaption { color: var(--text); }
 
     @media (max-width: 640px) {
-      .life-shelf { --shelf-card: min(208px, 62vw); }
+      .life-shelf { --shelf-card: min(176px, 48vw); }
       .life-shelf .shelf-rail { padding-block: 18px 22px; }
+      .polaroid { padding: 8px 8px 0; }
+      .polaroid + .polaroid { margin-left: -20px; }
+      .polaroid figcaption { padding: 11px 4px 12px; }
     }
     @media (prefers-reduced-motion: reduce) {
       /* The tilt is a layout, not motion, so it stays; only the travel goes. */
@@ -1023,6 +1034,27 @@
       font-weight: 500;
     }
     .pair dd { color: var(--muted); }
+
+    /* Tools is the one Toolkit row whose items are products rather than
+       skills, so where a vendor publishes a mark it goes in front of the name.
+       No new visual pattern: the mark is the sprite's own vendor geometry in
+       currentColor, so it inherits the row's --muted ink and reads as part of
+       the line, and the middots keep the same rhythm the five skill rows
+       above already have. 14px, not the footer's 17px — there the mark IS the
+       content, here it stands next to reading-size type. */
+    .tool-list {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: 7px;
+      row-gap: 5px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .tool-list li { display: inline-flex; align-items: center; gap: 6px; }
+    .tool-list li:not(:last-child)::after { content: '·'; color: var(--faint); }
+    .tool-list svg { width: 14px; height: 14px; flex: 0 0 auto; fill: currentColor; }
 
     /* ---------- FOOTER ---------- */
     footer {
@@ -1502,6 +1534,24 @@
     <symbol id="ico-openai" viewBox="0 0 24 24">
       <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>
     </symbol>
+
+    <!-- Tools-row marks. Same rule as the credit strip above: real vendor
+         geometry (simple-icons), never a hand-drawn approximation, monochrome
+         in currentColor so each one inherits the row's --muted ink. Figma Make
+         and Magic Patterns publish no obtainable mark, so they ride the row as
+         text alone rather than as something drawn to look like a logo. -->
+    <symbol id="ico-figma" viewBox="0 0 24 24">
+      <path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/>
+    </symbol>
+    <symbol id="ico-vercel" viewBox="0 0 24 24">
+      <path d="m12 1.608 12 20.784H0Z"/>
+    </symbol>
+    <symbol id="ico-linear" viewBox="0 0 24 24">
+      <path d="M2.886 4.18A11.982 11.982 0 0 1 11.99 0C18.624 0 24 5.376 24 12.009c0 3.64-1.62 6.903-4.18 9.105L2.887 4.18ZM1.817 5.626l16.556 16.556c-.524.33-1.075.62-1.65.866L.951 7.277c.247-.575.537-1.126.866-1.65ZM.322 9.163l14.515 14.515c-.71.172-1.443.282-2.195.322L0 11.358a12 12 0 0 1 .322-2.195Zm-.17 4.862 9.823 9.824a12.02 12.02 0 0 1-9.824-9.824Z"/>
+    </symbol>
+    <symbol id="ico-notion" viewBox="0 0 24 24">
+      <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/>
+    </symbol>
   </svg>
 
   <!-- Wordmark intro: "riri" writes itself, then flies into the header logo's
@@ -1832,28 +1882,38 @@
         <p class="sec-label"><svg class="sec-icon" aria-hidden="true" focusable="false"><use href="#ico-folder"/></svg>Toolkit</p>
         <dl class="pairs">
           <div class="pair">
-            <dt>Design</dt>
-            <dd>Product design, UX research, wireframing, prototyping, design systems, interaction &amp; visual design</dd>
+            <dt>Product</dt>
+            <dd>0&rarr;1 &middot; Problem framing &middot; User research &middot; Product thinking</dd>
           </div>
           <div class="pair">
-            <dt>Product</dt>
-            <dd>Product thinking, 0&rarr;1 scoping, user interviews, problem framing, roadmapping, design mentoring</dd>
+            <dt>Design</dt>
+            <dd>Interaction &middot; Visual &middot; Systems &middot; Prototyping</dd>
           </div>
           <div class="pair">
             <dt>AI</dt>
-            <dd>AI-enabled design, prompt-driven prototyping, agent workflows, designing for non-deterministic UX</dd>
-          </div>
-          <div class="pair">
-            <dt>Motion</dt>
-            <dd>Video editing, product demo films, motion &amp; micro-interactions, storyboarding, visual storytelling</dd>
+            <dd>Agent workflows &middot; Non-deterministic UX &middot; AI prototyping</dd>
           </div>
           <div class="pair">
             <dt>Build</dt>
-            <dd>HTML, CSS, design tokens, component architecture, design QA</dd>
+            <dd>HTML &middot; CSS &middot; Components &middot; Design QA</dd>
+          </div>
+          <div class="pair">
+            <dt>Motion</dt>
+            <dd>Demos &middot; Storytelling &middot; Micro-interactions</dd>
           </div>
           <div class="pair">
             <dt>Tools</dt>
-            <dd>Figma, Figma Make, Claude, Magic Patterns, Premiere Pro, After Effects, Vercel, Supabase, Linear, Notion</dd>
+            <dd>
+              <ul class="tool-list">
+                <li><svg aria-hidden="true" focusable="false"><use href="#ico-figma"/></svg>Figma</li>
+                <li><svg aria-hidden="true" focusable="false"><use href="#ico-claude"/></svg>Claude</li>
+                <li>Figma Make</li>
+                <li>Magic Patterns</li>
+                <li><svg aria-hidden="true" focusable="false"><use href="#ico-vercel"/></svg>Vercel</li>
+                <li><svg aria-hidden="true" focusable="false"><use href="#ico-linear"/></svg>Linear</li>
+                <li><svg aria-hidden="true" focusable="false"><use href="#ico-notion"/></svg>Notion</li>
+              </ul>
+            </dd>
           </div>
         </dl>
       </div>
