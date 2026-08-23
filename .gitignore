@@ -15,3 +15,6 @@ case-study-inputs/
 # Dev-only React island bundles — build output, rebuild with `npm run islands`
 assets/dial/
 assets/agentation/
+
+# plaintext for the encrypted case page — never commit
+private/

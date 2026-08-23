@@ -5,6 +5,7 @@
     "dev": "python3 -m http.server 8766",
     "dial": "ISLAND=dial vite build",
     "dial:watch": "ISLAND=dial vite build --watch",
+    "lock": "node tools/encrypt-case.mjs",
     "agentation": "ISLAND=agentation vite build",
     "agentation:watch": "ISLAND=agentation vite build --watch",
     "islands": "npm run dial && npm run agentation"
