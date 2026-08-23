@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ritika Shakkerwal — Product Designer</title>
+  <title>Ritika Shakkerwal &middot; Product Designer</title>
   <meta name="description" content="Product designer working on AI and fintech interfaces. Currently at FinSynth.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,6 +61,13 @@
       --bg-secondary: #ececee;
       --bg-secondary-hover: #e2e2e5;
       --bg-hover: #fff;                    /* the pill a row fills into */
+      /* The theme switch's two grounds. Each page names its raised surface
+         differently (--bg-secondary here, --bg-raised on the case studies), so
+         the switch aliases them once and the .theme-switch block below is then
+         identical in all three files. The knob has one job: read lighter than
+         the track it rides on, in both themes. */
+      --switch-track: var(--bg-secondary);
+      --switch-knob: var(--bg-hover);
       /* The window inside a #life polaroid frame. It needs its own value
          rather than --bg-secondary because the only thing it has to be is
          DARKER than the frame around it — and in dark theme --bg-secondary
@@ -115,8 +122,8 @@
          13px, 15px and 17px text alike. */
       --h1: clamp(32px, 7vw, 44px);   --h1-lh: 1.16;    /* page title */
       --h2: 30px;                     --h2-lh: 1.28;    /* section / chapter title */
-      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, standfirst, pull */
-      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose */
+      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, pull, card title */
+      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose, standfirst */
       --body2: 15px;                  --body2-lh: 1.55; /* UI, meta, captions */
       --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
 
@@ -226,6 +233,8 @@
       --bg-secondary: #26262e;
       --bg-secondary-hover: #32323c;
       --bg-hover: #1b1b22;
+      --switch-track: var(--bg-hover);
+      --switch-knob: var(--bg-secondary);
       --print-well: #141419;               /* below the #1b1b22 frame, above the #101013 page */
       /* the case sheet and the chat lift off the page instead of relying on a
          shadow, which does almost nothing against near-black */
@@ -325,6 +334,33 @@
     main, footer { position: relative; z-index: 1; }
 
     /* ---------- NAV ---------- */
+    /* Only the wordmark leaves the column, and that is a correction (Ritika,
+       2026-08-23: "undo the left and rifght corner adjustment i only meant it
+       for the logo"). The first pass widened the whole bar
+       (`header > .wrap { max-width: none; padding: 0 32px }`), which moved both
+       ends of it: the mark went out to the page edge and the theme switch went
+       out with it. The bar is back on the --content column with every other
+       element on the page, and the mark alone breaks out to the 32px page inset
+       &mdash; the same inset .index and .case-rail are parked at, so on the two case
+       studies the mark and the chapter rail still share a left edge.
+
+       Absolute rather than a negative margin, because the distance from the page
+       edge to the column changes with the viewport and there is no static offset
+       to write; `header` is sticky, which is what makes it the containing block.
+       Taking the mark out of flow leaves .nav's space-between with a single item
+       on index.html, which would drift to flex-start &mdash; hence margin-left: auto
+       on .nav-links. The case shells still have two children (.nav-left and
+       .nav-right) so that line is inert there; it is carried in all three files
+       anyway, because this block stays identical across them.
+
+       Scoped above 800px, which is where the wrap first has margin to break out
+       of. Below it the column already reaches the page edge, so the mark simply
+       stays in flow and needs no phone override. */
+    @media (min-width: 800px) {
+      .nav-name { position: absolute; left: 32px; top: 50%; translate: 0 -50%; }
+      .nav > .nav-links { margin-left: auto; }
+    }
+
     header {
       position: sticky; top: 0; z-index: 60;
       background: var(--bg);
@@ -378,26 +414,55 @@
     .nav-links { align-items: center; }
     .nav-links li:last-child { margin-left: -10px; } /* the icon carries its own padding */
 
-    /* Light / dark switch — same icon-button family as the overlay's controls.
-       The glyph names the theme you are in; the label names the one you'd get. */
-    .theme-toggle {
-      display: flex; align-items: center; justify-content: center;
-      width: 30px; height: 30px;
-      border: 1px solid transparent; border-radius: 8px;
-      background: transparent; color: var(--faint);
+    /* Light / dark switch &mdash; a switch pill, not a standalone icon button
+       (Ritika, 2026-08-23: "Add a switch pill instead of a standalone"). The
+       icon button said nothing about state: one glyph, and you had to know that
+       the sun meant "you are in light" rather than "click for light". A pill
+       shows both ends of the choice at once and puts the knob under the one you
+       are in, so the state is visible without reading the label.
+
+       The knob rides UNDER the two glyphs (z-index, not order), which is what
+       makes the mark sitting on it the theme you're in and the mark beside it
+       the theme you'd get. It moves on `translate` alone &mdash; compositor-only, so
+       a theme flip can never reflow the header. Colors deliberately do not
+       transition anywhere on this site (a color transition collides with the
+       chat squeeze), so only the knob's travel and the border animate.
+       Kept identical in index.html, finsynth.html and case.html. */
+    .theme-switch {
+      position: relative;
+      display: inline-flex; align-items: center;
+      width: 56px; height: 30px; padding: 0;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--switch-track);
       cursor: pointer;
       -webkit-appearance: none; appearance: none;
-      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+      transition: border-color 0.18s ease, scale 0.15s ease-out;
     }
-    .theme-toggle:hover, .theme-toggle:focus-visible {
-      color: var(--text); background: var(--bg-secondary); border-color: var(--line);
-      outline: none;
+    .theme-switch:hover, .theme-switch:focus-visible { border-color: var(--line-hover); }
+    .theme-switch:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .theme-switch:active { scale: 0.96; }
+    .theme-switch-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 24px; height: 24px; border-radius: 999px;
+      background: var(--switch-knob);
+      box-shadow: 0 1px 2px rgba(16, 16, 19, 0.16);
+      transition: translate 0.24s cubic-bezier(.22, .61, .36, 1);
     }
-    .theme-toggle:active { scale: 0.94; }
-    .theme-toggle svg { display: block; width: 16px; height: 16px; }
-    .theme-toggle .ico-moon { display: none; }
-    :root[data-theme="dark"] .theme-toggle .ico-sun { display: none; }
-    :root[data-theme="dark"] .theme-toggle .ico-moon { display: block; }
+    :root[data-theme="dark"] .theme-switch-knob { translate: 26px 0; }
+    .theme-switch svg {
+      position: relative; z-index: 1;
+      flex: 0 0 auto;
+      display: block; width: 15px; height: 15px;
+      color: var(--faint);
+    }
+    .theme-switch .ico-sun { margin-left: 6.5px; }
+    .theme-switch .ico-moon { margin-left: auto; margin-right: 6.5px; }
+    /* the glyph the knob is parked on is the live theme, so it takes the ink */
+    :root[data-theme="light"] .theme-switch .ico-sun,
+    :root[data-theme="dark"] .theme-switch .ico-moon { color: var(--text); }
+    @media (prefers-reduced-motion: reduce) {
+      .theme-switch-knob { transition: none; }
+    }
 
     /* ---------- HERO ---------- */
     .hero { position: relative; padding: 88px 0 80px; }
@@ -1061,14 +1126,12 @@
       border-top: 1px solid var(--line);
       padding: 56px 0 64px;
     }
-    .footer-lead {
-      font-size: var(--body1); font-weight: 500;
-      line-height: var(--body1-lh);
-      color: var(--text);
-      margin-bottom: 28px;
-    }
-    /* One hairline row under the lead, contact marks at the left and the tools
-       at the right (Ritika, 2026-08-22, from a reference footer). The contact
+    /* Contact marks at the left, the tools at the right (Ritika, 2026-08-22,
+       from a reference footer). It sat under a "Open to full-time roles,
+       freelance, and good problems" lead line until she removed that
+       (2026-08-22) — so the row carries no hairline of its own any more:
+       footer's own border-top is 56px above it, and two rules with nothing
+       between them read as one doubled rule rather than two blocks. The contact
        links used to be four word pills — "Email LinkedIn Behance Twitter" — four
        unlike destinations dressed as four tags, all the same length and all the
        same weight, so the row read as a list to parse rather than four things to
@@ -1085,8 +1148,6 @@
     .footer-row {
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 20px 28px;
-      padding-top: 26px;
-      border-top: 1px solid var(--line);
       margin-bottom: 36px;
     }
     .footer-links { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; }
@@ -1589,7 +1650,7 @@
   <header id="siteHeader">
     <div class="wrap">
       <nav class="nav">
-        <a href="#top" class="nav-name" aria-label="Riri — Ritika Shakkerwal, home">
+        <a href="#top" class="nav-name" aria-label="Riri: Ritika Shakkerwal, home">
           <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
             <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 21v32"/>
@@ -1614,14 +1675,15 @@
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
           <li>
-            <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
-              <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+            <button type="button" class="theme-switch" id="themeToggle" role="switch" aria-checked="false" aria-label="Dark theme" title="Switch to dark theme">
+              <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" focusable="false">
                 <circle cx="12" cy="12" r="4.2"/>
-                <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.5 1.5M18.1 18.1l1.5 1.5M2.6 12h2.2M19.2 12h2.2M4.4 19.6l1.5-1.5M18.1 5.9l1.5-1.5"/>
+                <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
               </svg>
-              <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                 <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
               </svg>
+              <span class="theme-switch-knob" aria-hidden="true"></span>
             </button>
           </li>
         </ul>
@@ -1661,7 +1723,7 @@
         </p>
         <p>
           Before that, I was the sole designer at Scream, where I took three
-          products from zero to one &mdash; working closely with founders and
+          products from zero to one, working closely with founders and
           engineers from figuring out what to build to shipping the product.
         </p>
         <p>
@@ -1689,7 +1751,7 @@
             <a class="card" href="finsynth.html">
               <span class="card-art shot plate-product"><img class="card-shot" src="assets/cards/finsynth-product.jpg" width="1000" height="553" alt="" loading="lazy" decoding="async"></span>
               <span class="card-foot">
-                <span class="card-title">FinSynth AI &mdash; Product
+                <span class="card-title">FinSynth AI &middot; Product
                   <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
                 </span>
                 <span class="card-sub">An AI research agent for analysts.</span>
@@ -1698,7 +1760,7 @@
             <a class="card" href="https://finsynth.ai/" target="_blank" rel="noopener">
               <span class="card-art shot plate-landing"><img class="card-shot" src="assets/cards/finsynth-landing.jpg" width="1000" height="562" alt="" loading="lazy" decoding="async"></span>
               <span class="card-foot">
-                <span class="card-title">FinSynth AI &mdash; Landing page
+                <span class="card-title">FinSynth AI &middot; Landing page
                   <span class="card-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
                 </span>
                 <span class="card-sub">Live at finsynth.ai.</span>
@@ -1770,7 +1832,7 @@
             <span class="row-role">Founding Product Designer &middot; AI research agent for analysts</span>
             <span class="row-divider"></span>
             <span class="row-end">
-              <span class="row-years">2025 — Now</span>
+              <span class="row-years">2025 &ndash; Now</span>
               <span class="row-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8h9"/><path d="M8.5 4l4 4-4 4"/></svg></span>
             </span>
           </a>
@@ -1779,7 +1841,7 @@
             <span class="row-name"><span class="row-tile" aria-hidden="true">S</span>Scream</span>
             <span class="row-role">Product Design Intern &middot; three MVPs as sole designer</span>
             <span class="row-divider"></span>
-            <span class="row-end"><span class="row-years">2024 — 2025</span></span>
+            <span class="row-end"><span class="row-years">2024 &ndash; 2025</span></span>
           </div>
 
           <a class="row row-sub" href="https://mazicio.framer.website/" target="_blank" rel="noopener">
@@ -1828,13 +1890,13 @@
             <span class="row-name">10k Designers</span>
             <span class="row-role">Product Design Course, later alumni mentor</span>
             <span class="row-divider"></span>
-            <span class="row-end"><span class="row-years">2022 — 2023</span></span>
+            <span class="row-end"><span class="row-years">2022 &ndash; 2023</span></span>
           </div>
           <div class="row row-static">
             <span class="row-name">St Joseph's College, Bangalore</span>
             <span class="row-role">B.Sc (CBZ)</span>
             <span class="row-divider"></span>
-            <span class="row-end"><span class="row-years">2019 — 2022</span></span>
+            <span class="row-end"><span class="row-years">2019 &ndash; 2022</span></span>
           </div>
         </div>
       </div>
@@ -1853,7 +1915,7 @@
         <article class="give">
           <p class="give-tag">Mentorship</p>
           <h2 class="give-title">Alumni Mentor at 10k Designers</h2>
-          <p class="give-body">Mentoring aspiring product designers as an alumni mentor at 10k Designers &mdash; portfolio reviews, design critiques, and career guidance sessions for the next generation of designers.</p>
+          <p class="give-body">Mentoring aspiring product designers as an alumni mentor at 10k Designers: portfolio reviews, design critiques, and career guidance sessions for the next generation of designers.</p>
           <ul class="give-grid">
           <li class="give-shot">
             <span class="shot-empty" aria-hidden="true">Photo</span>
@@ -1987,7 +2049,6 @@
   <!-- ===== FOOTER ===== -->
   <footer id="contact">
     <div class="wrap">
-      <p class="footer-lead">Open to full-time roles, freelance, and good problems.</p>
       <div class="footer-row">
         <!-- Icon-only links, so every one needs an accessible name: aria-label
              names it for a screen reader, title for a mouse that hovers and
@@ -2068,9 +2129,10 @@
       root.setAttribute('data-theme', t);
       if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
       if (btn) {
-        var label = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
-        btn.setAttribute('aria-label', label);
-        btn.setAttribute('title', label);
+        // role="switch": aria-checked is "dark is on", the accessible name is
+        // fixed ("Dark theme"), and the tooltip names the theme you'd get.
+        btn.setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+        btn.setAttribute('title', 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme');
       }
     }
     apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));

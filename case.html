@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Case study — Ritika Shakkerwal</title>
-  <meta name="description" content="Case studies from Ritika Shakkerwal — product design across AI video, user insights, internal tools, and mobile.">
+  <title>Case study &middot; Ritika Shakkerwal</title>
+  <meta name="description" content="Case studies from Ritika Shakkerwal: product design across AI video, user insights, internal tools, and mobile.">
   <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,6 +40,14 @@
       --bg: var(--gray-1);
       --bg-card: #ffffff;
       --bg-raised: #f6f6f7;
+      --pain-bg: #f0efff;   /* .chapter-key's ground, finsynth's value */
+      /* The theme switch's two grounds. Each page names its raised surface
+         differently (--bg-secondary here, --bg-raised on the case studies), so
+         the switch aliases them once and the .theme-switch block below is then
+         identical in all three files. The knob has one job: read lighter than
+         the track it rides on, in both themes. */
+      --switch-track: var(--bg-raised);
+      --switch-knob: var(--bg-card);
       --bg-stage: linear-gradient(135deg, #f4f4f6, #fbfbfb);
       --bg-float: var(--bg);  /* the chat, lifted off the page in dark */
       /* The ask pill sits on the page, not in it: a true white card a
@@ -80,7 +88,14 @@
       --faint: var(--gray-9);
       --line: rgba(0, 0, 0, 0.08);
       --line-hover: rgba(0, 0, 0, 0.16); /* the hovered ask pill */
-      --logo: #752afc; /* riri wordmark — site purple (index.html --brand) */
+      --logo: #752afc; /* riri wordmark — site purple, the same value as --brand */
+      /* --brand is referenced by the two :focus-visible outlines in the header
+         and was never defined in this file — drift from index.html, where the
+         token lives. Defined here for the same reason it now is in
+         finsynth.html: the header is shared shell, so the ring it draws should
+         be too. */
+      --brand: #752afc;
+      --brand-hover: #6109de;
 
       /* Shadows are theme-dependent: on a dark page a soft black blur does
          nothing, so the dark set is deeper and tighter. */
@@ -122,8 +137,8 @@
          way the cat is, and a page-scale bump must not resize a mock's UI. */
       --h1: clamp(32px, 7vw, 44px);   --h1-lh: 1.16;    /* page title */
       --h2: 30px;                     --h2-lh: 1.28;    /* section / chapter title */
-      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, standfirst, pull */
-      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose */
+      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, pull, card title */
+      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose, standfirst */
       --body2: 15px;                  --body2-lh: 1.55; /* UI, meta, captions */
       --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
 
@@ -166,6 +181,9 @@
       --bg: #101013;
       --bg-card: #16161b;
       --bg-raised: #1c1c22;
+      --pain-bg: #242231;
+      --switch-track: var(--bg-card);
+      --switch-knob: var(--ask-pill-bg);
       --bg-stage: linear-gradient(135deg, #17171d, #1b1b22);
       /* the chat lifts off the page instead of relying on a shadow, which
          does almost nothing against near-black */
@@ -184,6 +202,8 @@
       --blue-ink: #7f9dff;
       --fail: #ef7a70;
       --logo: #a97bff;
+      --brand: #a97bff;
+      --brand-hover: #c3a4ff;
 
       /* Diagram ink inverts with the canvas it is drawn on */
       --dia-box: rgba(255, 255, 255, 0.22);
@@ -227,6 +247,33 @@
     main { overflow-x: clip; }
 
     /* ---------- NAV ---------- */
+    /* Only the wordmark leaves the column, and that is a correction (Ritika,
+       2026-08-23: "undo the left and rifght corner adjustment i only meant it
+       for the logo"). The first pass widened the whole bar
+       (`header > .wrap { max-width: none; padding: 0 32px }`), which moved both
+       ends of it: the mark went out to the page edge and the theme switch went
+       out with it. The bar is back on the --content column with every other
+       element on the page, and the mark alone breaks out to the 32px page inset
+       &mdash; the same inset .index and .case-rail are parked at, so on the two case
+       studies the mark and the chapter rail still share a left edge.
+
+       Absolute rather than a negative margin, because the distance from the page
+       edge to the column changes with the viewport and there is no static offset
+       to write; `header` is sticky, which is what makes it the containing block.
+       Taking the mark out of flow leaves .nav's space-between with a single item
+       on index.html, which would drift to flex-start &mdash; hence margin-left: auto
+       on .nav-links. The case shells still have two children (.nav-left and
+       .nav-right) so that line is inert there; it is carried in all three files
+       anyway, because this block stays identical across them.
+
+       Scoped above 800px, which is where the wrap first has margin to break out
+       of. Below it the column already reaches the page edge, so the mark simply
+       stays in flow and needs no phone override. */
+    @media (min-width: 800px) {
+      .nav-name { position: absolute; left: 32px; top: 50%; translate: 0 -50%; }
+      .nav > .nav-links { margin-left: auto; }
+    }
+
     header {
       position: sticky; top: 0; z-index: 60;
       background: var(--bg);
@@ -270,34 +317,75 @@
       }
     }
     .nav-left { display: flex; align-items: center; gap: 20px; }
+    /* A circular icon button, not a text link (Ritika, 2026-08-23, from a
+       reference: a filled circle holding a return arrow). 36px is the circle
+       the site already owns (.shelf-nav, .wf-nav); the arrow is the monoline
+       stroke idiom every drawn glyph here uses. Icon-only, so the accessible
+       name rides on the link (aria-label + title), same rule as the footer
+       marks. Kept identical in finsynth.html and case.html. */
     .nav-back {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      background: var(--bg-raised);
       color: var(--muted);
-      transition: color 0.18s ease;
+      transition: color 0.18s ease, scale 0.15s ease-out;
     }
     .nav-back:hover { color: var(--text); }
-    .nav-back { white-space: nowrap; }
+    .nav-back:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .nav-back:active { scale: 0.94; }
+    .nav-back svg { display: block; width: 18px; height: 18px; }
     .nav-right { display: flex; align-items: center; gap: 14px; }
 
-    /* Light / dark switch — same icon-button family as the chat's controls.
-       The glyph names the theme you are in; the label names the one you'd get.
-       Kept identical to index.html. */
-    .theme-toggle {
-      display: flex; align-items: center; justify-content: center;
-      width: 30px; height: 30px;
-      border: 1px solid transparent; border-radius: 8px;
-      background: transparent; color: var(--faint);
+    /* Light / dark switch &mdash; a switch pill, not a standalone icon button
+       (Ritika, 2026-08-23: "Add a switch pill instead of a standalone"). The
+       icon button said nothing about state: one glyph, and you had to know that
+       the sun meant "you are in light" rather than "click for light". A pill
+       shows both ends of the choice at once and puts the knob under the one you
+       are in, so the state is visible without reading the label.
+
+       The knob rides UNDER the two glyphs (z-index, not order), which is what
+       makes the mark sitting on it the theme you're in and the mark beside it
+       the theme you'd get. It moves on `translate` alone &mdash; compositor-only, so
+       a theme flip can never reflow the header. Colors deliberately do not
+       transition anywhere on this site (a color transition collides with the
+       chat squeeze), so only the knob's travel and the border animate.
+       Kept identical in index.html, finsynth.html and case.html. */
+    .theme-switch {
+      position: relative;
+      display: inline-flex; align-items: center;
+      width: 56px; height: 30px; padding: 0;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--switch-track);
       cursor: pointer;
       -webkit-appearance: none; appearance: none;
-      transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease, scale 0.15s ease-out;
+      transition: border-color 0.18s ease, scale 0.15s ease-out;
     }
-    .theme-toggle:hover, .theme-toggle:focus-visible {
-      color: var(--text); background: var(--bg-raised); border-color: var(--line); outline: none;
+    .theme-switch:hover, .theme-switch:focus-visible { border-color: var(--line-hover); }
+    .theme-switch:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .theme-switch:active { scale: 0.96; }
+    .theme-switch-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 24px; height: 24px; border-radius: 999px;
+      background: var(--switch-knob);
+      box-shadow: 0 1px 2px rgba(16, 16, 19, 0.16);
+      transition: translate 0.24s cubic-bezier(.22, .61, .36, 1);
     }
-    .theme-toggle:active { scale: 0.94; }
-    .theme-toggle svg { display: block; width: 16px; height: 16px; }
-    .theme-toggle .ico-moon { display: none; }
-    :root[data-theme="dark"] .theme-toggle .ico-sun { display: none; }
-    :root[data-theme="dark"] .theme-toggle .ico-moon { display: block; }
+    :root[data-theme="dark"] .theme-switch-knob { translate: 26px 0; }
+    .theme-switch svg {
+      position: relative; z-index: 1;
+      flex: 0 0 auto;
+      display: block; width: 15px; height: 15px;
+      color: var(--faint);
+    }
+    .theme-switch .ico-sun { margin-left: 6.5px; }
+    .theme-switch .ico-moon { margin-left: auto; margin-right: 6.5px; }
+    /* the glyph the knob is parked on is the live theme, so it takes the ink */
+    :root[data-theme="light"] .theme-switch .ico-sun,
+    :root[data-theme="dark"] .theme-switch .ico-moon { color: var(--text); }
+    @media (prefers-reduced-motion: reduce) {
+      .theme-switch-knob { transition: none; }
+    }
 
     /* Narrow screens: back/next earn the space; the masthead carries identity */
     @media (max-width: 560px) {
@@ -387,10 +475,14 @@
       color: var(--text);
       margin-bottom: 20px;
     }
+    /* Stepped from --h3 to --body1 with finsynth.html, which is the reference
+       implementation of this shell — see the note on .standfirst there. The
+       standfirst is a description, not a second headline; the distinction from
+       the body copy is carried by ink, not by a size. */
     .standfirst {
-      font-size: var(--h3); line-height: var(--h3-lh);
+      font-size: var(--body1); line-height: var(--body1-lh);
       color: var(--muted);
-      letter-spacing: -0.2px;
+      max-width: 54ch;
       text-wrap: pretty;
     }
     .masthead-meta {
@@ -524,36 +616,53 @@
       text-wrap: pretty;
       margin-bottom: 0;
     }
-    /* The chapter's one point, pulled onto a rule. It sits AFTER the figure,
+    /* The chapter's one point. It sits AFTER the figure,
        never before it — see the section grammar note above .chapter-head.
        Lede is muted, key is ink: the two sit at the same size and the
-       hierarchy is carried by colour and the rule alone, which is how this
+       hierarchy is carried by colour and weight alone, which is how this
        page keeps four levels without four type sizes. Every key line was
        MOVED out of the body it used to sit in — the chapter gains nothing it
        didn't already say. Chapters that already resolve on their own terms
        (04's .pull, 08's .beat) don't get one. */
-    /* A soft tinted panel, not a left rule (Ritika, 2026-08-22, from a
-       reference she pointed at). The rule version was the head's one point
-       hung off a 2px hairline; as a filled block it reads as the thing the
-       chapter resolves to rather than an aside beside the prose. This is NOT a
-       new material: `.canvas` and `.term` already ground content-column
-       surfaces in --bg-raised, and 14px is the radius .card uses on the
-       portfolio, so the panel is assembled from what the page already owns.
-       Borderless on purpose — .canvas and .term both carry a hairline because
-       they hold artwork and code that need containing; this holds one line of
-       the page's own voice, and the tint alone is enough to lift it. */
+    /* The tinted panel, restored 2026-08-23 (Ritika, on 02's key in finsynth:
+       "you miss understood the div covering these.. restore it. for all where
+       ever it existed unless specifically asked to remove"). It had been
+       stripped to a bare label-and-line here for a few hours, on two same-day
+       notes she had left on two of finsynth's keys — "no need to keep it in. a
+       div" and "no need it to be in div" — read as a verdict on the pattern.
+       They were about those two placements. "Where ever it existed" covers the
+       shared shell, so the panel is back in both files. The two placements she
+       named have since stopped being keys at all -- 04's line is body prose
+       and the turning point is deleted -- so finsynth draws the panel on every
+       key it still has, and there is no opt-out left to mirror.
+
+       Ground is --pain-bg, the violet tint finsynth settled on, and adding the
+       token here is what finally ends the --pain-bg / --bg-raised drift on
+       this rule: the two files now draw the same panel on the same ground.
+       .nav-back above is the one rule still holding --bg-raised where finsynth
+       holds --pain-bg — a visible control she has not spoken about, so it is
+       left for her rather than reconciled quietly.
+
+       This file's renderer emits no key today (no CASES entry carries one), so
+       nothing here renders — it is carried for shell parity, which is exactly
+       why it must not be left holding a treatment finsynth no longer draws. */
     .chapter-key {
       margin: 30px 0;
       padding: 22px 24px;
       border-radius: 14px;
-      background: var(--bg-raised);
+      background: var(--pain-bg);
     }
+    /* `.chapter-key.plain` was carried here for a few hours, for parity with
+       an un-tinted variant finsynth used on two keys. Both of those stopped
+       being keys the same day (04's is body prose, the turning point is
+       deleted), the variant went with them, and so did this copy. Parity is
+       the panel and nothing else. */
     .chapter-key .k {
       display: block;
       font-family: var(--mono); font-size: var(--pill);
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 7px;
+      margin-bottom: 8px;
     }
     .chapter-key p {
       font-size: var(--body1); line-height: 1.6;
@@ -563,7 +672,7 @@
       margin-bottom: 0;
     }
     @media (max-width: 560px) {
-      /* 24px of padding either side is 48px off a phone measure */
+      /* 24px of padding either side is 48px off a phone measure. */
       .chapter-key { padding: 18px 18px; border-radius: 12px; }
     }
 
@@ -655,7 +764,14 @@
       position: fixed; left: 50%; bottom: 20px; z-index: 70;
       translate: -50% 0;
       display: flex; align-items: center; gap: 10px;
-      width: min(520px, calc(100vw - 32px));
+      /* 400px, down from 520 (Ritika, 2026-08-23: "reduce the width").
+         520 was width the label was not using: it sat in 415px of box for
+         188px of type. 400 leaves ~107px of slack, so the label still never
+         ellipses and the box still reads as an input rather than as a
+         shrink-wrapped button, which is the one thing its width has to say.
+         Below the mobile query it goes full-width regardless, so nothing
+         there changes. Both chat pages carry the same number. */
+      width: min(400px, calc(100vw - 32px));
       padding: 9px 9px 9px 10px;
       background: var(--ask-pill-bg);
       border: 1px solid var(--line-hover); border-radius: 999px;
@@ -820,10 +936,17 @@
       0%, 60%, 100% { opacity: 0.35; transform: none; }
       30% { opacity: 1; transform: translateY(-2px); }
     }
+    /* Chips and the input are one unit: the composer owns the hairline that
+       used to sit on the form, so the suggestions read as part of the thing
+       you type into rather than as a band floating above it. */
+    .ask-composer { border-top: 1px solid var(--line); }
     .ask-chips {
       display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
-      padding: 0 16px 12px;
+      padding: 12px 16px 4px;
     }
+    /* Nothing to suggest, no band: an empty box would leave a stray gap
+       inside the composer while the intro is still streaming. */
+    .ask-chips:empty { display: none; }
     .ask-chip {
       max-width: 100%;
       background: var(--bg-float); border: 1px solid var(--line); border-radius: 999px;
@@ -838,9 +961,16 @@
     .ask-chip.pre { opacity: 0; translate: 0 6px; }
     .ask-form {
       display: flex; align-items: center; gap: 8px;
-      border-top: 1px solid var(--line);
       padding: 10px 12px 10px 16px;
     }
+    /* Follow-ups hang off the answer that raised them, inside its own text
+       column, so they read as this answer's next step. Left-aligned, which is
+       what separates them from the composer's right-aligned suggestions. */
+    .ask-follow {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+      margin-top: 12px;
+    }
+    .ask-follow .ask-chip { text-align: left; }
     .ask-input {
       flex: 1; min-width: 0;
       border: 0; background: transparent; outline: none;
@@ -911,7 +1041,7 @@
     <div class="wrap">
       <nav class="nav">
         <div class="nav-left">
-          <a href="index.html" class="nav-name" aria-label="Riri — Ritika Shakkerwal, back to portfolio">
+          <a href="index.html" class="nav-name" aria-label="Riri: Ritika Shakkerwal, back to portfolio">
             <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
               <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 21v32"/>
@@ -931,17 +1061,23 @@
               <path class="riri-tail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
             </svg>
           </a>
-          <a href="index.html#work" class="nav-back">&larr; Back</a>
+          <a href="index.html#work" class="nav-back" aria-label="Back to the portfolio" title="Back to the portfolio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M9 14 4 9l5-5"/>
+              <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+            </svg>
+          </a>
         </div>
         <div class="nav-right">
-          <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch to dark theme" title="Switch to dark theme">
-            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <button type="button" class="theme-switch" id="themeToggle" role="switch" aria-checked="false" aria-label="Dark theme" title="Switch to dark theme">
+            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" focusable="false">
               <circle cx="12" cy="12" r="4.2"/>
               <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
             </svg>
-            <svg class="ico-moon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+            <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
               <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
             </svg>
+            <span class="theme-switch-knob" aria-hidden="true"></span>
           </button>
         </div>
       </nav>
@@ -993,13 +1129,16 @@
         <button type="button" class="ask-head-close" id="askClose" aria-label="Close chat">&times;</button>
       </div>
     </div>
-    <p class="ask-note">Nothing here is generated &mdash; every answer is scripted in advance.</p>
+    <p class="ask-note">Nothing here is generated; every answer is scripted in advance.</p>
     <div class="ask-log" id="askLog"></div>
-    <div class="ask-chips" id="askChips"></div>
-    <form class="ask-form" id="askForm">
-      <input class="ask-input" id="askInput" type="text" placeholder="Ask me anything&hellip;" autocomplete="off" aria-label="Ask a question about this case study">
-      <button class="ask-send" type="submit" aria-label="Send question">&rarr;</button>
-    </form>
+    <!-- Chips + input are one composer: the hairline lives on the wrapper. -->
+    <div class="ask-composer">
+      <div class="ask-chips" id="askChips"></div>
+      <form class="ask-form" id="askForm">
+        <input class="ask-input" id="askInput" type="text" placeholder="Ask me anything&hellip;" autocomplete="off" aria-label="Ask a question about this case study">
+        <button class="ask-send" type="submit" aria-label="Send question">&rarr;</button>
+      </form>
+    </div>
     <div class="ask-sr" aria-live="polite" id="askLive"></div>
   </div>
 
@@ -1018,9 +1157,10 @@
       root.setAttribute('data-theme', t);
       if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
       if (btn) {
-        var label = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
-        btn.setAttribute('aria-label', label);
-        btn.setAttribute('title', label);
+        // role="switch": aria-checked is "dark is on", the accessible name is
+        // fixed ("Dark theme"), and the tooltip names the theme you'd get.
+        btn.setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+        btn.setAttribute('title', 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme');
       }
     }
     apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
@@ -1070,7 +1210,7 @@
           { h: 'Context', p: ['Event Beep connected students with campus events and opportunities. The app had grown feature by feature until the navigation could not hold it, and recruiters had no interface of their own at all.'] },
           { h: 'What I worked on', list: [
             'Restructured the app around what students came back for, rather than what had shipped most recently.',
-            'A visual refresh — type scale, spacing, components — that made the app feel like one product.',
+            'A visual refresh (type scale, spacing, components) that made the app feel like one product.',
             'A recruiter dashboard from scratch: posting, tracking applicants, and reading results.'
           ] },
           { h: 'What I learned', p: ['My first design role, and the one that taught me that most redesigns are really information-architecture problems wearing a visual-design costume.'] }
@@ -1078,15 +1218,21 @@
         qa: [
           { q: 'What did your first design role teach you?',
             k: ['learn', 'first', 'lesson'],
-            a: ['That most redesigns are information-architecture problems wearing a visual-design costume. The app did not look broken — it had grown feature by feature until the navigation could not hold it.',
+            f: ['Why restructure around what students came back for?',
+                'What was the recruiter dashboard?'],
+            a: ['That most redesigns are information-architecture problems wearing a visual-design costume. The app did not look broken; it had grown feature by feature until the navigation could not hold it.',
                 'I went in expecting to push pixels and spent most of my time deciding what the app was actually organised around.'] },
           { q: 'Why restructure around what students came back for?',
             k: ['navigation', 'restructure', 'students'],
-            a: ['The navigation had been organised by shipping order — whatever launched most recently got the space. Students did not think in release notes; they came back for events and opportunities.',
+            f: ['What was the recruiter dashboard?',
+                'What did your first design role teach you?'],
+            a: ['The navigation had been organised by shipping order: whatever launched most recently got the space. Students did not think in release notes; they came back for events and opportunities.',
                 'Restructuring around those return visits made the rest of the redesign mostly fall out on its own.'] },
           { q: 'What was the recruiter dashboard?',
             k: ['recruiter', 'dashboard'],
-            a: ['Recruiters had no interface at all — they worked through the team behind the scenes. I designed their first one from scratch: posting, tracking applicants, reading results.',
+            f: ['Why restructure around what students came back for?',
+                'What did your first design role teach you?'],
+            a: ['Recruiters had no interface at all; they worked through the team behind the scenes. I designed their first one from scratch: posting, tracking applicants, reading results.',
                 'Designing for a second audience inside the same product was the most useful thing I could have done in a first role.'] }
         ]
       }
@@ -1096,22 +1242,22 @@
     var GLOBAL_QA = [
       { q: 'How do I get in touch?',
         k: ['contact', 'email', 'hire', 'hiring', 'reach', 'available', 'chat', 'talk', 'connect'],
-        a: ['The links in the site footer reach me directly — email is fastest.',
+        a: ['The links in the site footer reach me directly; email is fastest.',
             'If it is about this project specifically, mention which part caught your eye and I will skip straight to the interesting bits.'] },
       { q: 'Who are you?',
         k: ['who', 'about', 'ritika', 'designer', 'background'],
-        a: ['I am Ritika — a product designer working on AI and fintech interfaces, currently the founding designer at FinSynth.',
+        a: ['I am Ritika, a product designer working on AI and fintech interfaces, currently the founding designer at FinSynth.',
             'The About section on the main page has the longer version.'] }
     ];
 
     // Fallback when nothing matches a typed question
-    var ASK_FALLBACK = ['Fair question — and past the edge of what I have written up here. This little chat runs on prepared answers, not a live model, so it only knows what I have told it.',
+    var ASK_FALLBACK = ['Fair question, and past the edge of what I have written up here. This little chat runs on prepared answers, not a live model, so it only knows what I have told it.',
                         'For the real answer, the contact links in the footer reach the actual me.'];
 
     // Brief orientation before anything else — streamed on the very first
     // interaction (localStorage 'askIntroSeen', shared across the site),
     // rendered instantly after that so the log never opens empty.
-    var ASK_INTRO = ['Hi — I’m the scripted version of Ritika. This chat is a quick way to interrogate this case study: I’ve written answers ahead of time to the questions it tends to raise.',
+    var ASK_INTRO = ['Hi, I’m the scripted version of Ritika. This chat is a quick way to interrogate this case study: I’ve written answers ahead of time to the questions it tends to raise.',
                      'Tap a suggestion below, or just type; if I don’t have an answer prepared, I’ll say so instead of making one up.'];
 
     function esc(s) {
@@ -1136,7 +1282,7 @@
       // spot a broken link than a mystery redirect.
       main.innerHTML = '<div class="wrap case-miss"><h1>Case not found</h1>'
         + '<p style="margin-top:14px"><a href="index.html#work">&larr; Back to the work list</a></p></div>';
-      document.title = 'Case not found — Ritika Shakkerwal';
+      document.title = 'Case not found \u00b7 Ritika Shakkerwal';
       return;
     }
 
@@ -1172,7 +1318,7 @@
       }
 
       main.innerHTML = html;
-      document.title = c.title + ' — Ritika Shakkerwal';
+      document.title = c.title + ' \u00b7 Ritika Shakkerwal';
     })();
 
     // ——— Reveal on scroll ———
@@ -1271,12 +1417,33 @@
     var askInput = document.getElementById('askInput');
     var askLive = document.getElementById('askLive');
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    var ask = { seeds: c.qa.slice(), asked: [], busy: false };
+    var ask = { seeds: c.qa.slice(), asked: [], busy: false, follow: [] };
     askPill.hidden = false;
+
+    // Opening the drawer squeezes the page: right padding plus a `zoom` step
+    // down on main/footer, which re-lays-out the document. Under an unchanged
+    // scrollY that slides the reader out of the chapter they were reading, so
+    // pin the current chapter in view across the mutation and correct scrollY
+    // by however far it moved. The rail's aria-current is what says which one.
+    function askKeepPlace(mutate) {
+      var link = document.querySelector('.case-rail a[aria-current="true"]');
+      var anchor = link ? document.getElementById(link.getAttribute('href').slice(1)) : null;
+      if (!anchor) { mutate(); return; }
+      var before = anchor.getBoundingClientRect().top;
+      mutate();
+      var after = anchor.getBoundingClientRect().top;
+      // 'instant' rather than 'auto': 'auto' defers to the page's own
+      // scroll-behavior, which is smooth, and turns the correction into a
+      // long glide. A correction has to land in the same frame the layout
+      // changed in, or the reader watches the page slide.
+      if (after !== before) {
+        window.scrollTo({ top: window.scrollY + (after - before), behavior: 'instant' });
+      }
+    }
 
     function askOpenDrawer(entry) {
       askAttractStop();
-      document.body.classList.add('chat-open');
+      askKeepPlace(function() { document.body.classList.add('chat-open'); });
       askDrawer.classList.add('in');
       if (entry) askQuestion(entry.q, entry);
       else {
@@ -1287,7 +1454,7 @@
 
     function askCloseDrawer() {
       askDrawer.classList.remove('in');
-      document.body.classList.remove('chat-open');
+      askKeepPlace(function() { document.body.classList.remove('chat-open'); });
       askPill.focus();
     }
 
@@ -1330,8 +1497,9 @@
       scrollLog();
       setTimeout(function() {
         typing.remove();
-        streamAnswer(entry ? entry.a : ASK_FALLBACK, function() {
+        streamAnswer(entry ? entry.a : ASK_FALLBACK, function(body) {
           ask.busy = false;
+          renderFollow(entry, body);
           renderChips();
         });
       }, reduceMotion.matches ? 250 : 900);
@@ -1346,7 +1514,7 @@
       var finish = function() {
         askLive.textContent = paras.join(' ');
         scrollLog();
-        done();
+        done(msgBody);
       };
       if (reduceMotion.matches) {
         msgBody.innerHTML = paras.map(function(p) { return '<p>' + esc(p) + '</p>'; }).join('');
@@ -1369,8 +1537,44 @@
       })();
     }
 
+    // Where the answer leads: the entry's own `f` list, resolved by question
+    // text so the data reads as prose rather than as indexes, minus anything
+    // already asked. Two at most, and they are excluded from the composer's
+    // chips below so the reader never sees one question offered twice.
+    function renderFollow(entry, msgBody) {
+      ask.follow = [];
+      if (!entry || !entry.f || !msgBody) return;
+      var picks = [];
+      entry.f.forEach(function(q) {
+        for (var i = 0; i < QA.length; i++) {
+          var next = QA[i];
+          if (next.q !== q || next === entry) continue;
+          if (ask.asked.indexOf(next) < 0 && picks.indexOf(next) < 0) picks.push(next);
+          break;
+        }
+      });
+      ask.follow = picks = picks.slice(0, 2);
+      if (!picks.length) return;
+      var box = document.createElement('div');
+      box.className = 'ask-follow';
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', 'Follow-up questions');
+      picks.forEach(function(s, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ask-chip pre';
+        b.textContent = s.q;
+        b.addEventListener('click', function() { askQuestion(s.q, s); });
+        box.appendChild(b);
+        setTimeout(function() { b.classList.remove('pre'); }, 60 + i * 90);
+      });
+      msgBody.appendChild(box);
+    }
+
     function renderChips() {
-      var picks = ask.seeds.filter(function(s) { return ask.asked.indexOf(s) < 0; }).slice(0, 3);
+      var picks = ask.seeds.filter(function(s) {
+        return ask.asked.indexOf(s) < 0 && ask.follow.indexOf(s) < 0;
+      }).slice(0, 3);
       askChips.innerHTML = '';
       picks.forEach(function(s, i) {
         var b = document.createElement('button');
