@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fcfcfc">
+  <meta name="theme-color" content="#101013">
   <!-- The whole point of the page is that its content is not public, so it must
        not be indexed either. The ciphertext is safe from a crawler; the title
        and any hint copy are not, which is why nothing above names the client. -->
@@ -17,9 +17,7 @@
     (function () {
       var t = null;
       try { t = localStorage.getItem('theme'); } catch (e) {}
-      if (t !== 'light' && t !== 'dark') {
-        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
+      if (t !== 'light' && t !== 'dark') t = 'dark';
       document.documentElement.setAttribute('data-theme', t);
     })();
   </script>
@@ -715,13 +713,12 @@
   <script>
   // ——— Light / dark theme ———
   // The head script already picked the theme; this wires the switch, keeps the
-  // address-bar colour in step, and follows the OS while no choice is stored.
+  // address-bar colour in step. Dark is the default until a visitor chooses.
   // Same key as index.html, so a choice made on any page holds on all of them.
   (function() {
     var root = document.documentElement;
     var btn = document.getElementById('themeToggle');
     var meta = document.querySelector('meta[name="theme-color"]');
-    var mq = window.matchMedia('(prefers-color-scheme: dark)');
     function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
     function apply(t) {
       root.setAttribute('data-theme', t);
@@ -733,10 +730,7 @@
         btn.setAttribute('title', 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme');
       }
     }
-    apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
-    mq.addEventListener('change', function(e) {
-      if (stored() !== 'light' && stored() !== 'dark') apply(e.matches ? 'dark' : 'light');
-    });
+    apply(stored() === 'light' || stored() === 'dark' ? stored() : 'dark');
     if (btn) btn.addEventListener('click', function() {
       var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem('theme', next); } catch (e) {}
@@ -1030,6 +1024,20 @@
       sectionIndex();
       storyTabs();
       evoSwitcher();
+      askMe();
+    }
+
+    // Ask Me ships encrypted with the case because its questions and answers
+    // are part of Ritika's design record. The source's script is carried as
+    // text: scripts inserted through innerHTML never run, so execute this one
+    // deliberately only after its pill and drawer have entered the document.
+    function askMe() {
+      var driver = main.querySelector('#caseAskDriver');
+      if (!driver) return;
+      var script = document.createElement('script');
+      script.text = driver.textContent;
+      document.body.appendChild(script);
+      driver.remove();
     }
 
     /* Section index (the rail in the left margin). Ported from the source page.
