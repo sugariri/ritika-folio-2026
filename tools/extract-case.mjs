@@ -72,7 +72,7 @@ if (!/id="caseIndex"/.test(index)) fail('the section index lost id="caseIndex", 
   // its driver lives in the template and binds by href, so a renamed anchor
   // would ship a rail that highlights nothing rather than failing the build.
   const hrefs = (index.match(/href="#[a-z-]+"/g) || []).length;
-  if (hrefs !== 11) fail(`the section index: expected 11 links, found ${hrefs}`);
+  if (hrefs !== 12) fail(`the section index: expected 12 links, found ${hrefs}`);
 }
 
 /* ---------- transforms, each one asserted ---------- */
@@ -132,11 +132,11 @@ keep(/ class="chapter reveal story-tab-panel" role="tabpanel" aria-labelledby="s
 // 3. .reveal is opacity:0 until an IntersectionObserver adds .in. With no
 //    observer every section would stay invisible, so the class comes off the
 //    markup rather than being overridden in CSS.
-// 12, not the 8 this was written at: the four story-tab panels used to have
+// 13, not the 8 this was written at: the four story-tab panels used to have
 //    their class attribute rewritten wholesale by transform 2 and lost ` reveal`
 //    on the way. They keep it now, so they are counted here like every other
 //    section instead of being stripped as a side effect of a different cut.
-swap(/ reveal(?=["\s])/g, '', '.reveal classes', 12);
+swap(/ reveal(?=["\s])/g, '', '.reveal classes', 13);
 
 // 4. The Before/After switcher is a real tablist and it stays one.
 //    This was four rewrites until 2026-08-24: the tablist band and the state
@@ -153,12 +153,12 @@ swap(/ reveal(?=["\s])/g, '', '.reveal classes', 12);
 //    #evo-after and #evo-after-label is now the tablist's correct start state
 //    (allowed through the stray-hidden check below), and every hook the driver
 //    binds to is asserted here so renaming one fails the build.
-keep(/<div class="evo-bar">/, 'evo tablist band');
-keep(/<button class="evo-tab"[^>]*\sid="evo-tab-(?:before|after)"[^>]*\saria-controls="evo-(?:before|after)"/g,
-     'evo tab buttons, each pointing at its panel', 2);
-keep(/<p class="evo-label" id="evo-(?:before|after)-label"/g, 'evo state labels, one per panel', 2);
-keep(/<figure class="evo-state" id="evo-after"[^>]*\shidden>/, 'evo after panel starts hidden');
-keep(/<p class="evo-label" id="evo-after-label" hidden>/, 'evo after label starts hidden');
+keep(/<div class="evo-bar">/g, 'before/after tablist bands', 2);
+keep(/<button class="evo-tab"[^>]*\sid="(?:evo|citation)-tab-(?:before|after)"[^>]*\saria-controls="(?:evo|citation)-(?:before|after)"/g,
+     'before/after tab buttons, each pointing at its panel', 4);
+keep(/<p class="evo-label" id="(?:evo|citation)-(?:before|after)-label"/g, 'before/after state labels, one per panel', 4);
+keep(/<figure class="evo-state" id="(?:evo|citation)-after"[^>]*\shidden>/g, 'after panels start hidden', 2);
+keep(/<p class="evo-label" id="(?:evo|citation)-after-label" hidden>/g, 'after labels start hidden', 2);
 
 // 5. Retired 2026-08-24. #anatomy cross-highlighted on a 2.8s cycle and this
 //    pinned its reduced-motion resting state (the first region lit, a class on
@@ -178,7 +178,7 @@ keep(/<p class="evo-label" id="evo-after-label" hidden>/, 'evo after label start
 // two go back to being genuine strays.
 {
   const left = main.match(/<[^>]*\shidden(?=[\s>])[^>]*>/g) || [];
-  const allowed = /class="wf-nav|id="evo-after"|id="evo-after-label"/;
+  const allowed = /class="wf-nav|id="(?:evo|citation)-after(?:-label)?"/;
   const stray = left.filter((t) => !allowed.test(t));
   if (stray.length) fail(`still hidden with no JS to unhide it:\n  ${stray.join('\n  ')}`);
 }

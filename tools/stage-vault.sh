@@ -22,14 +22,18 @@ node tools/encrypt-case.mjs \
   --footnote 'this page keeps secrets. so do i. 😉'
 
 echo "3/4  copying the assets the page actually reaches"
-# 17 files, 6.0M: the 15 <img> srcs the fragment names plus the two CSS-only
+# 18 files, 6.0M: the 16 <img> srcs the fragment names plus the two CSS-only
 # assets (hero-mat.webp, spotlight-wall-st.jpg) that an <img> audit would miss.
 # Audited against private/finsynth.plain.html on 2026-08-24, when it was three
 # short (the 07.1 and 07.3 captures) and adding fia-citations.png would have
-# made it four. A missing file here is a vault that opens onto a broken image.
+# made it four. evo-after-agent.png joined the same day and is the case this
+# list is easiest to miss: it is a *second* crop of hero-agent.png, so the old
+# entry still resolves and an eye scanning for "the agent shot" sees one that
+# is already here. A missing file here is a vault that opens onto a broken
+# image.
 mkdir -p "$OUT/assets/finsynth" "$OUT/assets/logos"
-for f in ai-assist.png evo-before-update.png fia-asks-first.png \
-         fia-citations.png fia-home.png fia-plan-mode.png \
+for f in ai-assist.png evo-after-agent.png evo-before-update.png \
+         fia-asks-first.png fia-citations.png fia-home.png fia-plan-mode.png \
          fia-proposed-plan.jpg fia-question-in-place.jpg fia-questions.png \
          fia-timeline.png fia-tool-permission.png hero-agent.png \
          hero-mat.webp shipped-6-trend.png spotlight-wall-st.jpg \

@@ -1167,32 +1167,33 @@
        page: "why did this change?"). It had been cut to two stacked figures
        because a tab pair with no driver is a dead control; this is the driver. */
     function evoSwitcher() {
-      var root = main.querySelector('.evo-switcher');
-      if (!root) return;
-      var tabs = Array.prototype.slice.call(root.querySelectorAll('.evo-tab'));
-      if (tabs.length < 2) return;
+      var roots = Array.prototype.slice.call(main.querySelectorAll('.evo-switcher'));
+      roots.forEach(function(root) {
+        var tabs = Array.prototype.slice.call(root.querySelectorAll('.evo-tab'));
+        if (tabs.length < 2) return;
 
-      function select(tab) {
-        tabs.forEach(function(t) {
-          var on = t === tab;
-          t.setAttribute('aria-selected', on ? 'true' : 'false');
-          t.tabIndex = on ? 0 : -1;
-          var key = t.getAttribute('aria-controls');
-          var panel = document.getElementById(key);
-          if (panel) panel.hidden = !on;
-          // the state sentence is the panel's header, so it switches with it
-          var label = document.getElementById(key + '-label');
-          if (label) label.hidden = !on;
-        });
-      }
-      tabs.forEach(function(t, i) {
-        t.addEventListener('click', function() { select(t); });
-        t.addEventListener('keydown', function(e) {
-          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-          e.preventDefault();
-          var to = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-          select(to);
-          to.focus();
+        function select(tab) {
+          tabs.forEach(function(t) {
+            var on = t === tab;
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+            t.tabIndex = on ? 0 : -1;
+            var key = t.getAttribute('aria-controls');
+            var panel = document.getElementById(key);
+            if (panel) panel.hidden = !on;
+            // the state sentence is the panel's header, so it switches with it
+            var label = document.getElementById(key + '-label');
+            if (label) label.hidden = !on;
+          });
+        }
+        tabs.forEach(function(t, i) {
+          t.addEventListener('click', function() { select(t); });
+          t.addEventListener('keydown', function(e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            var to = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+            select(to);
+            to.focus();
+          });
         });
       });
     }
