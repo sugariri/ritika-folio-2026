@@ -32,7 +32,8 @@ echo "3/4  copying the assets the page actually reaches"
 # is already here. A missing file here is a vault that opens onto a broken
 # image.
 mkdir -p "$OUT/assets/finsynth" "$OUT/assets/logos"
-for f in ai-assist.png evo-after-agent.png evo-before-update.png \
+for f in ai-assist.png citations-after-excel.png citations-before-excel.png \
+         evo-after-agent.png evo-before-update.png \
          fia-asks-first.png fia-citations.png fia-home.png fia-plan-mode.png \
          fia-proposed-plan.jpg fia-question-in-place.jpg fia-questions.png \
          fia-timeline.png fia-tool-permission.png hero-agent.png \
