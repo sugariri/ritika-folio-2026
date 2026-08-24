@@ -68,14 +68,21 @@ const askMarkup = between(
   'Ask Me markup'
 );
 const spotlightStart = src.indexOf('  // ——— Spotlight reveal ———');
+const railStart = src.indexOf('  // ——— Track arrows (03\'s three workflows, the agent rail) ———');
+const railEnd = src.indexOf('  // ——— Before/After switcher (04.1) ———', railStart);
 const interactionEnd = src.indexOf('  // ——— Agentation annotation toolbar (dev only) ———', spotlightStart);
-if (spotlightStart < 0 || interactionEnd < 0) fail('could not find the spotlight and Ask Me drivers');
-const interactionDriver = src.slice(spotlightStart, interactionEnd).trim();
+if (railStart < 0 || railEnd < 0 || spotlightStart < 0 || interactionEnd < 0) {
+  fail('could not find the rail, spotlight, and Ask Me drivers');
+}
+const interactionDriver = `${src.slice(railStart, railEnd).trim()}\n\n${src.slice(spotlightStart, interactionEnd).trim()}`;
 if (!/var QA = \[/.test(interactionDriver) || !/classList\.contains\('ask-pill-float'\)/.test(interactionDriver)) {
   fail('interactive case driver lost its Ask Me Q&A data or cat control');
 }
 if (!/querySelectorAll\('\.spotlight'\)/.test(interactionDriver)) {
   fail('interactive case driver lost the spotlight glow');
+}
+if (!/querySelectorAll\('\.wf-shelf'\)/.test(interactionDriver)) {
+  fail('interactive case driver lost product-rail pagination');
 }
 
 // The section rail is a SIBLING of <main>, not a child, so slicing <main>
