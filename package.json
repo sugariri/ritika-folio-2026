@@ -1,0 +1,28 @@
+{
+  "name": "folio-2026",
+  "private": true,
+  "scripts": {
+    "dev": "python3 -m http.server 8766",
+    "dial": "ISLAND=dial vite build",
+    "dial:watch": "ISLAND=dial vite build --watch",
+    "lock": "node tools/encrypt-case.mjs",
+    "agentation": "ISLAND=agentation vite build",
+    "agentation:watch": "ISLAND=agentation vite build --watch",
+    "islands": "npm run dial && npm run agentation"
+  },
+  "dependencies": {
+    "agentation": "^3.0.2",
+    "agentation-mcp": "^1.2.0",
+    "dialkit": "^1.3.0",
+    "motion": "^12.42.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0"
+  }
+}

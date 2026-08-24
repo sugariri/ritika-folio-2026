@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fcfcfc">
+  <!-- The whole point of the page is that its content is not public, so it must
+       not be indexed either. The ciphertext is safe from a crawler; the title
+       and any hint copy are not, which is why nothing above names the client. -->
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="referrer" content="no-referrer">
+  <title>__TITLE__</title>
+
+  <!-- Resolve the theme before first paint, so there is no flash of the wrong
+       one. Identical to the head script in index / finsynth / case. -->
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* Tokens mirrored from case.html — any new colour goes here as a variable.
+       Only the ones this page actually uses are carried over; the figure,
+       chat and diagram tokens stay on the pages that draw figures. */
+    :root {
+      --gray-1:  #fcfcfc;
+      --gray-9:  #6d6d78;
+      --gray-10: #5d5d6f;
+      --gray-14: #2c2c35;
+
+      --bg:        var(--gray-1);
+      --bg-card:   #ffffff;
+      --bg-raised: #f6f6f7;
+      --pain-bg:   #f0efff;
+
+      /* The theme switch's two grounds. Each page names its raised surface
+         differently, so the switch aliases them once per theme and the
+         .theme-switch block below is then byte-identical across the pages. */
+      --switch-track: var(--bg-raised);
+      --switch-knob:  var(--bg-card);
+
+      --text:  var(--gray-14);
+      --muted: var(--gray-10);
+      --faint: var(--gray-9);
+
+      --line:       rgba(0, 0, 0, .08);
+      --line-hover: rgba(0, 0, 0, .16);
+
+      --logo:        #752afc;
+      --brand:       #752afc;
+      --brand-hover: #6109de;
+
+      --fail: #b3352c;
+      --ok:   #2f7d5b;
+
+      /* Shadows are theme-dependent: on a dark page a soft black blur does
+         nothing, so the dark set below is deeper and tighter. */
+
+      /* ---------- TYPE SCALE ---------- */
+      /* Six roles, and six is the whole point. Each ships its line-height
+         alongside; anything needing a finer distinction reaches for ink or
+         weight, never a seventh size. */
+      --h1: clamp(32px, 7vw, 44px);   --h1-lh: 1.16;    /* page title */
+      --h2: 30px;                     --h2-lh: 1.28;    /* section / chapter title */
+      --h3: 22px;                     --h3-lh: 1.4;     /* sub-head, pull, card title */
+      --body1: 17px;                  --body1-lh: 1.7;  /* reading prose, standfirst */
+      --body2: 15px;                  --body2-lh: 1.55; /* UI, meta, captions */
+      --pill: 12px;                   --pill-lh: 1;     /* mono micro-caps tags and keys */
+
+      --font: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --content: 660px;
+      --gutter:  24px;
+
+    }
+
+    /* The scale steps down as one thing, not rule by rule. */
+    @media (max-width: 720px) {
+      :root { --h2: 26px; --h3: 20px; }
+    }
+
+    /* ---------- DARK ----------
+       Exactly one block, right after :root, because the head script resolves
+       the theme onto data-theme. No duplicated prefers-color-scheme palette. */
+    :root[data-theme="dark"] {
+      --bg:        #101013;
+      --bg-card:   #16161b;
+      --bg-raised: #1c1c22;
+      --pain-bg:   #242231;
+
+      --switch-track: var(--bg-card);
+      --switch-knob:  #22222b;
+
+      --text:  #ededf2;
+      --muted: #a6a6b6;
+      --faint: #8b8b9c;
+
+      --line:       rgba(255, 255, 255, .10);
+      --line-hover: rgba(255, 255, 255, .24);
+
+      /* #752afc vibrates on near-black, so both lift */
+      --logo:        #a97bff;
+      --brand:       #a97bff;
+      --brand-hover: #c3a4ff;
+
+      --fail: #ff8a7d;
+      --ok:   #6fd3a4;
+
+    }
+
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: var(--body1);
+      line-height: var(--body1-lh);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+    .wrap {
+      max-width: calc(var(--content) + var(--gutter) * 2);
+      margin: 0 auto;
+      padding: 0 var(--gutter);
+    }
+    main, footer { position: relative; z-index: 1; }
+    main { overflow-x: clip; }
+
+    a { color: inherit; text-decoration: none; }
+    .inline { color: var(--brand); transition: color .18s ease; }
+    .inline:hover { color: var(--brand-hover); }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+    /* ---------- NAV ---------- */
+    header {
+      position: sticky; top: 0; z-index: 60;
+      background: var(--bg);
+      border-bottom: 1px solid transparent;
+    }
+    header.scrolled { border-bottom-color: var(--line); }
+    .nav {
+      display: flex; align-items: baseline; justify-content: space-between;
+      padding: 22px 0; gap: 24px;
+      font-size: var(--body2); line-height: 24px;
+    }
+
+    /* Only the wordmark leaves the column. The bar is a box with two ends, so
+       widening it would move the switch out to the right page edge too, and the
+       switch was never the subject. 32px is the inset the chapter rails use. */
+    @media (min-width: 800px) {
+      .nav-name { position: absolute; left: 32px; top: 50%; translate: 0 -50%; }
+      .nav > .nav-links { margin-left: auto; }
+    }
+
+    /* "riri" wordmark — hand-drawn monoline SVG, coloured via currentColor */
+    .nav-name { font-weight: 500; color: var(--text); }
+    .riri-logo {
+      display: block; height: 28px; width: auto;
+      color: var(--logo);
+      transition: scale 0.18s ease;
+    }
+    .nav-name:hover .riri-logo { scale: 1.05; }
+    /* the cat in the second i swishes its tail on hover — a `d` morph where
+       supported, a rotate-from-the-base wag everywhere else */
+    .riri-tail { transform-box: fill-box; transform-origin: 0% 0%; }
+    @keyframes riri-tail-wag {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(-10deg); }
+      65% { transform: rotate(7deg); }
+    }
+    @keyframes riri-tail-wave {
+      0%, 100% { d: path("M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61"); }
+      30% { d: path("M129 51 C138 57 144 50 149 53 C153 55 155 56 160 52"); }
+      65% { d: path("M129 51 C138 59 143 54 148 59 C152 62 153 65 157 63"); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .nav-name:hover .riri-tail,
+      .nav-name:focus-visible .riri-tail { animation: riri-tail-wag 1s ease-in-out infinite; }
+      @supports (d: path("M0 0")) {
+        .nav-name:hover .riri-tail,
+        .nav-name:focus-visible .riri-tail { animation-name: riri-tail-wave; }
+      }
+    }
+    .nav-left { display: flex; align-items: center; gap: 20px; }
+    /* A circular icon button, not a text link (Ritika, 2026-08-23, from a
+       reference: a filled circle holding a return arrow). 36px is the circle
+       the site already owns (.shelf-nav, .wf-nav); the arrow is the monoline
+       stroke idiom every drawn glyph here uses. Icon-only, so the accessible
+       name rides on the link (aria-label + title), same rule as the footer
+       marks. Kept identical in finsynth.html and case.html. */
+    .nav-back {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      background: var(--bg-raised);
+      color: var(--muted);
+      transition: color 0.18s ease, scale 0.15s ease-out;
+    }
+    .nav-back:hover { color: var(--text); }
+    .nav-back:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .nav-back:active { scale: 0.94; }
+    .nav-back svg { display: block; width: 18px; height: 18px; }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+
+    /* Light / dark switch &mdash; a switch pill, not a standalone icon button
+       (Ritika, 2026-08-23: "Add a switch pill instead of a standalone"). The
+       icon button said nothing about state: one glyph, and you had to know that
+       the sun meant "you are in light" rather than "click for light". A pill
+       shows both ends of the choice at once and puts the knob under the one you
+       are in, so the state is visible without reading the label.
+
+       The knob rides UNDER the two glyphs (z-index, not order), which is what
+       makes the mark sitting on it the theme you're in and the mark beside it
+       the theme you'd get. It moves on `translate` alone &mdash; compositor-only, so
+       a theme flip can never reflow the header. Colors deliberately do not
+       transition anywhere on this site (a color transition collides with the
+       chat squeeze), so only the knob's travel and the border animate.
+       Kept identical in index.html, finsynth.html and case.html. */
+    .theme-switch {
+      position: relative;
+      display: inline-flex; align-items: center;
+      width: 56px; height: 30px; padding: 0;
+      border: 1px solid var(--line); border-radius: 999px;
+      background: var(--switch-track);
+      cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      transition: border-color 0.18s ease, scale 0.15s ease-out;
+    }
+    .theme-switch:hover, .theme-switch:focus-visible { border-color: var(--line-hover); }
+    .theme-switch:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .theme-switch:active { scale: 0.96; }
+    .theme-switch-knob {
+      position: absolute; top: 2px; left: 2px;
+      width: 24px; height: 24px; border-radius: 999px;
+      background: var(--switch-knob);
+      box-shadow: 0 1px 2px rgba(16, 16, 19, 0.16);
+      transition: translate 0.24s cubic-bezier(.22, .61, .36, 1);
+    }
+    :root[data-theme="dark"] .theme-switch-knob { translate: 26px 0; }
+    .theme-switch svg {
+      position: relative; z-index: 1;
+      flex: 0 0 auto;
+      display: block; width: 15px; height: 15px;
+      color: var(--faint);
+    }
+    .theme-switch .ico-sun { margin-left: 6.5px; }
+    .theme-switch .ico-moon { margin-left: auto; margin-right: 6.5px; }
+    /* the glyph the knob is parked on is the live theme, so it takes the ink */
+    :root[data-theme="light"] .theme-switch .ico-sun,
+    :root[data-theme="dark"] .theme-switch .ico-moon { color: var(--text); }
+    @media (prefers-reduced-motion: reduce) {
+      .theme-switch-knob { transition: none; }
+    }
+
+    /* Lock this tab again. It ships hidden and is unhidden by inject(), so it
+       only exists once there is something to lock -- and it is in the <header>
+       rather than in the gate on purpose: injection is main.innerHTML, so the
+       gate and its "keep this tab unlocked" checkbox are gone by the time a
+       reader wants the way back. header is a sibling of main and survives.
+       Same 36px circle as .nav-back (and .shelf-nav, .wf-nav on the folio),
+       restated here rather than added to that rule because the .nav-back CSS
+       is byte-identical to case.html and stays that way. Icon-only, so it
+       carries aria-label + title, same rule as the footer marks. */
+    .nav-lock {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border: 0; padding: 0; font: inherit; cursor: pointer;
+      border-radius: 999px;
+      background: var(--bg-raised);
+      color: var(--muted);
+      transition: color 0.18s ease, scale 0.15s ease-out;
+    }
+    .nav-lock[hidden] { display: none; }
+    .nav-lock:hover { color: var(--text); }
+    .nav-lock:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .nav-lock:active { scale: 0.94; }
+    .nav-lock svg { display: block; width: 18px; height: 18px; }
+
+    /* Narrow screens: back earns the space; the masthead carries identity */
+    @media (max-width: 560px) {
+      .nav-name { display: none; }
+    }
+
+    /* ---------- THE GATE ---------- */
+    /* The one card on this site, and the gate is why it is allowed: this is the
+       whole first screen with nothing else on it, so the plate is what says
+       "this is the only thing to do here". Everything in it is the site's own
+       material -- --bg-card on --bg, one --line hairline, 20px radius, no
+       shadow -- which is .card's material on index.html, at card scale. */
+    .gate {
+      max-width: 540px;
+      margin: 92px auto 116px;
+      padding: 52px 48px 34px;
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+    }
+    /* The three mono lines here are lowercase sentences, so they drop the
+       .14em micro-caps tracking the site's mono tags wear. */
+    .gate-eyebrow {
+      display: flex; align-items: center; gap: 9px;
+      font-family: var(--mono);
+      font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: .04em;
+      color: var(--faint);
+      margin-bottom: 24px;
+    }
+    /* A filled dot, not a lock glyph: the word beside it already says locked,
+       and a padlock next to "locked" is the label drawn twice. */
+    .gate-dot {
+      width: 7px; height: 7px; flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .gate h1 {
+      font-size: var(--h1); line-height: var(--h1-lh); font-weight: 500;
+      letter-spacing: -0.022em; text-wrap: balance;
+      margin-bottom: 14px;
+    }
+    /* Full ink, not --muted: it is one short line and it is the instruction. */
+    .gate-standfirst {
+      font-size: var(--body1); line-height: var(--body1-lh);
+      color: var(--text); text-wrap: pretty;
+    }
+
+    .gate-form { margin-top: 34px; }
+
+    /* One character per box. The count comes from payload.slots, so the UI can
+       never disagree with the length of the key it is asking for, and there is
+       no submit button: the last character opens the page. */
+    .gate-code { display: flex; gap: 10px; }
+    .gate-slot {
+      flex: 1 1 0; min-width: 0; max-width: 56px; height: 60px;
+      border: 1px solid var(--line-hover); border-radius: 12px;
+      /* --bg-raised sinks into the white card in light and lifts off it in
+         dark, which is the same both-ways-legible trade .give-shot makes. */
+      background: var(--bg-raised);
+      color: var(--text);
+      font-family: var(--mono);
+      /* 16px is the iOS zoom-on-focus guard, not a type choice */
+      font-size: 16px; text-align: center;
+      transition: border-color .18s ease;
+    }
+    .gate-slot:hover:not(:disabled) { border-color: var(--muted); }
+    .gate-slot:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+    .gate-slot:disabled { color: var(--faint); }
+    @media (prefers-reduced-motion: reduce) { .gate-slot { transition: none; } }
+
+    /* The plain-field fallback, for a build that records no slot count. */
+    .gate-label {
+      display: block;
+      font-family: var(--mono);
+      font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 11px;
+    }
+    .gate-row { display: flex; align-items: stretch; gap: 10px; }
+    .gate-input {
+      flex: 1 1 auto; min-width: 0;
+      height: 48px; padding: 0 14px;
+      border: 1px solid var(--line-hover); border-radius: 10px;
+      background: var(--bg-raised);
+      color: var(--text);
+      font-family: var(--font);
+      /* 16px is the iOS zoom-on-focus guard, not a type choice */
+      font-size: 16px;
+      transition: border-color .18s ease;
+    }
+    .gate-input::placeholder { color: var(--faint); }
+    .gate-input:hover { border-color: var(--muted); }
+    .gate-input:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+    .gate-go {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 48px; padding: 0 18px; flex: 0 0 auto;
+      border: 1px solid var(--line-hover); border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font); font-size: var(--body2); font-weight: 500;
+      cursor: pointer;
+      transition: background .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .gate-go:hover:not(:disabled) { background: var(--bg-raised); border-color: var(--muted); }
+    .gate-go:disabled { color: var(--faint); cursor: default; }
+    .gate-go i { font-style: normal; transition: translate .18s ease; }
+    .gate-go:hover:not(:disabled) i { translate: 2px 0; }
+    @media (prefers-reduced-motion: reduce) { .gate-go i { transition: none; } }
+
+    /* The helper under the boxes, and the closing line under the hairline:
+       both mono, both --faint. They are sentences that wrap, so they take
+       --body2 with its own leading rather than --pill, whose 1.0 line-height
+       has no leading to give -- and the scale has no seventh size to invent. */
+    .gate-help {
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--faint);
+    }
+    .gate-keep {
+      display: flex; align-items: center; gap: 9px;
+      margin-top: 18px;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .gate-keep input { accent-color: var(--brand); width: 15px; height: 15px; }
+
+    .gate-msg {
+      margin-top: 16px;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--fail);
+    }
+    .gate-msg.working { color: var(--muted); }
+    .gate-msg.ok { color: var(--ok); }
+
+    .gate-foot {
+      margin-top: 32px; padding-top: 20px;
+      border-top: 1px solid var(--line);
+      font-family: var(--mono);
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--faint);
+    }
+    .gate-note { margin-top: 10px; }
+    .gate-note:first-child { margin-top: 0; }
+
+    @media (max-width: 560px) {
+      .gate {
+        margin: 56px auto 76px;
+        padding: 38px 22px 26px;
+        border-radius: 16px;
+      }
+      .gate-code { gap: 7px; }
+      .gate-slot { height: 54px; border-radius: 10px; }
+      .gate-row { flex-direction: column; }
+      .gate-go { justify-content: center; }
+    }
+
+    /* ---------- THE DECRYPTED CONTENT ---------- */
+    /* The injected markup is written in the case-study grammar the other pages
+       use, so the shell has to be able to render it: masthead, numbered
+       chapters, gloss, key panel, captions, beat. */
+    .masthead { padding: 72px 0 84px; }
+    .eyebrow {
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--faint); font-weight: 500;
+      margin-bottom: 18px;
+    }
+    .masthead h1 {
+      font-size: var(--h1); line-height: 1.2; font-weight: 500;
+      letter-spacing: -0.022em; text-wrap: balance;
+      margin-bottom: 20px;
+    }
+    .standfirst {
+      font-size: var(--body1); line-height: var(--body1-lh);
+      color: var(--muted); max-width: 54ch; text-wrap: pretty;
+    }
+    .masthead-meta {
+      margin-top: 30px;
+      font-family: var(--mono);
+      font-size: var(--pill); line-height: 1.8;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--faint);
+    }
+
+    /* Pill = new chapter = rule. The hairline introduces the section beneath
+       it, so the gap around it is split unevenly: 40 above, 56 below. */
+    .chapter { padding: 56px 0 0; scroll-margin-top: 76px; }
+    section:has(> .chapter-head > .chapter-num) {
+      border-top: 1px solid var(--line);
+      margin-top: 40px;
+    }
+    .chapter-head { margin-bottom: 30px; }
+    .chapter-num {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 11px 5px;
+      margin-bottom: 18px;
+    }
+    .chapter h2 {
+      font-size: var(--h2); line-height: var(--h2-lh); font-weight: 500;
+      letter-spacing: -0.018em; text-wrap: balance;
+    }
+    .chapter-gloss {
+      margin-top: 14px;
+      font-size: var(--body1); line-height: var(--body1-lh);
+      color: var(--muted); text-wrap: pretty;
+    }
+    /* The chapter's one point, in the page's own tinted panel. Borderless: the
+       tint alone lifts it, and it holds one line of the page's voice. */
+    .chapter-key {
+      margin: 30px 0; padding: 22px 24px;
+      border-radius: 14px;
+      background: var(--pain-bg);
+    }
+    .chapter-key .k {
+      display: block;
+      font-family: var(--mono);
+      font-size: var(--pill); line-height: var(--pill-lh);
+      letter-spacing: .14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .chapter-key p {
+      font-size: var(--body1); line-height: var(--body1-lh); font-weight: 500;
+      color: var(--text);
+    }
+    @media (max-width: 560px) {
+      .chapter-key { padding: 18px; border-radius: 12px; }
+    }
+    .chapter p + p, .chapter ul, .chapter ol { margin-top: 20px; }
+    .chapter ul, .chapter ol { padding-left: 22px; }
+    .chapter li + li { margin-top: 10px; }
+    .chapter strong { font-weight: 600; }
+    figure { margin: 30px 0; }
+    figure img { display: block; width: 100%; height: auto; border-radius: 10px; }
+    figcaption {
+      margin-top: 14px;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--faint);
+      text-align: center;
+    }
+    .beat {
+      margin-top: 30px;
+      font-size: var(--h3); line-height: var(--h3-lh); font-weight: 500;
+      text-wrap: balance;
+    }
+    .close { padding: 56px 0 0; }
+
+    footer {
+      margin-top: 96px; padding: 40px 0 64px;
+      border-top: 1px solid var(--line);
+    }
+    .footer-row {
+      display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--muted);
+    }
+    .footer-row a { transition: color .18s ease; }
+    .footer-row a:hover { color: var(--text); }
+    .footer-copy { font-size: var(--body2); color: var(--faint); }
+  </style>
+</head>
+<body>
+
+  <header id="siteHeader">
+    <div class="wrap">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="index.html" class="nav-name" aria-label="Riri: Ritika Shakkerwal, back to portfolio">
+            <svg class="riri-logo" viewBox="0 0 168 68" aria-hidden="true" focusable="false">
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 21v32"/>
+                <path d="M12 41c0-14 17-23 26-15"/>
+              </g>
+              <!-- first i: plain dotted stem -->
+              <circle cx="57" cy="6.5" r="6" fill="currentColor"/>
+              <path d="M57 21v32" fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+              <g fill="none" stroke="currentColor" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M80 21v32"/>
+                <path d="M80 41c0-14 17-23 26-15"/>
+              </g>
+              <g fill="currentColor" stroke="none" transform="translate(0 2)">
+                <path d="M112 10 C112 5 113 3 113 1 L118 5 C119.3 4.6 120.7 4.6 122 5 L127 1 C127 3 128 5 128 10 C128 15.5 124.5 18 120 18 C115.5 18 112 15.5 112 10 Z"/>
+                <path d="M120 21 C115 30 108 37 108 45 C108 51.5 113.5 56 120 56 C126.5 56 132 51.5 132 45 C132 37 125 30 120 21 Z"/>
+              </g>
+              <path class="riri-tail" d="M129 51 C138 58 143 52 148 56 C152 59 153 63 158 61" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+          </a>
+          <a href="index.html#work" class="nav-back" aria-label="Back to the portfolio" title="Back to the portfolio">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M9 14 4 9l5-5"/>
+              <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+            </svg>
+          </a>
+        </div>
+        <div class="nav-right">
+          <button type="button" class="nav-lock" id="navLock" hidden
+                  aria-label="Lock this tab again" title="Lock this tab again">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <rect x="4.5" y="10.4" width="15" height="10.1" rx="2.4"/>
+              <path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/>
+            </svg>
+          </button>
+          <button type="button" class="theme-switch" id="themeToggle" role="switch" aria-checked="false" aria-label="Dark theme" title="Switch to dark theme">
+            <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="4.2"/>
+              <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/>
+            </svg>
+            <svg class="ico-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
+            </svg>
+            <span class="theme-switch-knob" aria-hidden="true"></span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="doc">
+    <div class="wrap">
+      <section class="gate" id="gate">
+        <p class="gate-eyebrow"><span class="gate-dot" aria-hidden="true"></span>locked</p>
+        <h1>__HEADING__</h1>
+        <p class="gate-standfirst">__STANDFIRST__</p>
+
+        <form class="gate-form" id="gateForm" autocomplete="on">
+          <!-- The boxes are built by the script below, one per payload.slots,
+               and .gate-field is removed. A build that records no slot count
+               keeps the field and this group is removed instead. -->
+          <div class="gate-code" id="gateCode" role="group" aria-label="Access code" hidden></div>
+
+          <div class="gate-field" id="gateField">
+            <label class="gate-label" for="pw">Password</label>
+            <div class="gate-row">
+              <input class="gate-input" id="pw" name="password" type="password"
+                     autocomplete="current-password" autocapitalize="off" spellcheck="false"
+                     aria-describedby="gateHelp gateMsg" placeholder="Enter the password" required>
+              <button class="gate-go" type="submit" id="gateGo">Unlock <i aria-hidden="true">&rarr;</i></button>
+            </div>
+          </div>
+
+          <p class="gate-help" id="gateHelp">__HINT__</p>
+
+          <label class="gate-keep">
+            <input type="checkbox" id="gateKeep">
+            Keep this tab unlocked while I read
+          </label>
+          <!-- role=alert so a failure is announced; aria-live keeps the
+               "Decrypting" progress line polite rather than assertive. -->
+          <p class="gate-msg" id="gateMsg" role="alert" aria-live="polite"></p>
+        </form>
+
+        <div class="gate-foot">
+          <p class="gate-note">__FOOTNOTE__</p>
+          <p class="gate-note">
+            The content of this page is stored encrypted (AES-GCM 256, PBKDF2-SHA256).
+            It is decrypted in your browser and never sent anywhere.
+          </p>
+        </div>
+
+        <noscript>
+          <p class="gate-note" style="color:var(--fail)">
+            This page decrypts its content in the browser, so it needs JavaScript enabled.
+          </p>
+        </noscript>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-row">
+        <!-- The "Back to work" link went 2026-08-23 (Ritika: "remove this"). The
+           header's .nav-back circle already returns to index.html#work, so the
+           footer was saying it a second time, further from the reader's eye. -->
+        <a href="mailto:ritika@finsynth.ai">ritika@finsynth.ai</a>
+      </div>
+      <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
+    </div>
+  </footer>
+
+  <!-- The payload. base64 has no "<" in its alphabet, so none of this can
+       close the script tag, and JSON in a non-executing script type is inert. -->
+  <script type="application/json" id="payload">__PAYLOAD__</script>
+
+  <script>
+  // ——— Light / dark theme ———
+  // The head script already picked the theme; this wires the switch, keeps the
+  // address-bar colour in step, and follows the OS while no choice is stored.
+  // Same key as index.html, so a choice made on any page holds on all of them.
+  (function() {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function stored() { try { return localStorage.getItem('theme'); } catch (e) { return null; } }
+    function apply(t) {
+      root.setAttribute('data-theme', t);
+      if (meta) meta.setAttribute('content', t === 'dark' ? '#101013' : '#fcfcfc');
+      if (btn) {
+        // role="switch": aria-checked is "dark is on", the accessible name is
+        // fixed ("Dark theme"), and the tooltip names the theme you'd get.
+        btn.setAttribute('aria-checked', t === 'dark' ? 'true' : 'false');
+        btn.setAttribute('title', 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme');
+      }
+    }
+    apply(stored() === 'light' || stored() === 'dark' ? stored() : (mq.matches ? 'dark' : 'light'));
+    mq.addEventListener('change', function(e) {
+      if (stored() !== 'light' && stored() !== 'dark') apply(e.matches ? 'dark' : 'light');
+    });
+    if (btn) btn.addEventListener('click', function() {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      apply(next);
+    });
+  })();
+
+  // ——— Header hairline on scroll ———
+  (function() {
+    var header = document.getElementById('siteHeader');
+    function sync() {
+      header.classList.toggle('scrolled', window.scrollY > 8);
+    }
+    sync();
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+  })();
+
+  // ——— The gate ———
+  //
+  // There is no password in this file, and no comparison against one. The
+  // content is a single AES-GCM ciphertext, and AES-GCM is authenticated: the
+  // 128-bit tag is verified as part of decryption, so a key derived from the
+  // wrong password makes crypto.subtle.decrypt() reject. "Wrong password" is
+  // therefore a caught exception, not an if/else a reader can find in View
+  // Source and step over. Patching the JS gets you nothing, because the
+  // plaintext is not in the file to be revealed.
+  //
+  // What that does not buy: the ciphertext is public, so an attacker can take
+  // it away and grind passwords offline as fast as their hardware allows. The
+  // whole security boundary is the password's strength times the KDF's cost
+  // (PBKDF2-SHA256, iteration count in the payload below). Treat this as a
+  // strong lock on a door, not as a vault.
+  (function() {
+    var form  = document.getElementById('gateForm');
+    var wrap  = document.getElementById('gateCode');
+    var field = document.getElementById('gateField');
+    var input = document.getElementById('pw');
+    var go    = document.getElementById('gateGo');
+    var keep  = document.getElementById('gateKeep');
+    var msg   = document.getElementById('gateMsg');
+    var gate  = document.getElementById('gate');
+    var main  = document.getElementById('doc');
+    var lock  = document.getElementById('navLock');
+    var SESSION_KEY = 'lockedCase.pw';
+
+    function say(text, kind) {
+      msg.textContent = text || '';
+      msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
+    }
+
+    // The payload is read before anything is drawn, because how the gate asks
+    // for the key depends on what the key is: payload.slots is the real
+    // password's length, recorded at build time, so the number of boxes can
+    // never disagree with the key the page is asking for. That publishes the
+    // length, which the boxes were going to announce anyway.
+    var payload = null;
+    try {
+      payload = JSON.parse(document.getElementById('payload').textContent);
+    } catch (e) {}
+
+    var slots = 0;
+    if (payload && typeof payload.slots === 'number' && payload.slots > 0 && payload.slots <= 24) {
+      slots = payload.slots | 0;
+    }
+
+    // One object either way, so nothing below this line learns which gate is up.
+    var entry = slots ? buildCode(slots) : useField();
+
+    // crypto.subtle only exists in a secure context. Say so rather than
+    // failing on an undefined property when the file is opened over file://
+    // or served from a plain-http host.
+    if (!window.crypto || !window.crypto.subtle) {
+      entry.setDisabled(true);
+      say('This page needs a secure context to decrypt: open it over https, or from localhost during development. The Web Crypto API is unavailable here.');
+      return;
+    }
+
+    if (!payload) {
+      entry.setDisabled(true);
+      say('The encrypted payload in this page is unreadable. It was probably damaged in transit.');
+      return;
+    }
+
+    // The plain field: a build with no slot count, or a key long enough that
+    // one box per character would be a row of forty.
+    function useField() {
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      input.addEventListener('input', function() {
+        if (msg.textContent && !busy) say('');
+      });
+      return {
+        ready:     function() { return !!input.value; },
+        notReady:  'Enter the password to unlock the page.',
+        value:     function() { return input.value; },
+        setDisabled: function(d) { input.disabled = d; go.disabled = d; },
+        focus:     function() { input.focus({ preventScroll: true }); },
+        reset:     function() { input.select(); input.focus(); }
+      };
+    }
+
+    // One character per box, and no submit button: the last character opens
+    // the page. Everything is delegated to the wrapper, so the box count is
+    // the only thing the payload gets to decide.
+    function buildCode(n) {
+      if (field && field.parentNode) field.parentNode.removeChild(field);
+      var boxes = [];
+      for (var i = 0; i < n; i++) {
+        var b = document.createElement('input');
+        b.className = 'gate-slot';
+        b.type = 'text';
+        b.maxLength = 1;
+        b.autocapitalize = 'off';
+        b.spellcheck = false;
+        b.setAttribute('autocomplete', 'off');
+        b.setAttribute('aria-label', 'Character ' + (i + 1) + ' of ' + n);
+        b.setAttribute('aria-describedby', 'gateHelp gateMsg');
+        wrap.appendChild(b);
+        boxes.push(b);
+      }
+      wrap.hidden = false;
+
+      function at(el) { return boxes.indexOf(el); }
+      function full() {
+        for (var i = 0; i < boxes.length; i++) if (!boxes[i].value) return false;
+        return true;
+      }
+      function firstEmpty() {
+        for (var i = 0; i < boxes.length; i++) if (!boxes[i].value) return boxes[i];
+        return boxes[boxes.length - 1];
+      }
+      // A pasted or autofilled string spreads rightward from where it landed,
+      // rather than filling one box and dropping the rest.
+      function spread(from, chars) {
+        var i = from, j = 0;
+        for (; i < boxes.length && j < chars.length; i++, j++) boxes[i].value = chars[j];
+        boxes[Math.min(i, boxes.length - 1)].focus();
+      }
+      function maybeSubmit() { if (full() && !busy) submitNow(); }
+
+      wrap.addEventListener('input', function(e) {
+        var i = at(e.target);
+        if (i < 0) return;
+        var chars = e.target.value.split('');
+        if (chars.length > 1) {
+          spread(i, chars);
+        } else if (chars.length === 1 && boxes[i + 1]) {
+          boxes[i + 1].focus();
+        }
+        if (msg.textContent && !busy) say('');
+        maybeSubmit();
+      });
+
+      wrap.addEventListener('keydown', function(e) {
+        var i = at(e.target);
+        if (i < 0) return;
+        if (e.key === 'Backspace' && !e.target.value && boxes[i - 1]) {
+          // Step back and clear, so held backspace walks the code out.
+          e.preventDefault();
+          boxes[i - 1].value = '';
+          boxes[i - 1].focus();
+        } else if (e.key === 'ArrowLeft' && boxes[i - 1]) {
+          e.preventDefault();
+          boxes[i - 1].focus();
+        } else if (e.key === 'ArrowRight' && boxes[i + 1]) {
+          e.preventDefault();
+          boxes[i + 1].focus();
+        } else if (e.key === 'Enter') {
+          // There is no submit button, so Enter has to be wired by hand.
+          e.preventDefault();
+          submitNow();
+        }
+      });
+
+      wrap.addEventListener('paste', function(e) {
+        var text = (e.clipboardData && e.clipboardData.getData('text')) || '';
+        if (!text) return;
+        e.preventDefault();
+        spread(Math.max(0, at(e.target)), text.trim().split(''));
+        if (msg.textContent && !busy) say('');
+        maybeSubmit();
+      });
+
+      return {
+        ready:     full,
+        notReady:  'Fill every box to unlock the page.',
+        value:     function() { return boxes.map(function(b) { return b.value; }).join(''); },
+        setDisabled: function(d) { boxes.forEach(function(b) { b.disabled = d; }); },
+        focus:     function() { firstEmpty().focus({ preventScroll: true }); },
+        reset:     function() {
+          boxes.forEach(function(b) { b.value = ''; });
+          boxes[0].focus();
+        }
+      };
+    }
+
+    function b64ToBytes(s) {
+      var bin = atob(s);
+      var out = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    // gzip is optional and the payload says which it is, so a page built
+    // without --gzip never touches DecompressionStream.
+    function gunzip(buf) {
+      if (typeof DecompressionStream !== 'function') {
+        throw new Error('This browser cannot decompress the content (DecompressionStream is unavailable).');
+      }
+      var stream = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
+      return new Response(stream).arrayBuffer();
+    }
+
+    async function decrypt(password) {
+      // NFKC on both sides of the wire, or a password typed with a composed
+      // accent on one machine derives a different key on another.
+      var pw = password.normalize('NFKC');
+      var baseKey = await crypto.subtle.importKey(
+        'raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']
+      );
+      var key = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: b64ToBytes(payload.kdf.salt),
+          iterations: payload.kdf.iterations,
+          hash: payload.kdf.hash
+        },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['decrypt']
+      );
+      // Throws on a wrong password: the GCM tag fails to verify.
+      var plain = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: b64ToBytes(payload.cipher.iv), tagLength: payload.cipher.tagBits },
+        key,
+        b64ToBytes(payload.ct)
+      );
+      if (payload.compress === 'gzip') plain = await gunzip(plain);
+      return new TextDecoder().decode(plain);
+    }
+
+    function inject(html) {
+      // innerHTML runs no <script>: inline <style> in the content applies,
+      // script tags in it are inert. Keep the encrypted content declarative.
+      main.innerHTML = html;
+
+      // The tab title is generic until unlock so nothing leaks to a crawler or
+      // a shoulder; now the content can name itself.
+      var h1 = main.querySelector('h1');
+      if (h1) document.title = h1.textContent.trim() + ' · Ritika Shakkerwal';
+
+      // Move focus into the content, or a keyboard reader is left on a button
+      // that no longer exists.
+      var target = h1 || main;
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+
+      // The way back. Without it "keep this tab unlocked" is a one-way door:
+      // the stored password re-unlocks on every reload and the checkbox that
+      // set it went out with the gate, so there is nothing left to untick.
+      // Forgetting the password is the whole action; a reload then finds no
+      // stored value and draws the gate.
+      if (lock) {
+        lock.hidden = false;
+        lock.addEventListener('click', function() {
+          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+          location.reload();
+        });
+      }
+    }
+
+    var busy = false;
+
+    async function attempt(password, fromSession) {
+      if (busy) return;
+      busy = true;
+      entry.setDisabled(true);
+      // PBKDF2 at this iteration count blocks for a moment, so say so before
+      // starting rather than looking dead.
+      say('Decrypting…', 'working');
+
+      // Let the browser paint that line before the KDF takes the thread.
+      await new Promise(function(r) { requestAnimationFrame(function() { r(); }); });
+
+      try {
+        var html = await decrypt(password);
+        if (keep && keep.checked) {
+          // Per tab, cleared when the tab closes. It is the password rather
+          // than the plaintext because it is far smaller, and neither is
+          // meaningfully safer than the other once this tab is trusted.
+          try { sessionStorage.setItem(SESSION_KEY, password); } catch (e) {}
+        }
+        say('Unlocked.', 'ok');
+        inject(html);
+      } catch (err) {
+        busy = false;
+        entry.setDisabled(false);
+        if (fromSession) {
+          // A stored password that no longer works means the page was rebuilt.
+          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+          say('');
+          entry.reset();
+          return;
+        }
+        // A DecompressionStream or payload problem is not a wrong password,
+        // and telling the reader "wrong password" would send them in circles.
+        if (err && err.message && /Decompress/i.test(err.message)) {
+          say(err.message);
+        } else {
+          say('That does not decrypt this page. Check for a stray space, and mind the capitals.');
+        }
+        // The boxes clear themselves: with no submit button there is nothing to
+        // press again, so a failed code has to leave an empty row to retype.
+        entry.reset();
+      }
+    }
+
+    // Both gates end here: the form's submit button when there is one, and the
+    // last box or Enter when there isn't.
+    function submitNow() {
+      if (busy) return;
+      if (!entry.ready()) { say(entry.notReady); entry.focus(); return; }
+      attempt(entry.value(), false);
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitNow();
+    });
+
+    // Resume an already-unlocked tab.
+    var remembered = null;
+    try { remembered = sessionStorage.getItem(SESSION_KEY); } catch (e) {}
+    if (remembered) {
+      if (keep) keep.checked = true;
+      attempt(remembered, true);
+    } else {
+      entry.focus();
+    }
+  })();
+  </script>
+</body>
+</html>

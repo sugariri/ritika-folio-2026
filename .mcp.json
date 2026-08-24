@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "agentation": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["agentation-mcp", "server"],
+      "env": {}
+    }
+  }
+}
