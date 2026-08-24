@@ -15,14 +15,21 @@
  * behaviour the source page drives from JS has to be replaced by its resting
  * state here, not merely left alone.
  *
- *   node tools/extract-case.mjs --in finsynth.html --out private/finsynth.plain.html
+ *   node tools/extract-case.mjs --in private/finsynth.source.html \
+ *     --out private/finsynth.plain.html
+ *
+ * The default --in is private/finsynth.source.html and NOT finsynth.html, because
+ * finsynth.html is now the vault build (generated output). The plaintext source
+ * lives only in gitignored private/ -- see "Password-protected case page" in
+ * CLAUDE.md. Pointing this at the vault page fails loudly on the first assert
+ * rather than producing a fragment, which is the intended failure.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
 const { values: o } = parseArgs({
   options: {
-    in:  { type: 'string', default: 'finsynth.html' },
+    in:  { type: 'string', default: 'private/finsynth.source.html' },
     out: { type: 'string', default: 'private/finsynth.plain.html' },
   },
 });

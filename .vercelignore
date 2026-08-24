@@ -1,0 +1,17 @@
+# Anything listed here is never uploaded by `vercel deploy` from this directory.
+#
+# private/ is the one that matters: it holds the case study PLAINTEXT and the
+# fragment the vault is built from. It is gitignored, so a git-integration
+# deploy never sees it -- but a CLI deploy from the repo root uploads the
+# working directory, and without this file that plaintext would ship to a
+# public URL and defeat the whole encrypted page.
+private/
+case-study-inputs/
+
+node_modules/
+.vercel
+.git
+.claude/
+.agents/
+.playwright-cli/
+.DS_Store
