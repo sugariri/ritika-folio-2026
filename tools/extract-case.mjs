@@ -67,12 +67,15 @@ const askMarkup = between(
   '\n\n  <script>',
   'Ask Me markup'
 );
-const askStart = src.indexOf('  // ——— Ask-me chat (floating pill + drawer) ———');
-const askEnd = src.indexOf('  // ——— Agentation annotation toolbar (dev only) ———', askStart);
-if (askStart < 0 || askEnd < 0) fail('could not find the Ask Me drivers');
-const askDriver = src.slice(askStart, askEnd).trim();
-if (!/var QA = \[/.test(askDriver) || !/classList\.contains\('ask-pill-float'\)/.test(askDriver)) {
-  fail('Ask Me driver lost its Q&A data or cat control');
+const spotlightStart = src.indexOf('  // ——— Spotlight reveal ———');
+const interactionEnd = src.indexOf('  // ——— Agentation annotation toolbar (dev only) ———', spotlightStart);
+if (spotlightStart < 0 || interactionEnd < 0) fail('could not find the spotlight and Ask Me drivers');
+const interactionDriver = src.slice(spotlightStart, interactionEnd).trim();
+if (!/var QA = \[/.test(interactionDriver) || !/classList\.contains\('ask-pill-float'\)/.test(interactionDriver)) {
+  fail('interactive case driver lost its Ask Me Q&A data or cat control');
+}
+if (!/querySelectorAll\('\.spotlight'\)/.test(interactionDriver)) {
+  fail('interactive case driver lost the spotlight glow');
 }
 
 // The section rail is a SIBLING of <main>, not a child, so slicing <main>
@@ -126,10 +129,10 @@ function keep(re, label, expect = 1) {
   n++;
 }
 
-// 1. The spotlight lens is a cursor-tracked layer with an empty DOM footprint
-//    and no JS to move it. An unarmed lens is a blank div; drop it.
-cut(/\s*<div class="spotlight" aria-hidden="true">\s*<div class="spotlight-lens"><div class="spotlight-img"><\/div><\/div>\s*<\/div>/,
-    'spotlight layer');
+// 1. The spotlight glow is a deliberate part of the hero. Its driver travels
+//    with the encrypted fragment and is run by the template after injection.
+keep(/<div class="spotlight" aria-hidden="true">\s*<div class="spotlight-lens"><div class="spotlight-img"><\/div><\/div>\s*<\/div>/,
+     'spotlight layer');
 
 // 2. The sticky story-tab navigator. Cut until 2026-08-24 on the argument
 //    that nothing hides behind it, so the four chapters read as one sequence
@@ -235,7 +238,7 @@ ${main}
 <!-- Ask Me lives outside the source <main>; the vault template runs this
      trusted driver after injection because scripts inserted with innerHTML are inert. -->
 ${askMarkup}
-<script type="text/plain" id="caseAskDriver">${askDriver.replace(/<\/script/gi, '<\\/script')}</script>`;
+<script type="text/plain" id="caseInteractionDriver">${interactionDriver.replace(/<\/script/gi, '<\\/script')}</script>`;
 
 writeFileSync(o.out, out);
 console.log(`extract-case: ${n} transforms applied.`);

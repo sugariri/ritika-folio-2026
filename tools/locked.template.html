@@ -1024,15 +1024,15 @@
       sectionIndex();
       storyTabs();
       evoSwitcher();
-      askMe();
+      caseInteractions();
     }
 
-    // Ask Me ships encrypted with the case because its questions and answers
-    // are part of Ritika's design record. The source's script is carried as
-    // text: scripts inserted through innerHTML never run, so execute this one
-    // deliberately only after its pill and drawer have entered the document.
-    function askMe() {
-      var driver = main.querySelector('#caseAskDriver');
+    // The hero glow and Ask Me ship encrypted with the case because they are
+    // part of Ritika's design record. The source's driver is carried as text:
+    // scripts inserted through innerHTML never run, so execute it deliberately
+    // only after its hero, pill, and drawer have entered the document.
+    function caseInteractions() {
+      var driver = main.querySelector('#caseInteractionDriver');
       if (!driver) return;
       var script = document.createElement('script');
       script.text = driver.textContent;
