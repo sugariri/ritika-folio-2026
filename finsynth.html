@@ -1055,9 +1055,11 @@
     }
     /* The number is a tag, not a line of text: bounded, so label and title
        bind into one object instead of reading as two stacked lines. Hairline
-       and monochrome — the pill is the shape, not a fill. Only top-level
-       chapters get it; .decision-num inside 07 stays a bare label, which is
-       what marks it as the nested level. */
+       and monochrome — the pill is the shape, not a fill. Every numbered
+       label wears it, .decision-num inside 07 included since 2026-08-23 —
+       so the pill no longer marks the top level, and the nested level is
+       marked by what was always marking it too: the h3 under it, the absent
+       section-separator hairline, and .index's li.sub indent. */
     .chapter-num {
       display: inline-block;
       font-family: var(--mono); font-size: var(--pill);
@@ -1247,12 +1249,22 @@
     }
 
     .decision-head { margin-bottom: 30px; }
+    /* A pill, like .chapter-num (Ritika, 2026-08-23, on 07.2's label: "pill
+       container border is missing"). inline-block is what makes the border
+       read as a container rather than as a rule with words in it: on the
+       display: block this used to be, the hairline would span the full 660px
+       column. 14px under it rather than .chapter-num's 18, because the h3
+       it introduces is 22px where a chapter head is 30. */
     .decision-num {
-      display: block;
+      display: inline-block;
       font-family: var(--mono); font-size: var(--pill);
+      line-height: 1;
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px 5px;
+      margin-bottom: 14px;
     }
     /* The nested level, so it is h3 — it used to be 26px, the same size as a
        bare h2, which is what made 07's three decisions read as peers of the
@@ -1760,6 +1772,13 @@
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 6px;
+      /* 44px below, matching `figure`'s own bottom margin. This was
+         `.evo-close`'s, and it came here when that line went (Ritika,
+         2026-08-23: "not needed"): the panel is a figure in everything but
+         the tag name, and the paragraph beneath it still needs the gap a
+         figure would have given it. Longhand, because both media queries
+         below zero or shift the two side margins and must not touch this. */
+      margin-bottom: 44px;
       margin-left: calc((var(--content) - var(--measure)) / 2);
       margin-right: calc((var(--content) - var(--measure)) / 2);
     }
@@ -1969,28 +1988,12 @@
       margin-bottom: -10px;
     }
 
-    /* An image description, and it was the section's closing claim (Ritika,
-       2026-08-23: "act this as a image description text,so need to be centr
-       and closer to image abovee."). So it takes the page's own figcaption
-       treatment whole — --body2 on 22px in --faint, centred, 14px under the
-       box — rather than a new one: the panel is a picture, and this is what
-       this page sets the line under a picture in. What went is the weight-500
-       fluid --h3 and the 30ch measure, which is what had it reading as a
-       claim of its own. It cannot be a real figcaption: .evo-switcher is a
-       div, and the two <figure>s are the states inside it.
-       It stays outside the panel's border (Ritika, earlier the same day:
-       "outside of the box") and needs no breakout of its own — the panel
-       bleeds 110px each side, so the column's centre line is the panel's. */
-    .evo-close {
-      /* 44px below, matching `figure`'s own bottom margin: the trio sits
-         inside 05 now, so the paragraph beneath it needs the gap a figure
-         would have given it. */
-      margin: 14px 0 44px;
-      font-size: var(--body2); line-height: 22px;
-      color: var(--faint);
-      text-wrap: pretty;
-      text-align: center;
-    }
+    /* `.evo-close` lived here: the centred --faint line under the panel,
+       gone with its one paragraph (Ritika, 2026-08-23: "not needed"). It had
+       copied the page's figcaption treatment by hand, because .evo-switcher
+       is a div and could not have a real one; nothing else in the file used
+       the class, so the rule went with the markup. Its margin-bottom is the
+       one thing that survives, on .evo-switcher above. */
     @media (max-width: 760px) {
       .evo-switcher { margin-left: 0; margin-right: 0; padding: 5px; }
       .evo-body { padding: 14px 12px 16px; }
@@ -2009,8 +2012,33 @@
       box-shadow: 0 2px 6px var(--mat-shade),
                   0 30px 60px -22px var(--mat-lift);
     }
+    /* A figure's keys, asterisked under its description rather than lettered
+       into the drawing (Ritika, 2026-08-23: "maybe at the bottom in * and then
+       tell this of this box as a description of image"). It is the figcaption's
+       own ink and size — no seventh size, no second colour — and only a block
+       of its own, so the five-word description above it stays a line and the
+       keys read as a note rather than as more of the sentence. One asterisk
+       opens the whole note; the marks it explains are in the figure. */
+    figcaption .fig-note { display: block; margin-top: 8px; }
+
     .product-frame figcaption { padding: 14px 2px 0; margin: 0; }
     .product-frame figcaption strong { color: var(--text); font-weight: 500; }
+
+    /* 07.1 runs 03's rail, not a second one of its own (Ritika, 2026-08-23:
+       "need to add new prodcut images here same kind of interaction as done.
+       in old product. i will give the images"). So the interaction, the blue
+       mat, the fixed 16/10 frame and the two paging arrows are all `.wf`'s,
+       reused rather than redrawn -- this wrapper supplies only the two things
+       `.wf-shelf` has no opinion about: the figure's vertical rhythm, and a
+       caption under the track. The caption sits OUTSIDE `.wf-shelf` on
+       purpose: `.wf-nav` is pinned at `top: 50%` of the shelf, so a caption
+       inside it would be half of frames-plus-caption and drop both arrows
+       below the screens they page. */
+    .product-rail { margin: 48px 0; }
+    /* `.wf`'s own 52px top margin is 03's gap under its chapter gloss; here
+       the figure's 48px above already supplies it. */
+    .product-rail .wf { margin-top: 0; }
+    .product-rail figcaption { padding: 14px 2px 0; margin: 0; }
 
     /* Placeholder for a screenshot that does not exist yet.
        This is the merge gate: the page is not publishable while one is on screen. */
@@ -2864,7 +2892,17 @@
         <div class="chapter-head">
           <span class="chapter-num">04 &middot; The limitation</span>
           <h2>Where the workflows stopped</h2>
-          <p class="chapter-gloss">Every workflow started with a problem the analyst already knew how to define. That was the ceiling of the old interaction model.</p>
+          <!-- No gloss. It read "Every workflow started with a problem the
+               analyst already knew how to define. That was the ceiling of the
+               old interaction model." and its first sentence is a QA answer now
+               (Ritika, 2026-08-23: "merge this with below para or add in the
+               'search anything about me'"). Of her two options the chat is the
+               one that costs nothing: the paragraph below already says the same
+               thing in the negative ("it couldn't recognize an unfamiliar
+               need"), so merging would have kept the duplication and only moved
+               it. The second sentence was dropped rather than kept, because it
+               names "the ceiling" -- the word this chapter's own tag was
+               renamed away from. 04 is title-only now, like 05. -->
         </div>
 
         <!-- The note used to stand above a 480px stage that cross-faded
@@ -2898,7 +2936,14 @@
               <li><span class="strip-step">03 &middot; Run the workflow</span></li>
             </ol>
           </div>
-          <figcaption>The old model made the analyst route the request. The product only ran after the workflow was chosen.</figcaption>
+          <!-- No figcaption. It read "The old model made the analyst route the
+               request. The product only ran after the workflow was chosen." and
+               it is in the same QA answer as the gloss above (Ritika,
+               2026-08-23: "add in 'search anythin about me'"). Routing is the
+               one thing it said that no other block in the chapter says, so it
+               went into the chat rather than out; the note's three numbered
+               steps and the ol's own aria-label already say what the picture
+               is. -->
         </figure>
 
         <!-- Body prose, and it was a .chapter-key (Ritika, 2026-08-23:
@@ -3129,17 +3174,18 @@
           </div>
         </div>
 
-        <p class="evo-close">The product stopped waiting to be told which workflow to run.</p>
-
-        <!-- One paragraph, and it was a .chapter-key plus the sentence under it
-             (Ritika, 2026-08-23, selecting both: "combine this into para").
-             It opened on "The product stopped waiting to be told which
-             workflow to run.", which is .evo-close word for word — fine while
-             the two sat a section apart, an echo now that the switcher moved in
-             directly above it. CLAUDE.md had already named this as the fix to
-             take if it ever read as one, so the sentence is the caption's alone
-             and "Then" takes its antecedent from the line above it. -->
-        <p>Then you described what you were trying to do, and it worked out the steps.</p>
+        <!-- `.evo-close` lived here — "The same workbook in both states: the
+             old pane's fixed form, then the agent's open composer." — and it
+             is gone (Ritika, 2026-08-23: "not needed"). It had been the
+             section's closing claim, then an image description, and by the
+             time it was a description the two states were labelled by the
+             `.evo-state-heading` above the panel and by the switch inside it,
+             so a third line naming them was the panel described twice. The
+             paragraph below already carries its own antecedent — that is why
+             its first sentence was put back earlier the same day — so
+             nothing was lost with the line, and the panel keeps the 44px it
+             used to supply (see `.evo-switcher`'s margin-bottom). -->
+        <p>The product stopped waiting to be told which workflow to run. Then you described what you were trying to do, and it worked out the steps.</p>
       </section>
     </div>
 
@@ -3219,60 +3265,67 @@
 
         <figure class="fig-wide">
           <div class="canvas">
-          <svg class="dia" viewBox="0 0 660 132" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The agent system end to end: the analyst’s question, agent reasoning, editable plan, tool calls, result, and the Excel model, which is live. Three numbered seams mark where a person can step in: 07.1 between the question and the reasoning, 07.2 at the editable plan, 07.3 at the tool calls. The last arrow, into the Excel model, is dashed: that write is always available and never automatic.">
+          <svg class="dia" viewBox="0 0 660 116" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The agent system end to end: the analyst’s question, agent reasoning, editable plan, tool calls, result, and the Excel model, which is live. Three numbered seams mark where a person can step in: 07.1 between the question and the reasoning, 07.2 at the editable plan, 07.3 at the tool calls. The last arrow, into the Excel model, is dashed: that write is always available and never automatic.">
             <defs>
               <marker id="ah4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
                 <path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1"/>
               </marker>
             </defs>
 
-            <!-- Legend. The 07.x numbers used to hang above the boxes with nothing
-                 saying what they were, and the dashed edge below needs a key too.
-                 The `seam` tspan takes the blue off `.dia .seam` — no new rule. -->
-            <g class="label" font-size="9.5" letter-spacing="1.3">
-              <text x="4" y="12"><tspan class="seam">07.1&ndash;07.3</tspan> WHERE A PERSON STEPS IN</text>
-              <text x="656" y="12" text-anchor="end">THE WRITE BACK IS OPTIONAL</text>
-            </g>
-            <path class="arrow" stroke-dasharray="4 3" d="M440,8.5 L464,8.5"/>
-
+            <!-- The two-ended legend that used to sit here is gone, and its
+                 keys are asterisked under the figure instead (Ritika,
+                 2026-08-23: "maybe at the bottom in * and then tell this of
+                 this box as a description of image"). A key inside the frame
+                 is the drawing explaining itself in a second voice — mono
+                 micro-caps over handwriting-free wireframe — and it cost the
+                 figure a whole 16-unit row. The marks it explained (the three
+                 07.x numbers, the dashed last arrow) stay; only the prose
+                 moved, so every y below is back to its pre-legend value and
+                 the viewBox is 116 again. -->
             <!-- the seams a person can reach into, numbered as the decisions below -->
             <g class="label seam" font-size="10.5" letter-spacing="1.3" text-anchor="middle">
-              <text x="106" y="30">07.1</text>
-              <text x="274" y="30">07.2</text>
-              <text x="386" y="30">07.3</text>
+              <text x="106" y="14">07.1</text>
+              <text x="274" y="14">07.2</text>
+              <text x="386" y="14">07.3</text>
             </g>
             <g class="arrow seam-tick">
-              <path d="M106,36 L106,48"/>
-              <path d="M274,36 L274,48"/>
-              <path d="M386,36 L386,48"/>
+              <path d="M106,20 L106,32"/>
+              <path d="M274,20 L274,32"/>
+              <path d="M386,20 L386,32"/>
             </g>
 
             <g font-size="15" text-anchor="middle">
-              <rect class="box" rx="9" x="4" y="52" width="92" height="48"/>
-              <text x="50" y="72">Analyst’s</text><text x="50" y="90">question</text>
-              <rect class="box" rx="9" x="116" y="52" width="92" height="48"/>
-              <text x="162" y="72">Agent</text><text x="162" y="90">reasoning</text>
-              <rect class="box-on" rx="9" x="228" y="52" width="92" height="48"/>
-              <text x="274" y="72">Editable</text><text x="274" y="90">plan</text>
-              <rect class="box-on" rx="9" x="340" y="52" width="92" height="48"/>
-              <text x="386" y="72">Tool</text><text x="386" y="90">calls</text>
-              <rect class="box" rx="9" x="452" y="52" width="92" height="48"/>
-              <text x="498" y="81">Result</text>
-              <rect class="box" rx="9" x="564" y="52" width="92" height="48"/>
-              <text x="610" y="72">Excel</text><text x="610" y="90">model</text>
+              <rect class="box" rx="9" x="4" y="36" width="92" height="48"/>
+              <text x="50" y="56">Analyst’s</text><text x="50" y="74">question</text>
+              <rect class="box" rx="9" x="116" y="36" width="92" height="48"/>
+              <text x="162" y="56">Agent</text><text x="162" y="74">reasoning</text>
+              <rect class="box-on" rx="9" x="228" y="36" width="92" height="48"/>
+              <text x="274" y="56">Editable</text><text x="274" y="74">plan</text>
+              <rect class="box-on" rx="9" x="340" y="36" width="92" height="48"/>
+              <text x="386" y="56">Tool</text><text x="386" y="74">calls</text>
+              <rect class="box" rx="9" x="452" y="36" width="92" height="48"/>
+              <text x="498" y="65">Result</text>
+              <rect class="box" rx="9" x="564" y="36" width="92" height="48"/>
+              <text x="610" y="56">Excel</text><text x="610" y="74">model</text>
             </g>
             <g class="arrow" marker-end="url(#ah4)">
-              <path d="M96,76 L112,76"/>
-              <path d="M208,76 L224,76"/>
-              <path d="M320,76 L336,76"/>
-              <path d="M432,76 L448,76"/>
+              <path d="M96,60 L112,60"/>
+              <path d="M208,60 L224,60"/>
+              <path d="M320,60 L336,60"/>
+              <path d="M432,60 L448,60"/>
               <!-- dashed: the write into the live model waits for the analyst -->
-              <path d="M544,76 L560,76" stroke-dasharray="4 3"/>
+              <path d="M544,60 L560,60" stroke-dasharray="4 3"/>
             </g>
-            <text class="dim" x="610" y="122" font-size="15" text-anchor="middle">live</text>
+            <text class="dim" x="610" y="106" font-size="15" text-anchor="middle">live</text>
           </svg>
           </div>
-          <figcaption>The system, end to end. The numbered seams are where a person can inspect, correct, or stop the work; each one is a decision below. The last step is dashed because the write into the live model is always available and never automatic: it waits for the analyst to approve it.</figcaption>
+          <!-- "just say 'the system end to end' that makes more sense"
+               (Ritika, 2026-08-23). The caption named the picture and then
+               spent two clauses keying it, which is the legend's job, and the
+               legend was inside the frame. Both moved here: the caption is
+               five words, and the keys are the asterisked note under it, so
+               the description of the image carries the marks the image uses. -->
+          <figcaption>The system end to end.<span class="fig-note">* The three 07.x marks are where a person can inspect, correct, or stop the work, and each one is a decision below. The last arrow is dashed because the write into the live model is always available and never automatic: it waits for the analyst to approve it.</span></figcaption>
         </figure>
 
         <!-- Was a four-item `.bounds` list, which restated the diagram above it
@@ -3343,33 +3396,86 @@
           <p class="chapter-gloss">A goal arrives the way people talk. <i>How has marketing spend trended?</i> For which company? Over what period? Trended against what?</p>
         </div>
 
-        <figure class="product-frame">
-          <div class="fiag-window">
-            <div class="fiag-chrome" aria-hidden="true">
-              <span class="fiag-lights"><i></i><i></i><i></i></span>
-              <span class="fiag-tab">
-                <span class="fiag-favicon"></span>
-                FinSynth
-              </span>
-              <span class="fiag-tab-add">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </span>
-              <span class="fiag-chrome-right">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </span>
-            </div>
-            <div class="fiag-page">
-              <div class="fiag-toolbar" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
-                <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
-                <span class="fiag-crumb"><strong>FinSynth</strong></span>
-              </div>
-            <img class="fiag-shot" src="assets/finsynth/fia-questions.png" width="2000" height="1218" alt="The shipped question checkpoint: the agent pauses its run to ask the first of three questions, about how the workbook should treat a quarter whose figure is unreadable in its own filing. Three suggested answers are laid out as cards, each stating its own trade-off, above a free text field and Skip and Next buttons." loading="lazy" decoding="async">
-            </div>
+        <!-- One static screen became 03's rail (Ritika, 2026-08-23: "need to
+             add new prodcut images here same kind of interaction as done. in
+             old product. i will give the images"). Her images append as
+             further `li`s -- nothing else has to move, and the arrows
+             re-measure themselves. Seeded with two real captures rather than
+             one, because `.wf`'s right padding is half a viewport wide: a
+             single frame still overflows it, so `sync()` would light the next
+             arrow onto empty mat. -->
+        <figure class="product-rail">
+          <div class="wf-shelf">
+            <ul class="wf" aria-label="Edit Query in the shipped agent">
+              <li>
+                <p class="wf-head"><span class="n">01</span><span class="name">The agent asks</span></p>
+                <div class="wf-frame">
+                  <div class="fiag-window">
+                    <div class="fiag-chrome" aria-hidden="true">
+                      <span class="fiag-lights"><i></i><i></i><i></i></span>
+                      <span class="fiag-tab">
+                        <span class="fiag-favicon"></span>
+                        FinSynth
+                      </span>
+                      <span class="fiag-tab-add">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                      </span>
+                      <span class="fiag-chrome-right">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </span>
+                    </div>
+                    <div class="fiag-page">
+                      <div class="fiag-toolbar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                        <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                        <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                      </div>
+                      <img class="fiag-shot" src="assets/finsynth/fia-asks-first.png" width="1605" height="1003" alt="The shipped agent thread in plan mode. The run opens with an instruction to resolve any open questions before producing a plan and to change nothing in the workbook. The agent replies that it has no task to plan around yet and asks for the essentials, a collapsed row records that three questions were asked, and the one it is still waiting on asks which company the request is about. Below that, every lookup, filing fetched and file read is listed as its own step, including one marked in red that could not be read, and a Proposed plan card sits at the foot of the thread." loading="lazy" decoding="async">
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <li>
+                <p class="wf-head"><span class="n">02</span><span class="name">The question cards</span></p>
+                <div class="wf-frame">
+                  <div class="fiag-window">
+                    <div class="fiag-chrome" aria-hidden="true">
+                      <span class="fiag-lights"><i></i><i></i><i></i></span>
+                      <span class="fiag-tab">
+                        <span class="fiag-favicon"></span>
+                        FinSynth
+                      </span>
+                      <span class="fiag-tab-add">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                      </span>
+                      <span class="fiag-chrome-right">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M15 5v14"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                      </span>
+                    </div>
+                    <div class="fiag-page">
+                      <div class="fiag-toolbar" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>
+                        <svg class="fiag-tool-dim" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-.9 5.2"/><path d="M20 5v6h-6"/></svg>
+                        <span class="fiag-crumb"><strong>FinSynth</strong></span>
+                      </div>
+                      <img class="fiag-shot" src="assets/finsynth/fia-questions.png" width="2000" height="1218" alt="The shipped question checkpoint: the agent pauses its run to ask the first of three questions, about how the workbook should treat a quarter whose figure is unreadable in its own filing. Three suggested answers are laid out as cards, each stating its own trade-off, above a free text field and Skip and Next buttons." loading="lazy" decoding="async">
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <button class="wf-nav wf-nav-prev" type="button" aria-label="Previous screen" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+            </button>
+            <button class="wf-nav wf-nav-next" type="button" aria-label="Next screen" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+            </button>
           </div>
-          <figcaption>Where the ask is ambiguous, the agent stops and asks instead of guessing. Each suggested answer carries its own trade-off, a typed answer can overrule them all, and the question can be skipped.</figcaption>
+          <figcaption>The agent will not plan around an ask it cannot pin down. It says what is missing, asks for the essentials, and the questions it asked stay in the record above the work. Each question lays out suggested answers with their trade-offs, a typed answer overrules them all, and the question can be skipped.</figcaption>
         </figure>
 
         <!-- Two closing paragraphs came off here (Ritika, 2026-08-23: "this is
@@ -3598,7 +3704,9 @@
   <footer>
     <div class="wrap">
       <div class="footer-row">
-        <a href="index.html#work">&larr; Back to work</a>
+        <!-- The "Back to work" link went 2026-08-23 (Ritika: "remove this"). The
+           header's .nav-back circle already returns to index.html#work, so the
+           footer was saying it a second time, further from the reader's eye. -->
         <a href="mailto:Ritikashofficial2511@gmail.com">Ritikashofficial2511@gmail.com</a>
       </div>
       <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
@@ -3608,7 +3716,7 @@
   <!-- ===== ASK-ME CHAT — mirrored from index.html's case-overlay chat ===== -->
   <button type="button" class="ask-pill" id="askPill">
     <span class="ask-avatar" aria-hidden="true">R</span>
-    <span class="ask-pill-label">Search anything about me</span>
+    <span class="ask-pill-label">Ask me about the case study</span>
     <span class="ask-pill-send" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5"/></svg></span>
   </button>
   <div class="ask-drawer" id="askDrawer" role="dialog" aria-modal="false" aria-label="Ask Ritika about this case study">
@@ -3753,19 +3861,21 @@
     items.forEach(function(el) { io.observe(el); });
   })();
 
-  // ——— Workflow track arrows (03) ———
+  // ——— Track arrows (03's three workflows, 07.1's Edit Query screens) ———
   // Same contract as index.html's .shelf-nav: both buttons ship hidden and
   // are only shown by measurement, page by one frame, and re-sync on scroll
   // and resize. Each button hides at its own end of the track, so the pair
   // doubles as the scroll indicator; with this dead the track still scrolls.
+  // querySelectorAll, not querySelector: there are two tracks on the page
+  // now, and a singular lookup would leave the second one's arrows hidden
+  // forever, since nothing would ever measure them.
   (function() {
-    var shelf = document.querySelector('.wf-shelf');
-    if (!shelf) return;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    Array.prototype.forEach.call(document.querySelectorAll('.wf-shelf'), function(shelf) {
     var rail = shelf.querySelector('.wf');
     var prev = shelf.querySelector('.wf-nav-prev');
     var next = shelf.querySelector('.wf-nav-next');
     if (!rail || !prev || !next) return;
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
     function step() {
       // measured off two real items, so retuning the frames needs no change here
@@ -3785,6 +3895,7 @@
     rail.addEventListener('scroll', sync, { passive: true });
     window.addEventListener('resize', sync, { passive: true });
     sync();
+    });
   })();
 
   // ——— Before/After switcher (04.1) ———
@@ -4070,11 +4181,12 @@
         a: ['Research, analysis, model upkeep, validation, and the doubt running under all of it: they land together, for every name on the list.',
             'The loop is the tidy version. A real day doesn’t queue its problems, and there are forty names on the coverage list.'] },
       { q: 'What did the old workflows ask of the analyst?', s: ['start', 'ceiling'],
-        k: ['contract', 'predefined', 'condition', 'matched', 'button', 'routing', 'route', 'old'],
+        k: ['contract', 'predefined', 'condition', 'matched', 'button', 'routing', 'route', 'old', 'ceiling', 'limitation'],
         f: ['Why an editable plan instead of act-then-revise?',
             'What were the results?'],
-        a: ['Predefined workflows worked on one condition: the need already matched one.',
+        a: ['Every workflow started with a problem the analyst already knew how to define. Predefined workflows worked on one condition: the need already matched one.',
             'All three ran on the same contract. You already knew what you wanted. You found the workflow that did it. You ran it. You got the output.',
+            'The old model made the analyst route the request. The product only ran after the workflow was chosen.',
             'An analyst whose need fit that got a good answer. An analyst whose need didn’t got nothing, and there was no way to say: here’s what I’m trying to do, work out how to help me. It couldn’t discover a problem the user was having.'] },
       { q: 'How big was the engineering team?', s: ['system'],
         k: ['backend', 'frontend', 'headcount', 'engineers', 'many', 'size', 'three'],
