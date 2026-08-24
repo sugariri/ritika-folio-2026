@@ -320,12 +320,14 @@
       color: var(--faint);
       margin-bottom: 24px;
     }
-    /* A filled dot, not a lock glyph: the word beside it already says locked,
-       and a padlock next to "locked" is the label drawn twice. */
-    .gate-dot {
-      width: 7px; height: 7px; flex: 0 0 auto;
-      border-radius: 50%;
-      background: var(--muted);
+    /* A padlock, asked for by name (Ritika, 2026-08-24: "add a loc icon"). It
+       was a filled dot until then, on the argument that the word beside it
+       already says locked -- she wants the glyph, and it is the same closed
+       padlock .nav-lock draws, so nothing new was invented for it. */
+    .gate-lock {
+      display: block;
+      width: 14px; height: 14px; flex: 0 0 auto;
+      color: var(--muted);
     }
     .gate h1 {
       font-size: var(--h1); line-height: var(--h1-lh); font-weight: 500;
@@ -401,27 +403,34 @@
     .gate-go:hover:not(:disabled) i { translate: 2px 0; }
     @media (prefers-reduced-motion: reduce) { .gate-go i { transition: none; } }
 
-    /* The helper under the boxes, and the closing line under the hairline:
-       both mono, both --faint. They are sentences that wrap, so they take
-       --body2 with its own leading rather than --pill, whose 1.0 line-height
-       has no leading to give -- and the scale has no seventh size to invent. */
-    .gate-help {
-      margin-top: 18px;
-      font-family: var(--mono);
-      font-size: var(--body2); line-height: var(--body2-lh);
-      color: var(--faint);
-    }
+    /* The "{n} characters. it opens itself." line under the boxes went
+       2026-08-24 (Ritika: "no need to write this.... this is odd"). Six boxes
+       already say six characters, and the auto-submit announces itself by
+       happening, so the line was the UI explained to someone watching it work.
+       --hint went with it, out of the template and out of the encryptor.
+
+       The checkbox sits under the hairline now (Ritika, same pass: "move the
+       check box thing below the line"), which puts it in .gate-foot. It states
+       its own font rather than inheriting: .gate-foot carried the mono until
+       the note left it on 2026-08-24, and a control that has always wanted the
+       page sans should not have depended on that. It is the only thing under
+       the line now, so it carries no bottom gap. */
     .gate-keep {
       display: flex; align-items: center; gap: 9px;
-      margin-top: 18px;
+      margin: 0;
+      font-family: var(--font);
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--muted);
       cursor: pointer;
     }
     .gate-keep input { accent-color: var(--brand); width: 15px; height: 15px; }
 
+    /* Directly under the entry, because that is where the reader is looking
+       when it fails (Ritika, 2026-08-24: "when wrong, the text need to appear
+       right next to the input area boxes"). It used to sit below the checkbox,
+       a control away from the thing it was about. */
     .gate-msg {
-      margin-top: 16px;
+      margin-top: 14px;
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--fail);
     }
@@ -431,12 +440,24 @@
     .gate-foot {
       margin-top: 32px; padding-top: 20px;
       border-top: 1px solid var(--line);
+    }
+
+    /* Her closing line became the opening one on 2026-08-24 ("move at the top
+       and add a wink emoji"), which took it out of .gate-foot and so out of
+       the mono block it had been inheriting. It carries its own type now. That
+       also fixes the <noscript> copy by accident: it has always been a sibling
+       of .gate-foot rather than a child, so it never got the mono it was
+       written for. */
+    .gate-note {
+      margin-top: 10px;
       font-family: var(--mono);
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--faint);
     }
-    .gate-note { margin-top: 10px; }
     .gate-note:first-child { margin-top: 0; }
+    /* At the top the line speaks before the padlock does, so it needs the gap
+       under it that the eyebrow's own margin gives the heading. */
+    .gate-top { margin: 0 0 22px; }
 
     @media (max-width: 560px) {
       .gate {
@@ -549,8 +570,15 @@
       margin-top: 96px; padding: 40px 0 64px;
       border-top: 1px solid var(--line);
     }
+    /* space-between has held this row since it had two children; the second
+       left with "Back to work" and the email sat alone at the left margin
+       until 2026-08-24 (Ritika, of the address: "move to the right?"). The
+       fix is to give the rule its second child back rather than to change the
+       rule: the copyright line moved up into the row, so the footer is one
+       row and two corners. */
     .footer-row {
       display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+      align-items: baseline;
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--muted);
     }
@@ -618,7 +646,12 @@
   <main id="doc">
     <div class="wrap">
       <section class="gate" id="gate">
-        <p class="gate-eyebrow"><span class="gate-dot" aria-hidden="true"></span>locked</p>
+        <p class="gate-note gate-top">__FOOTNOTE__</p>
+        <p class="gate-eyebrow">
+          <svg class="gate-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <rect x="4.5" y="10.4" width="15" height="10.1" rx="2.4"/>
+            <path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/>
+          </svg>locked</p>
         <h1>__HEADING__</h1>
         <p class="gate-standfirst">__STANDFIRST__</p>
 
@@ -633,28 +666,25 @@
             <div class="gate-row">
               <input class="gate-input" id="pw" name="password" type="password"
                      autocomplete="current-password" autocapitalize="off" spellcheck="false"
-                     aria-describedby="gateHelp gateMsg" placeholder="Enter the password" required>
+                     aria-describedby="gateMsg" placeholder="Enter the password" required>
               <button class="gate-go" type="submit" id="gateGo">Unlock <i aria-hidden="true">&rarr;</i></button>
             </div>
           </div>
 
-          <p class="gate-help" id="gateHelp">__HINT__</p>
-
-          <label class="gate-keep">
-            <input type="checkbox" id="gateKeep">
-            Keep this tab unlocked while I read
-          </label>
           <!-- role=alert so a failure is announced; aria-live keeps the
-               "Decrypting" progress line polite rather than assertive. -->
+               "Decrypting" progress line polite rather than assertive. It is
+               the last thing in the form, so it lands under the entry. -->
           <p class="gate-msg" id="gateMsg" role="alert" aria-live="polite"></p>
         </form>
 
         <div class="gate-foot">
-          <p class="gate-note">__FOOTNOTE__</p>
-          <p class="gate-note">
-            The content of this page is stored encrypted (AES-GCM 256, PBKDF2-SHA256).
-            It is decrypted in your browser and never sent anywhere.
-          </p>
+          <!-- Below the hairline by request, which puts it outside the form:
+               form="gateForm" keeps it associated, and the script only ever
+               reads it by id. -->
+          <label class="gate-keep">
+            <input type="checkbox" id="gateKeep" form="gateForm">
+            Keep this tab unlocked while I read
+          </label>
         </div>
 
         <noscript>
@@ -672,9 +702,9 @@
         <!-- The "Back to work" link went 2026-08-23 (Ritika: "remove this"). The
            header's .nav-back circle already returns to index.html#work, so the
            footer was saying it a second time, further from the reader's eye. -->
-        <a href="mailto:ritika@finsynth.ai">ritika@finsynth.ai</a>
+        <p class="footer-copy">&copy; 2026 Ritika Shakkerwal</p>
+        <a href="mailto:Ritikashofficial2511@gmail.com">Ritikashofficial2511@gmail.com</a>
       </div>
-      <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
     </div>
   </footer>
 
@@ -823,7 +853,7 @@
         b.spellcheck = false;
         b.setAttribute('autocomplete', 'off');
         b.setAttribute('aria-label', 'Character ' + (i + 1) + ' of ' + n);
-        b.setAttribute('aria-describedby', 'gateHelp gateMsg');
+        b.setAttribute('aria-describedby', 'gateMsg');
         wrap.appendChild(b);
         boxes.push(b);
       }
@@ -978,6 +1008,193 @@
           location.reload();
         });
       }
+
+      armContentDrivers();
+    }
+
+    /* ——— Content drivers ———
+       Everything above this point is the vault. This is the one place the vault
+       reaches into the case study, and it exists because innerHTML runs no
+       <script> while THIS page's scripts run fine: a behaviour in the fragment
+       can either be flattened to a resting state by tools/extract-case.mjs, or
+       have its driver live here and arm after injection. The extractor's
+       header explains when each is right.
+
+       Keep this list short. Every driver here is an interaction split across
+       two files, and the fragment cannot tell it is missing -- so each one is
+       paired with a keep() assertion in the extractor, which fails the build if
+       the markup it binds to is renamed. Add a driver, add the assertion.
+
+       Called from inject(), after main.innerHTML, so the nodes exist. */
+    function armContentDrivers() {
+      sectionIndex();
+      storyTabs();
+      evoSwitcher();
+    }
+
+    /* Section index (the rail in the left margin). Ported from the source page.
+       Restored 2026-08-24 with the story-tab band below, after Ritika read the
+       unlocked page: "my page index is missing".
+
+       The move out of main is the whole trick, and it is a stacking-context
+       one. .index is position: fixed, so its parent does not place it -- but
+       main carries z-index: 1, which makes it a stacking context, and the
+       story-tab band inside main sits at z-index 55 against the rail's 50. Left
+       inside main the band would paint over the rail's first labels. In the
+       source the rail is a sibling of <main>, so it escapes that context and
+       always paints above; putting it back there is what keeps the source's
+       own reasoning true. The extractor emits it ahead of the content for
+       exactly this handoff. */
+    function sectionIndex() {
+      var nav = main.querySelector('.index');
+      if (!nav) return;
+      // A second inject() would otherwise leave the first rail stranded
+      // outside main, where nothing clears it.
+      var stale = document.querySelector('body > .index');
+      if (stale && stale !== nav) stale.remove();
+      main.parentNode.insertBefore(nav, main);
+
+      var links = Array.prototype.slice.call(nav.querySelectorAll('a'));
+      var targets = links.map(function(a) {
+        return document.getElementById(a.getAttribute('href').slice(1));
+      });
+      if (targets.some(function(el) { return !el; })) return;
+
+      // Last section whose top has crossed 42% of the viewport wins. A simple
+      // position test rather than an IntersectionObserver, because the chapters
+      // vary wildly in height and "most visible" reads wrong on the long ones.
+      var current = -1;
+      var ticking = false;
+
+      function update() {
+        ticking = false;
+        var line = window.innerHeight * 0.42;
+        var next = 0;
+        for (var i = 0; i < targets.length; i++) {
+          if (targets[i].getBoundingClientRect().top <= line) next = i;
+        }
+        // Bottom of the page: the last chapter is short, so pin it there.
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 4) {
+          next = targets.length - 1;
+        }
+        if (next === current) return;
+        if (current > -1) links[current].removeAttribute('aria-current');
+        links[next].setAttribute('aria-current', 'true');
+        current = next;
+        // The source fires an `asksection` event here so the ask-me chat can
+        // retarget its chips. The vault ships no chat, so there is no listener
+        // and the event is not ported.
+      }
+
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(update);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      update();
+      // The rail is opacity: 0 until this class lands, so it fades in once it
+      // knows which chapter to ink rather than flashing every label neutral.
+      nav.classList.add('ready');
+    }
+
+    /* Opening story tabs: the four opening chapters share one sticky
+       navigator, while their content stays in one continuous scroll sequence.
+       Ported from the source page. The band was cut from the fragment until
+       2026-08-24 (Ritika: "my navigation dov for the analyst, the old product,
+       the limitation"), on the argument that nothing hides behind it. Nothing
+       does -- but it is the reader's map of the opening either way. */
+    function storyTabs() {
+      var tabs = Array.prototype.slice.call(main.querySelectorAll('.story-tab'));
+      if (!tabs.length) return;
+      var panels = {};
+      tabs.forEach(function(tab) {
+        var name = tab.getAttribute('aria-controls');
+        panels[name] = document.getElementById(name);
+      });
+      if (Object.keys(panels).some(function(k) { return !panels[k]; })) return;
+
+      function activate(name, updateHash) {
+        tabs.forEach(function(tab) {
+          tab.setAttribute('aria-selected',
+            tab.getAttribute('aria-controls') === name ? 'true' : 'false');
+        });
+        if (updateHash) history.replaceState(null, '', '#' + name);
+        // The source also adds .in here, to force the reveal on a panel jumped
+        // to before its observer fired. The extractor strips .reveal from this
+        // page, so every panel is already at rest and there is nothing to add.
+      }
+
+      tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          var name = tab.getAttribute('aria-controls');
+          activate(name, true);
+          panels[name].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      // The rail's four opening links drive the band as well, so the two
+      // navigators never disagree about which chapter is current.
+      var railLinks = document.querySelectorAll(
+        '.index a[href="#job"], .index a[href="#problems"], .index a[href="#start"], .index a[href="#ceiling"]');
+      Array.prototype.forEach.call(railLinks, function(link) {
+        link.addEventListener('click', function(event) {
+          event.preventDefault();
+          var name = link.getAttribute('href').slice(1);
+          activate(name, true);
+          panels[name].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      });
+
+      if (panels[location.hash.slice(1)]) activate(location.hash.slice(1), false);
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) activate(entry.target.id, false);
+        });
+      }, { rootMargin: '-120px 0px -55% 0px', threshold: 0.02 });
+      Object.keys(panels).forEach(function(key) { observer.observe(panels[key]); });
+    }
+
+    /* Before/After switcher (04.1). Ported from the source page unchanged --
+       two states of one artifact behind a tab pair, both in the DOM, the switch
+       only toggles `hidden`, so there is nothing here for prefers-reduced-
+       motion to disable. Arrow keys move between the tabs.
+
+       Restored 2026-08-24 (Ritika, annotating the switcher on the unlocked
+       page: "why did this change?"). It had been cut to two stacked figures
+       because a tab pair with no driver is a dead control; this is the driver. */
+    function evoSwitcher() {
+      var root = main.querySelector('.evo-switcher');
+      if (!root) return;
+      var tabs = Array.prototype.slice.call(root.querySelectorAll('.evo-tab'));
+      if (tabs.length < 2) return;
+
+      function select(tab) {
+        tabs.forEach(function(t) {
+          var on = t === tab;
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+          t.tabIndex = on ? 0 : -1;
+          var key = t.getAttribute('aria-controls');
+          var panel = document.getElementById(key);
+          if (panel) panel.hidden = !on;
+          // the state sentence is the panel's header, so it switches with it
+          var label = document.getElementById(key + '-label');
+          if (label) label.hidden = !on;
+        });
+      }
+      tabs.forEach(function(t, i) {
+        t.addEventListener('click', function() { select(t); });
+        t.addEventListener('keydown', function(e) {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          e.preventDefault();
+          var to = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+          select(to);
+          to.focus();
+        });
+      });
     }
 
     var busy = false;
@@ -1048,6 +1265,32 @@
     } else {
       entry.focus();
     }
+  })();
+  </script>
+
+  <!-- ——— Agentation annotation toolbar (dev only) ———
+       Same gate as index.html and case.html, restated here because the vault
+       pages are built from this template and the injected fragment carries no
+       script: extract-case.mjs lifts only <style> and <main>, and innerHTML
+       runs no <script> anyway. So the toolbar has to be page furniture, not
+       part of the case study it annotates.
+
+       It loads on the gate screen too, before any code is typed. That is the
+       right side to err on: the gate is a real screen worth annotating, and the
+       bundle is fetched only on localhost or with ?agent, so a reader who is
+       handed this link still downloads nothing.
+
+       The path is relative to the BUILT page at the repo root, not to this
+       template in tools/. -->
+  <script>
+  (function() {
+    var host = location.hostname;
+    var on = host === 'localhost' || host === '127.0.0.1' || host === '[::1]'
+          || /[?&]agent(&|=|$)/.test(location.search);
+    if (!on) return;
+    import('./assets/agentation/agentation.js').catch(function(err) {
+      console.warn('[agentation] toolbar bundle missing — run `npm run agentation`', err);
+    });
   })();
   </script>
 </body>

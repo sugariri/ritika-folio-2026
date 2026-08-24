@@ -29,8 +29,8 @@
  *   --title <text>       browser tab title before unlock
  *   --heading <text>     the h1 on the lock screen
  *   --standfirst <text>  the line under the h1
- *   --hint <text>        the line under the entry: {n} becomes the code length
- *   --footnote <text>    the line under the hairline at the foot of the card
+ *   --footnote <text>    the line under the hairline at the foot of the card:
+ *                        {n} becomes the code length
  *   --code               ask for the password as one box per character, and
  *                        lower the length floor to 6. Read the note on it.
  *   --iterations <n>     PBKDF2 iterations        (default 600000)
@@ -62,7 +62,6 @@ const { values: o } = parseArgs({
     title:      { type: 'string' },
     heading:    { type: 'string' },
     standfirst: { type: 'string' },
-    hint:       { type: 'string' },
     footnote:   { type: 'string' },
     code:       { type: 'boolean', default: false },
     iterations: { type: 'string', default: '600000' },
@@ -82,8 +81,8 @@ if (o.help || !o.in) {
   --title <text>       tab title before unlock
   --heading <text>     h1 on the lock screen
   --standfirst <text>  line under the h1
-  --hint <text>        line under the entry: {n} becomes the code length
-  --footnote <text>    line under the hairline at the foot of the card
+  --footnote <text>    line under the hairline at the foot of the card:
+                       {n} becomes the code length
   --code               one box per character, no submit button; floor drops
                        to ${MIN_CODE} characters
   --iterations <n>     PBKDF2 iterations                (default 600000)
@@ -225,15 +224,15 @@ const payload = {
 const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const DEFAULT_HINT =
-  'Need the password? Email <a class="inline" href="mailto:ritika@finsynth.ai">ritika@finsynth.ai</a>.';
-
 const DEFAULT_FOOTNOTE = 'this page keeps secrets. so do i.';
 
-// {n} in --hint or --footnote becomes the number of boxes, so a line like
-// "{n} characters. it opens itself." cannot go stale when the code changes
-// length. With no --code there is no count, and {n} is left alone rather than
-// resolved to something untrue.
+// {n} in --footnote becomes the number of boxes, so a line that names the code
+// length cannot go stale when the code changes length. With no --code there is
+// no count, and {n} is left alone rather than resolved to something untrue.
+//
+// --hint went with the line it filled (2026-08-24): the gate no longer draws a
+// helper under the entry, and a substitution with no placeholder to land in is
+// a build error here, by design.
 const slotCount = o.code ? password.length : null;
 const fillN = (s) => (slotCount === null ? s : String(s).split('{n}').join(String(slotCount)));
 
@@ -242,10 +241,8 @@ const subs = {
   __TITLE__:      escapeHtml(o.title      ?? 'Protected case study · Ritika Shakkerwal'),
   __HEADING__:    escapeHtml(o.heading    ?? 'This case study is password protected'),
   __STANDFIRST__: escapeHtml(o.standfirst ?? 'The work behind it is under NDA, so the page is encrypted rather than merely hidden. Enter the password and it decrypts in your browser.'),
-  // --hint and --footnote are the two substitutions that take raw HTML, so a
-  // link can be written into them. They come from the command line, not from a
-  // reader.
-  __HINT__:       fillN(o.hint ?? DEFAULT_HINT),
+  // --footnote is the one substitution that takes raw HTML, so a link can be
+  // written into it. It comes from the command line, not from a reader.
   __FOOTNOTE__:   fillN(o.footnote ?? DEFAULT_FOOTNOTE),
 };
 

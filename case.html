@@ -723,6 +723,12 @@
       margin-top: 96px;
       padding: 48px 0 64px;
     }
+    /* space-between has held this row since it had two children; the second
+       left with "Back to work" and the email sat alone at the left margin
+       until 2026-08-24 (Ritika, of the address: "move to the right?"). The
+       fix is to give the rule its second child back rather than to change the
+       rule: the copyright line moved up into the row, so the footer is one
+       row and two corners. */
     .footer-row {
       display: flex; flex-wrap: wrap; gap: 12px;
       align-items: baseline; justify-content: space-between;
@@ -1101,9 +1107,9 @@
         <!-- The "Back to work" link went 2026-08-23 (Ritika: "remove this"). The
            header's .nav-back circle already returns to index.html#work, so the
            footer was saying it a second time, further from the reader's eye. -->
+        <p class="footer-copy">&copy; 2026 Ritika Shakkerwal</p>
         <a href="mailto:Ritikashofficial2511@gmail.com">Ritikashofficial2511@gmail.com</a>
       </div>
-      <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
     </div>
   </footer>
 
