@@ -267,36 +267,101 @@
       .theme-switch-knob { transition: none; }
     }
 
+    /* Lock this tab again. It ships hidden and is unhidden by inject(), so it
+       only exists once there is something to lock -- and it is in the <header>
+       rather than in the gate on purpose: injection is main.innerHTML, so the
+       gate and its "keep this tab unlocked" checkbox are gone by the time a
+       reader wants the way back. header is a sibling of main and survives.
+       Same 36px circle as .nav-back (and .shelf-nav, .wf-nav on the folio),
+       restated here rather than added to that rule because the .nav-back CSS
+       is byte-identical to case.html and stays that way. Icon-only, so it
+       carries aria-label + title, same rule as the footer marks. */
+    .nav-lock {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border: 0; padding: 0; font: inherit; cursor: pointer;
+      border-radius: 999px;
+      background: var(--bg-raised);
+      color: var(--muted);
+      transition: color 0.18s ease, scale 0.15s ease-out;
+    }
+    .nav-lock[hidden] { display: none; }
+    .nav-lock:hover { color: var(--text); }
+    .nav-lock:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .nav-lock:active { scale: 0.94; }
+    .nav-lock svg { display: block; width: 18px; height: 18px; }
+
     /* Narrow screens: back earns the space; the masthead carries identity */
     @media (max-width: 560px) {
       .nav-name { display: none; }
     }
 
     /* ---------- THE GATE ---------- */
-    /* Rows and type, like every other block on this site: no card, no shadow,
-       one hairline under the field. The lock glyph is the same monoline
-       stroke-1.8 viewBox-24 idiom as .nav-back's arrow. */
-    .gate { padding: 96px 0 120px; max-width: 54ch; }
+    /* The one card on this site, and the gate is why it is allowed: this is the
+       whole first screen with nothing else on it, so the plate is what says
+       "this is the only thing to do here". Everything in it is the site's own
+       material -- --bg-card on --bg, one --line hairline, 20px radius, no
+       shadow -- which is .card's material on index.html, at card scale. */
+    .gate {
+      max-width: 540px;
+      margin: 92px auto 116px;
+      padding: 52px 48px 34px;
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+    }
+    /* The three mono lines here are lowercase sentences, so they drop the
+       .14em micro-caps tracking the site's mono tags wear. */
     .gate-eyebrow {
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; gap: 9px;
       font-family: var(--mono);
       font-size: var(--pill); line-height: var(--pill-lh);
-      letter-spacing: .14em; text-transform: uppercase;
+      letter-spacing: .04em;
       color: var(--faint);
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
-    .gate-eyebrow svg { display: block; width: 15px; height: 15px; flex: 0 0 auto; }
+    /* A filled dot, not a lock glyph: the word beside it already says locked,
+       and a padlock next to "locked" is the label drawn twice. */
+    .gate-dot {
+      width: 7px; height: 7px; flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--muted);
+    }
     .gate h1 {
       font-size: var(--h1); line-height: var(--h1-lh); font-weight: 500;
       letter-spacing: -0.022em; text-wrap: balance;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
+    /* Full ink, not --muted: it is one short line and it is the instruction. */
     .gate-standfirst {
       font-size: var(--body1); line-height: var(--body1-lh);
-      color: var(--muted); text-wrap: pretty;
+      color: var(--text); text-wrap: pretty;
     }
 
-    .gate-form { margin-top: 38px; }
+    .gate-form { margin-top: 34px; }
+
+    /* One character per box. The count comes from payload.slots, so the UI can
+       never disagree with the length of the key it is asking for, and there is
+       no submit button: the last character opens the page. */
+    .gate-code { display: flex; gap: 10px; }
+    .gate-slot {
+      flex: 1 1 0; min-width: 0; max-width: 56px; height: 60px;
+      border: 1px solid var(--line-hover); border-radius: 12px;
+      /* --bg-raised sinks into the white card in light and lifts off it in
+         dark, which is the same both-ways-legible trade .give-shot makes. */
+      background: var(--bg-raised);
+      color: var(--text);
+      font-family: var(--mono);
+      /* 16px is the iOS zoom-on-focus guard, not a type choice */
+      font-size: 16px; text-align: center;
+      transition: border-color .18s ease;
+    }
+    .gate-slot:hover:not(:disabled) { border-color: var(--muted); }
+    .gate-slot:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+    .gate-slot:disabled { color: var(--faint); }
+    @media (prefers-reduced-motion: reduce) { .gate-slot { transition: none; } }
+
+    /* The plain-field fallback, for a build that records no slot count. */
     .gate-label {
       display: block;
       font-family: var(--mono);
@@ -310,7 +375,7 @@
       flex: 1 1 auto; min-width: 0;
       height: 48px; padding: 0 14px;
       border: 1px solid var(--line-hover); border-radius: 10px;
-      background: var(--bg-card);
+      background: var(--bg-raised);
       color: var(--text);
       font-family: var(--font);
       /* 16px is the iOS zoom-on-focus guard, not a type choice */
@@ -336,9 +401,19 @@
     .gate-go:hover:not(:disabled) i { translate: 2px 0; }
     @media (prefers-reduced-motion: reduce) { .gate-go i { transition: none; } }
 
+    /* The helper under the boxes, and the closing line under the hairline:
+       both mono, both --faint. They are sentences that wrap, so they take
+       --body2 with its own leading rather than --pill, whose 1.0 line-height
+       has no leading to give -- and the scale has no seventh size to invent. */
+    .gate-help {
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: var(--body2); line-height: var(--body2-lh);
+      color: var(--faint);
+    }
     .gate-keep {
       display: flex; align-items: center; gap: 9px;
-      margin-top: 16px;
+      margin-top: 18px;
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--muted);
       cursor: pointer;
@@ -352,20 +427,25 @@
     }
     .gate-msg.working { color: var(--muted); }
     .gate-msg.ok { color: var(--ok); }
-    .gate-hint {
-      margin-top: 34px; padding-top: 22px;
+
+    .gate-foot {
+      margin-top: 32px; padding-top: 20px;
       border-top: 1px solid var(--line);
+      font-family: var(--mono);
       font-size: var(--body2); line-height: var(--body2-lh);
       color: var(--faint);
     }
-    .gate-note {
-      margin-top: 10px;
-      font-size: var(--body2); line-height: var(--body2-lh);
-      color: var(--faint);
-    }
+    .gate-note { margin-top: 10px; }
+    .gate-note:first-child { margin-top: 0; }
 
     @media (max-width: 560px) {
-      .gate { padding: 64px 0 88px; }
+      .gate {
+        margin: 56px auto 76px;
+        padding: 38px 22px 26px;
+        border-radius: 16px;
+      }
+      .gate-code { gap: 7px; }
+      .gate-slot { height: 54px; border-radius: 10px; }
       .gate-row { flex-direction: column; }
       .gate-go { justify-content: center; }
     }
@@ -513,6 +593,13 @@
           </a>
         </div>
         <div class="nav-right">
+          <button type="button" class="nav-lock" id="navLock" hidden
+                  aria-label="Lock this tab again" title="Lock this tab again">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+              <rect x="4.5" y="10.4" width="15" height="10.1" rx="2.4"/>
+              <path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/>
+            </svg>
+          </button>
           <button type="button" class="theme-switch" id="themeToggle" role="switch" aria-checked="false" aria-label="Dark theme" title="Switch to dark theme">
             <svg class="ico-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" focusable="false">
               <circle cx="12" cy="12" r="4.2"/>
@@ -531,24 +618,28 @@
   <main id="doc">
     <div class="wrap">
       <section class="gate" id="gate">
-        <p class="gate-eyebrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            <rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/>
-            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>
-          </svg>
-          Protected
-        </p>
+        <p class="gate-eyebrow"><span class="gate-dot" aria-hidden="true"></span>locked</p>
         <h1>__HEADING__</h1>
         <p class="gate-standfirst">__STANDFIRST__</p>
 
         <form class="gate-form" id="gateForm" autocomplete="on">
-          <label class="gate-label" for="pw">Password</label>
-          <div class="gate-row">
-            <input class="gate-input" id="pw" name="password" type="password"
-                   autocomplete="current-password" autocapitalize="off" spellcheck="false"
-                   aria-describedby="gateMsg" placeholder="Enter the password" required>
-            <button class="gate-go" type="submit" id="gateGo">Unlock <i aria-hidden="true">&rarr;</i></button>
+          <!-- The boxes are built by the script below, one per payload.slots,
+               and .gate-field is removed. A build that records no slot count
+               keeps the field and this group is removed instead. -->
+          <div class="gate-code" id="gateCode" role="group" aria-label="Access code" hidden></div>
+
+          <div class="gate-field" id="gateField">
+            <label class="gate-label" for="pw">Password</label>
+            <div class="gate-row">
+              <input class="gate-input" id="pw" name="password" type="password"
+                     autocomplete="current-password" autocapitalize="off" spellcheck="false"
+                     aria-describedby="gateHelp gateMsg" placeholder="Enter the password" required>
+              <button class="gate-go" type="submit" id="gateGo">Unlock <i aria-hidden="true">&rarr;</i></button>
+            </div>
           </div>
+
+          <p class="gate-help" id="gateHelp">__HINT__</p>
+
           <label class="gate-keep">
             <input type="checkbox" id="gateKeep">
             Keep this tab unlocked while I read
@@ -558,11 +649,13 @@
           <p class="gate-msg" id="gateMsg" role="alert" aria-live="polite"></p>
         </form>
 
-        <p class="gate-hint">__HINT__</p>
-        <p class="gate-note">
-          The content of this page is stored encrypted (AES-GCM 256, PBKDF2-SHA256).
-          It is decrypted in your browser and never sent anywhere.
-        </p>
+        <div class="gate-foot">
+          <p class="gate-note">__FOOTNOTE__</p>
+          <p class="gate-note">
+            The content of this page is stored encrypted (AES-GCM 256, PBKDF2-SHA256).
+            It is decrypted in your browser and never sent anywhere.
+          </p>
+        </div>
 
         <noscript>
           <p class="gate-note" style="color:var(--fail)">
@@ -576,7 +669,9 @@
   <footer>
     <div class="wrap">
       <div class="footer-row">
-        <a href="index.html#work">&larr; Back to work</a>
+        <!-- The "Back to work" link went 2026-08-23 (Ritika: "remove this"). The
+           header's .nav-back circle already returns to index.html#work, so the
+           footer was saying it a second time, further from the reader's eye. -->
         <a href="mailto:ritika@finsynth.ai">ritika@finsynth.ai</a>
       </div>
       <p class="footer-copy" style="margin-top:20px">&copy; 2026 Ritika Shakkerwal</p>
@@ -647,12 +742,15 @@
   // strong lock on a door, not as a vault.
   (function() {
     var form  = document.getElementById('gateForm');
+    var wrap  = document.getElementById('gateCode');
+    var field = document.getElementById('gateField');
     var input = document.getElementById('pw');
     var go    = document.getElementById('gateGo');
     var keep  = document.getElementById('gateKeep');
     var msg   = document.getElementById('gateMsg');
     var gate  = document.getElementById('gate');
     var main  = document.getElementById('doc');
+    var lock  = document.getElementById('navLock');
     var SESSION_KEY = 'lockedCase.pw';
 
     function say(text, kind) {
@@ -660,23 +758,149 @@
       msg.className = 'gate-msg' + (kind ? ' ' + kind : '');
     }
 
+    // The payload is read before anything is drawn, because how the gate asks
+    // for the key depends on what the key is: payload.slots is the real
+    // password's length, recorded at build time, so the number of boxes can
+    // never disagree with the key the page is asking for. That publishes the
+    // length, which the boxes were going to announce anyway.
+    var payload = null;
+    try {
+      payload = JSON.parse(document.getElementById('payload').textContent);
+    } catch (e) {}
+
+    var slots = 0;
+    if (payload && typeof payload.slots === 'number' && payload.slots > 0 && payload.slots <= 24) {
+      slots = payload.slots | 0;
+    }
+
+    // One object either way, so nothing below this line learns which gate is up.
+    var entry = slots ? buildCode(slots) : useField();
+
     // crypto.subtle only exists in a secure context. Say so rather than
     // failing on an undefined property when the file is opened over file://
     // or served from a plain-http host.
     if (!window.crypto || !window.crypto.subtle) {
-      go.disabled = true;
-      input.disabled = true;
+      entry.setDisabled(true);
       say('This page needs a secure context to decrypt: open it over https, or from localhost during development. The Web Crypto API is unavailable here.');
       return;
     }
 
-    var payload;
-    try {
-      payload = JSON.parse(document.getElementById('payload').textContent);
-    } catch (e) {
-      go.disabled = true;
+    if (!payload) {
+      entry.setDisabled(true);
       say('The encrypted payload in this page is unreadable. It was probably damaged in transit.');
       return;
+    }
+
+    // The plain field: a build with no slot count, or a key long enough that
+    // one box per character would be a row of forty.
+    function useField() {
+      if (wrap && wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      input.addEventListener('input', function() {
+        if (msg.textContent && !busy) say('');
+      });
+      return {
+        ready:     function() { return !!input.value; },
+        notReady:  'Enter the password to unlock the page.',
+        value:     function() { return input.value; },
+        setDisabled: function(d) { input.disabled = d; go.disabled = d; },
+        focus:     function() { input.focus({ preventScroll: true }); },
+        reset:     function() { input.select(); input.focus(); }
+      };
+    }
+
+    // One character per box, and no submit button: the last character opens
+    // the page. Everything is delegated to the wrapper, so the box count is
+    // the only thing the payload gets to decide.
+    function buildCode(n) {
+      if (field && field.parentNode) field.parentNode.removeChild(field);
+      var boxes = [];
+      for (var i = 0; i < n; i++) {
+        var b = document.createElement('input');
+        b.className = 'gate-slot';
+        b.type = 'text';
+        b.maxLength = 1;
+        b.autocapitalize = 'off';
+        b.spellcheck = false;
+        b.setAttribute('autocomplete', 'off');
+        b.setAttribute('aria-label', 'Character ' + (i + 1) + ' of ' + n);
+        b.setAttribute('aria-describedby', 'gateHelp gateMsg');
+        wrap.appendChild(b);
+        boxes.push(b);
+      }
+      wrap.hidden = false;
+
+      function at(el) { return boxes.indexOf(el); }
+      function full() {
+        for (var i = 0; i < boxes.length; i++) if (!boxes[i].value) return false;
+        return true;
+      }
+      function firstEmpty() {
+        for (var i = 0; i < boxes.length; i++) if (!boxes[i].value) return boxes[i];
+        return boxes[boxes.length - 1];
+      }
+      // A pasted or autofilled string spreads rightward from where it landed,
+      // rather than filling one box and dropping the rest.
+      function spread(from, chars) {
+        var i = from, j = 0;
+        for (; i < boxes.length && j < chars.length; i++, j++) boxes[i].value = chars[j];
+        boxes[Math.min(i, boxes.length - 1)].focus();
+      }
+      function maybeSubmit() { if (full() && !busy) submitNow(); }
+
+      wrap.addEventListener('input', function(e) {
+        var i = at(e.target);
+        if (i < 0) return;
+        var chars = e.target.value.split('');
+        if (chars.length > 1) {
+          spread(i, chars);
+        } else if (chars.length === 1 && boxes[i + 1]) {
+          boxes[i + 1].focus();
+        }
+        if (msg.textContent && !busy) say('');
+        maybeSubmit();
+      });
+
+      wrap.addEventListener('keydown', function(e) {
+        var i = at(e.target);
+        if (i < 0) return;
+        if (e.key === 'Backspace' && !e.target.value && boxes[i - 1]) {
+          // Step back and clear, so held backspace walks the code out.
+          e.preventDefault();
+          boxes[i - 1].value = '';
+          boxes[i - 1].focus();
+        } else if (e.key === 'ArrowLeft' && boxes[i - 1]) {
+          e.preventDefault();
+          boxes[i - 1].focus();
+        } else if (e.key === 'ArrowRight' && boxes[i + 1]) {
+          e.preventDefault();
+          boxes[i + 1].focus();
+        } else if (e.key === 'Enter') {
+          // There is no submit button, so Enter has to be wired by hand.
+          e.preventDefault();
+          submitNow();
+        }
+      });
+
+      wrap.addEventListener('paste', function(e) {
+        var text = (e.clipboardData && e.clipboardData.getData('text')) || '';
+        if (!text) return;
+        e.preventDefault();
+        spread(Math.max(0, at(e.target)), text.trim().split(''));
+        if (msg.textContent && !busy) say('');
+        maybeSubmit();
+      });
+
+      return {
+        ready:     full,
+        notReady:  'Fill every box to unlock the page.',
+        value:     function() { return boxes.map(function(b) { return b.value; }).join(''); },
+        setDisabled: function(d) { boxes.forEach(function(b) { b.disabled = d; }); },
+        focus:     function() { firstEmpty().focus({ preventScroll: true }); },
+        reset:     function() {
+          boxes.forEach(function(b) { b.value = ''; });
+          boxes[0].focus();
+        }
+      };
     }
 
     function b64ToBytes(s) {
@@ -741,6 +965,19 @@
       target.setAttribute('tabindex', '-1');
       target.focus({ preventScroll: true });
       window.scrollTo(0, 0);
+
+      // The way back. Without it "keep this tab unlocked" is a one-way door:
+      // the stored password re-unlocks on every reload and the checkbox that
+      // set it went out with the gate, so there is nothing left to untick.
+      // Forgetting the password is the whole action; a reload then finds no
+      // stored value and draws the gate.
+      if (lock) {
+        lock.hidden = false;
+        lock.addEventListener('click', function() {
+          try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+          location.reload();
+        });
+      }
     }
 
     var busy = false;
@@ -748,8 +985,7 @@
     async function attempt(password, fromSession) {
       if (busy) return;
       busy = true;
-      go.disabled = true;
-      input.disabled = true;
+      entry.setDisabled(true);
       // PBKDF2 at this iteration count blocks for a moment, so say so before
       // starting rather than looking dead.
       say('Decrypting…', 'working');
@@ -769,12 +1005,12 @@
         inject(html);
       } catch (err) {
         busy = false;
-        go.disabled = false;
-        input.disabled = false;
+        entry.setDisabled(false);
         if (fromSession) {
           // A stored password that no longer works means the page was rebuilt.
           try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
           say('');
+          entry.reset();
           return;
         }
         // A DecompressionStream or payload problem is not a wrong password,
@@ -782,22 +1018,25 @@
         if (err && err.message && /Decompress/i.test(err.message)) {
           say(err.message);
         } else {
-          say('That password does not decrypt this page. Check for a stray space, and mind the capitals.');
+          say('That does not decrypt this page. Check for a stray space, and mind the capitals.');
         }
-        input.select();
-        input.focus();
+        // The boxes clear themselves: with no submit button there is nothing to
+        // press again, so a failed code has to leave an empty row to retype.
+        entry.reset();
       }
+    }
+
+    // Both gates end here: the form's submit button when there is one, and the
+    // last box or Enter when there isn't.
+    function submitNow() {
+      if (busy) return;
+      if (!entry.ready()) { say(entry.notReady); entry.focus(); return; }
+      attempt(entry.value(), false);
     }
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
-      var pw = input.value;
-      if (!pw) { say('Enter the password to unlock the page.'); input.focus(); return; }
-      attempt(pw, false);
-    });
-
-    input.addEventListener('input', function() {
-      if (msg.textContent && !busy) say('');
+      submitNow();
     });
 
     // Resume an already-unlocked tab.
@@ -807,7 +1046,7 @@
       if (keep) keep.checked = true;
       attempt(remembered, true);
     } else {
-      input.focus({ preventScroll: true });
+      entry.focus();
     }
   })();
   </script>

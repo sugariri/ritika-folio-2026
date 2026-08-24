@@ -29,7 +29,10 @@
  *   --title <text>       browser tab title before unlock
  *   --heading <text>     the h1 on the lock screen
  *   --standfirst <text>  the line under the h1
- *   --hint <text>        where a reader should go to ask for the password
+ *   --hint <text>        the line under the entry: {n} becomes the code length
+ *   --footnote <text>    the line under the hairline at the foot of the card
+ *   --code               ask for the password as one box per character, and
+ *                        lower the length floor to 6. Read the note on it.
  *   --iterations <n>     PBKDF2 iterations        (default 600000)
  *   --gzip               compress before encrypting (needs DecompressionStream
  *                        in the browser: Chrome 80+, Safari 16.4+, Firefox 113+)
@@ -43,6 +46,13 @@ import { parseArgs } from 'node:util';
 import readline from 'node:readline';
 
 const MIN_PASSWORD = 12;
+// --code's floor. Six characters is a genuinely weak secret against the offline
+// attack described above (a 6-character alphanumeric code is about 2.2e9
+// candidates, hours rather than years on one GPU at 600,000 iterations), so it
+// is a deliberate trade for a short shared code and not the default.
+const MIN_CODE = 6;
+// The gate draws one box per character and stops at 24 of them.
+const MAX_CODE = 24;
 
 const { values: o } = parseArgs({
   options: {
@@ -53,6 +63,8 @@ const { values: o } = parseArgs({
     heading:    { type: 'string' },
     standfirst: { type: 'string' },
     hint:       { type: 'string' },
+    footnote:   { type: 'string' },
+    code:       { type: 'boolean', default: false },
     iterations: { type: 'string', default: '600000' },
     gzip:       { type: 'boolean', default: false },
     'allow-weak': { type: 'boolean', default: false },
@@ -70,10 +82,13 @@ if (o.help || !o.in) {
   --title <text>       tab title before unlock
   --heading <text>     h1 on the lock screen
   --standfirst <text>  line under the h1
-  --hint <text>        how to ask for the password
+  --hint <text>        line under the entry: {n} becomes the code length
+  --footnote <text>    line under the hairline at the foot of the card
+  --code               one box per character, no submit button; floor drops
+                       to ${MIN_CODE} characters
   --iterations <n>     PBKDF2 iterations                (default 600000)
   --gzip               compress before encrypting
-  --allow-weak         skip the ${MIN_PASSWORD}-character floor
+  --allow-weak         skip the length floor (${MIN_PASSWORD}, or ${MIN_CODE} with --code)
 `);
   process.exit(o.in ? 0 : 1);
 }
@@ -103,8 +118,8 @@ function promptHidden(question) {
 
 // Not an entropy estimator, just a floor with teeth. Length is what actually
 // costs an offline attacker, so length is what is checked.
-function tooWeak(pw) {
-  if (pw.length < MIN_PASSWORD) return `shorter than ${MIN_PASSWORD} characters`;
+function tooWeak(pw, floor) {
+  if (pw.length < floor) return `shorter than ${floor} characters`;
   if (/^\d+$/.test(pw)) return 'digits only';
   if (/^(.)\1*$/.test(pw)) return 'one repeated character';
   const common = ['password', 'passphrase', 'letmein', 'casestudy', 'portfolio', 'changeme', 'secret', 'qwerty'];
@@ -130,15 +145,33 @@ async function getPassword() {
   // accent on one machine fails to derive the same key on another.
   pw = pw.normalize('NFKC');
   if (!pw) { console.error('Empty password. Nothing was written.'); process.exit(1); }
-  const weak = tooWeak(pw);
+  const floor = o.code ? MIN_CODE : MIN_PASSWORD;
+  const weak = tooWeak(pw, floor);
   if (weak && !o['allow-weak']) {
     console.error(
       `\nRefusing to encrypt: that password is ${weak}.\n` +
       'The ciphertext ships inside the page, so the only thing standing between\n' +
       'a reader and the content is how expensive the password is to guess offline.\n' +
-      `Use ${MIN_PASSWORD}+ characters, or pass --allow-weak if you have a reason.\n`
+      `Use ${floor}+ characters, or pass --allow-weak if you have a reason.\n`
     );
     process.exit(1);
+  }
+  if (o.code) {
+    if (pw.length > MAX_CODE) {
+      console.error(
+        `\nRefusing to encrypt: --code draws one box per character and stops at ${MAX_CODE}.\n` +
+        `That code is ${pw.length} characters. Drop --code and it gets a plain field instead.\n`
+      );
+      process.exit(1);
+    }
+    // Said out loud every time, because the page publishes the length and the
+    // length is most of what an offline attacker needs to size the job.
+    console.log(
+      `\nNote: --code puts ${pw.length} boxes on the page, so the code's length is public.\n` +
+      `A ${pw.length}-character code is a short secret against an offline attack on a\n` +
+      'public ciphertext. It is the right trade for a code you hand out and rotate,\n' +
+      'and the wrong one for content that has to stay shut for years.'
+    );
   }
   return pw;
 }
@@ -178,6 +211,10 @@ const payload = {
   kdf: { name: 'PBKDF2', hash: 'SHA-256', iterations, salt: b64(salt) },
   cipher: { name: 'AES-GCM', iv: b64(iv), tagBits: 128 },
   compress: o.gzip ? 'gzip' : 'none',
+  // The gate reads this to decide how to ask: a number draws that many
+  // one-character boxes, its absence draws a plain password field. Recording it
+  // is what keeps the boxes from ever disagreeing with the real key.
+  ...(o.code ? { slots: password.length } : {}),
   ct: b64(ct),
 };
 
@@ -191,14 +228,25 @@ const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
 const DEFAULT_HINT =
   'Need the password? Email <a class="inline" href="mailto:ritika@finsynth.ai">ritika@finsynth.ai</a>.';
 
+const DEFAULT_FOOTNOTE = 'this page keeps secrets. so do i.';
+
+// {n} in --hint or --footnote becomes the number of boxes, so a line like
+// "{n} characters. it opens itself." cannot go stale when the code changes
+// length. With no --code there is no count, and {n} is left alone rather than
+// resolved to something untrue.
+const slotCount = o.code ? password.length : null;
+const fillN = (s) => (slotCount === null ? s : String(s).split('{n}').join(String(slotCount)));
+
 const subs = {
   __PAYLOAD__:    JSON.stringify(payload),
   __TITLE__:      escapeHtml(o.title      ?? 'Protected case study · Ritika Shakkerwal'),
   __HEADING__:    escapeHtml(o.heading    ?? 'This case study is password protected'),
   __STANDFIRST__: escapeHtml(o.standfirst ?? 'The work behind it is under NDA, so the page is encrypted rather than merely hidden. Enter the password and it decrypts in your browser.'),
-  // --hint is the one substitution that takes raw HTML, so a link can be
-  // written into it. It comes from the command line, not from a reader.
-  __HINT__:       o.hint ?? DEFAULT_HINT,
+  // --hint and --footnote are the two substitutions that take raw HTML, so a
+  // link can be written into them. They come from the command line, not from a
+  // reader.
+  __HINT__:       fillN(o.hint ?? DEFAULT_HINT),
+  __FOOTNOTE__:   fillN(o.footnote ?? DEFAULT_FOOTNOTE),
 };
 
 let out = template;
@@ -215,6 +263,7 @@ console.log(
   `  plaintext   ${kb(raw.length)}${o.gzip ? `  ->  gzip ${kb(body.length)}` : ''}\n` +
   `  ciphertext  ${kb(ct.length)}  (${kb(Buffer.byteLength(payload.ct))} as base64)\n` +
   `  page        ${kb(Buffer.byteLength(out))}\n` +
-  `  PBKDF2      ${iterations.toLocaleString()} iterations, SHA-256\n\n` +
+  `  PBKDF2      ${iterations.toLocaleString()} iterations, SHA-256\n` +
+  `  entry       ${o.code ? `${password.length} boxes, one per character` : 'password field'}\n\n` +
   `Keep ${o.in} out of git. Only ${o.out} is safe to publish.\n`
 );
