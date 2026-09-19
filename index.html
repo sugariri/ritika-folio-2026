@@ -74,6 +74,7 @@
          is lighter than --bg-hover, which turned the print inside out. */
       --print-well: #ececee;
       --bg-float: var(--bg);               /* sheets and the chat, lifted in dark */
+      --hero-plate: rgba(255, 255, 255, 0.72); /* the frosted card under hovered hero copy */
       --text: var(--gray-14);
       --muted: var(--gray-10);
       --faint: var(--gray-7);
@@ -239,6 +240,7 @@
       /* the case sheet and the chat lift off the page instead of relying on a
          shadow, which does almost nothing against near-black */
       --bg-float: #1a1a20;
+      --hero-plate: rgba(16, 16, 19, 0.72);
       --text: #ededf2;
       --muted: #a6a6b6;
       --faint: #74748c;
@@ -467,6 +469,37 @@
     /* ---------- HERO ---------- */
     .hero { position: relative; padding: 88px 0 80px; }
     .hero .wrap { position: relative; z-index: 1; } /* copy above the spotlight layer */
+    /* The card under the copy. Hover the text and the column lifts onto a
+       frosted plate with a hairline edge (Ritika, 2026-09-19, from a hero
+       reference where the copy sits on a rounded card): the spotlight lens
+       passes straight under the paragraphs, and --muted / --faint on a
+       photograph is a readability problem the dark-theme halo below only
+       half solves. A ::before rather than a background on .wrap so the plate
+       can bleed 32px above and below the copy without touching layout, and
+       so its left and right edges land exactly on the dashed guides — the
+       card is the column, not a second box inside it. z-index -1 keeps it
+       behind the text but inside .wrap's own stacking context, so it still
+       sits above the spotlight layer. Same 0.5s curve as the lens fade, so
+       plate and lens read as one move. Off wherever the spotlight is off:
+       with no photo behind the copy there is nothing to lift it off. */
+    .hero .wrap::before {
+      content: '';
+      position: absolute;
+      inset: -32px 0;
+      z-index: -1;
+      border-radius: 14px;              /* the card shelves' radius */
+      background: var(--hero-plate);
+      border: 1px solid var(--line);
+      -webkit-backdrop-filter: blur(18px) saturate(1.1);
+      backdrop-filter: blur(18px) saturate(1.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .hero .wrap:hover::before { opacity: 1; }
+    @media (prefers-reduced-motion: reduce), (hover: none), (max-width: 640px) {
+      .hero .wrap::before { display: none; }
+    }
     .hero h1 {
       font-size: var(--h1);
       font-weight: 500;
